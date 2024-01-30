@@ -1,0 +1,77 @@
+/* Định dạng phần chọn (select) */
+.modal-body select {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    color: #555;
+    outline: none;
+    transition: border-color 0.3s;
+  }
+  
+  /* Hiệu ứng hover cho option trong select */
+  .modal-body select option:hover {
+    background-color: #f2f2f2;
+  }
+  
+  /* Thiết lập các input */
+  .modal-body input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    color: #555;
+    outline: none;
+    transition: border-color 0.3s;
+  }
+  
+  /* Hiệu ứng khi hover vào input */
+  .modal-body input:hover {
+    border-color: #888;
+  }
+  
+  /* Hiệu ứng khi focus vào input */
+  .modal-body input:focus {
+    border-color: #4CAF50;
+  }
+  
+  /* Định dạng label */
+  .modal-body label {
+    color: #333;
+    font-size: 14px;
+    margin-bottom: 8px;
+    display: block;
+  }
+  
+  /* Định dạng nút */
+  .modal-body button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  
+  /* Hiệu ứng khi hover vào nút */
+  .modal-body button:hover {
+    background-color: #45a049;
+  }
+  
+  /* Thiết lập màu chữ và kích thước cho nội dung modal */
+  .modal-body {
+    color: #333;
+    font-size: 16px;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  
+  
