@@ -52,9 +52,9 @@ const LineChart = ({
     },
   ];
   useEffect(() => {
-    console.log("Child State has changed:", stateDoanhthu);
-    console.log("xem max " + maxD);
-    console.log("xem min " + minD);
+    // console.log("Child State has changed:", stateDoanhthu);
+    // console.log("xem max " + maxD);
+    // console.log("xem min " + minD);
   }, [stateDoanhthu]);
   return (
     <>
