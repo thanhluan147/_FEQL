@@ -44,6 +44,24 @@ export const DeletePhieuOrder = async (req) => {
   return JSON.stringify(respod.data);
 };
 
+export const UPdateProductStatusOrder = async (req) => {
+  const respod = await Axios.put(
+    `${Url_BackEnd}/order/updateProductStatusOrder`,
+    {
+      stateOrder: req,
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        // Thêm các header khác nếu cần
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }
+  );
+
+  return JSON.stringify(respod.data);
+};
+
 export const Get_all_Order = async (req) => {
   const respod = await Axios.get(`${Url_BackEnd}/order/getAllOrder`, {
     headers: {

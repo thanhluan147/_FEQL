@@ -25,6 +25,7 @@ import { useState, useEffect } from "react";
 import i18n from "../../i18n/i18n";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import "./style.css";
 const BRACNH = () => {
   const nav = useNavigate();
   useTranslation();
@@ -56,6 +57,7 @@ const BRACNH = () => {
       headerName: `${i18n.t("MA_B")}`,
       flex: 1,
       cellClassName: "name-column--cell",
+      renderCell: BranchIDCell,
     },
     {
       field: "name",
@@ -85,6 +87,25 @@ const BRACNH = () => {
     },
   ];
   const [stateBranch, setStateBranch] = useState([]);
+  const handleLogin = (x) => {
+    const storeID = x; // Giá trị bạn muốn truyền
+    nav("/details", { state: { storeID } });
+  };
+  function BranchIDCell(params) {
+    const arrayObject = params.value;
+    return (
+      <span
+        className="HoverLink"
+        style={{ cursor: "pointer", textDecoration: "underline" }}
+        onClick={() => handleLogin(arrayObject)}
+      >
+        {arrayObject}
+      </span>
+    );
+  }
+  const goToDetailsScreen = (paramX) => {
+    nav("/details", { state: paramX });
+  };
   function UpdatedateObjectCell(params) {
     const arrayObject = params.value;
     const originalDateString = arrayObject;
@@ -182,7 +203,6 @@ const BRACNH = () => {
         }}
       >
         <DataGrid
-          checkboxSelection
           components={{
             Toolbar: GridToolbar,
           }}

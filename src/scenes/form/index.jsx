@@ -20,21 +20,69 @@ import "react-confirm-alert/src/react-confirm-alert.css"; // Import CSS
 import ReactLoading from "react-loading";
 import i18n from "../../i18n/i18n";
 import { useTranslation } from "react-i18next";
+import { Get_all_Phieu_Store_By_StoreID } from "../invoices/handlePhieustore";
+import { CreateIdMaxValueOfarray } from "../method";
 const Form = () => {
   useTranslation();
+  const [stateID, setstateID] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const formatDate = (event) => {
+    // Kiểm tra định dạng
+    // if (!/^\d{4}-\d{2}-\d{2}$/.test(inputDate)) {
+    //   console.log("input inputDate: " + inputDate);
+    //   setErrorMessage("Invalid date format. Please use YYYY-MM-DD.");
+    // }
+
+    setErrorMessage(false);
+    setStatePhieu({
+      ...statePhieu,
+      [event.target.name]: event.target.value,
+    });
+  };
+  const fetchingGettAllPhieu_by_StoreID = async (x) => {
+    const check = await Get_all_Phieu_Store_By_StoreID(x);
+
+    if (check instanceof Promise) {
+      // Nếu là promise, chờ promise hoàn thành rồi mới cập nhật state
+      const resolvedResult = await check;
+
+      const checkIDMAX = CreateIdMaxValueOfarray(
+        "PN",
+        JSON.parse(resolvedResult),
+        code
+      );
+      setstateID(checkIDMAX);
+    } else {
+      const checkIDMAX = CreateIdMaxValueOfarray("PN", JSON.parse(check), code);
+
+      setstateID(checkIDMAX);
+    }
+  };
+  const handleBlurdate = () => {
+    // Kiểm tra lỗi khi mất focus (kết thúc nhập)
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(statePhieu.thoidiem)) {
+      setisShowerrorDate(true);
+    } else {
+      setisShowerrorDate(false);
+    }
+  };
   const [stateimage, setStateimg] = useState("");
   const [stateProduct, setStateProduct] = useState([]);
   const isNonMobile = useMediaQuery("(min-width:600px)");
   let chinhanhdau = "";
+  let code = "";
+  const [stateCode, setstateCode] = useState("");
   const [statesotienbandau, setsotienbandau] = useState(0);
   const [statechinhanhdau, setchinhanhdau] = useState("");
   const [isshowError, setisshowError] = useState(false);
   const [isshowErrorTable, setisshowErrorTable] = useState(false);
+  const [isShowerrorDate, setisShowerrorDate] = useState(false);
   const [isloading, setisloading] = useState(false);
   const [stateFormProduct, setStateFormProduct] = useState({
     id: "",
     name: "",
-    picture: "",
+    picture: "...",
     loai: "",
     soluong: 0,
     status: "GOOD",
@@ -52,10 +100,12 @@ const Form = () => {
   const [statePhieu, setStatePhieu] = useState({
     sotien: 0,
     loaiphieu: "",
+    thoidiem: "",
   });
   const onhandlechangePhieu = (event) => {
     setisshowError(false);
     setisshowErrorTable(false);
+    setisShowerrorDate(false);
     setStatePhieu({
       ...statePhieu,
       [event.target.name]: event.target.value,
@@ -69,6 +119,15 @@ const Form = () => {
         return;
       } else {
         setisshowError(false);
+      }
+
+      if (!statePhieu.thoidiem) {
+        setisShowerrorDate(true);
+        return;
+      }
+
+      if (isShowerrorDate) {
+        return;
       }
       if (stateProduct.length === 0 || stateProduct == []) {
         setisshowErrorTable(true);
@@ -90,12 +149,14 @@ const Form = () => {
             onClick: async () => {
               setisloading(true);
               const createphieu = {
+                id: stateID,
                 status: "PENDING",
                 userID: localStorage.getItem("id"),
                 loaiphieu: statePhieu.loaiphieu,
-                sotien: "0",
+                sotien: statePhieu.sotien,
                 StoreID: statechinhanhdau,
                 arrayProduct: stateProduct,
+                ngaylap: statePhieu.thoidiem,
                 updateDate: "...",
               };
 
@@ -109,19 +170,21 @@ const Form = () => {
                 setisloading(false);
                 setStatePhieu({
                   sotien: 0,
+                  thoidiem: "",
                   loaiphieu: "",
                 });
-                setStateFormProduct({
-                  id: "",
-                  name: "",
-                  picture: "",
-                  loai: "",
-                  soluong: 0,
-                  status: "GOOD",
-                  StoreID: "",
-                  sotien: 0,
-                  behavior: "ADMIN ADD",
-                });
+                setsotienbandau(0);
+                // setStateFormProduct({
+                //   id: "",
+                //   name: "",
+                //   picture: "",
+                //   loai: "",
+                //   soluong: 0,
+                //   status: "GOOD",
+                //   StoreID: "",
+                //   sotien: 0,
+                //   behavior: "ADMIN ADD",
+                // });
                 setStateProduct([]);
               }
             },
@@ -143,13 +206,20 @@ const Form = () => {
     if (objBranch instanceof Promise) {
       // Nếu là promise, chờ promise hoàn thành rồi mới cập nhật state
       const resolvedResult = await objBranch;
+
       chinhanhdau = JSON.parse(resolvedResult)[0].id;
+      code = JSON.parse(resolvedResult)[0].code;
+
       setchinhanhdau(chinhanhdau);
+      setstateCode(code);
     } else {
       // Nếu không phải là promise, cập nhật state ngay lập tức
 
       chinhanhdau = JSON.parse(objBranch)[0].id;
+      code = JSON.parse(objBranch)[0].code;
+
       setchinhanhdau(chinhanhdau);
+      setstateCode(code);
     }
   };
 
@@ -175,6 +245,7 @@ const Form = () => {
       ...stateFormProduct,
       [event.target.name]: event.target.value,
       picture: temp,
+
       StoreID: statechinhanhdau,
       id: "POR" + lenghtState,
     });
@@ -187,11 +258,14 @@ const Form = () => {
     });
   };
   const addproduct = async () => {
-    const { name, loai, soluong, sotien } = stateFormProduct;
+    const { name, loai, soluong, picture } = stateFormProduct;
     const errors = {};
 
     if (!name) {
       errors.name = `${i18n.t("ERROR_NAME")}`;
+    }
+    if (!picture) {
+      errors.picture = `*Vui lòng chọn ảnh`;
     }
 
     if (!loai) {
@@ -205,7 +279,7 @@ const Form = () => {
     setStateFormProduct({
       id: "",
       name: "",
-      picture: "",
+      picture: "...",
       loai: "",
       soluong: "",
       status: "GOOD",
@@ -265,6 +339,8 @@ const Form = () => {
   };
   const fetchingapi = async () => {
     await fetchingStore();
+
+    await fetchingGettAllPhieu_by_StoreID(chinhanhdau);
   };
   useEffect(() => {
     fetchingapi();
@@ -296,14 +372,7 @@ const Form = () => {
         initialValues={initialValues}
         validationSchema={checkoutSchema}
       >
-        {({
-          values,
-          errors,
-          touched,
-          handleBlur,
-          handleChange,
-          handleSubmit,
-        }) => (
+        {({ values, errors, touched, date, handleChange, handleSubmit }) => (
           <form onSubmit={handleSubmit}>
             <Box
               display="grid"
@@ -324,6 +393,27 @@ const Form = () => {
                 sx={{ gridColumn: "span 2" }}
               />
               <FormControl>
+                <TextField
+                  variant="filled"
+                  type="text"
+                  label={i18n.t("THOIDIEMLAP")}
+                  placeholder="yyyy-mm-dd"
+                  name="thoidiem"
+                  value={statePhieu.thoidiem}
+                  onChange={formatDate}
+                  onBlur={handleBlurdate}
+                  // onChange={onhandlechangePhieu}
+                  sx={{ gridColumn: "span 1" }}
+                />
+                {isShowerrorDate ? (
+                  <span style={{ color: "red" }}>
+                    {i18n.t("ERROR_DATEFORM")}
+                  </span>
+                ) : (
+                  ""
+                )}
+              </FormControl>
+              <FormControl>
                 <InputLabel htmlFor="age-filter">
                   {i18n.t("LOAIPHIEU_NHAP")}
                 </InputLabel>
@@ -341,9 +431,7 @@ const Form = () => {
                   Create a New User Profile{" "}
                 </Select>
                 {isshowError ? (
-                  <span style={{ color: "red" }}>
-                    *Vui lòng chọn loại phiếu
-                  </span>
+                  <span style={{ color: "red" }}>{i18n.t("ERROR_PHIEU")}</span>
                 ) : (
                   ""
                 )}
@@ -351,9 +439,7 @@ const Form = () => {
             </Box>
             <div className="table-container">
               {isshowErrorTable ? (
-                <span style={{ color: "red" }}>
-                  *chưa có dử liệu, không thể gửi
-                </span>
+                <span style={{ color: "red" }}>{i18n.t("ERROR_DULIEU")}</span>
               ) : (
                 ""
               )}
@@ -361,9 +447,9 @@ const Form = () => {
                 <thead>
                   <tr>
                     <th>{i18n.t("TEN_P")}</th>
-                    <th>{i18n.t("Loại")}</th>
+                    <th>{i18n.t("LOAI_P")}</th>
                     <th>{i18n.t("SOLUONG_P")}</th>
-
+                    <th>{i18n.t("SOTIEN_NP")}</th>
                     <th>{i18n.t("HINHANH_P")}</th>
 
                     <th></th>
@@ -375,7 +461,7 @@ const Form = () => {
                       <td>{item.name}</td>
                       <td>{item.loai}</td>
                       <td>{item.soluong}</td>
-
+                      <td>{item.sotien}</td>
                       <td>
                         {item.picture ? (
                           <img
@@ -466,6 +552,13 @@ const Form = () => {
                         type="number"
                         name="soluong"
                         value={stateFormProduct.soluong}
+                        onChange={onChangeAddProductForm}
+                      ></input>
+                      <label htmlFor="Role">{i18n.t("SOTIEN_NP")}</label>
+                      <input
+                        type="number"
+                        name="sotien"
+                        value={stateFormProduct.sotien}
                         onChange={onChangeAddProductForm}
                       ></input>
 

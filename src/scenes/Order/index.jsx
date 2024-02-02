@@ -31,6 +31,8 @@ import i18n from "../../i18n/i18n";
 import { useTranslation } from "react-i18next";
 import { EditProduct } from "../contacts/handleproduct";
 import { useNavigate } from "react-router-dom";
+import { getAllOrder_BY_storeID } from "./handleform";
+import { CreateIdMaxValueOfarray } from "../method";
 const Form = () => {
   useTranslation();
   const nav = useNavigate();
@@ -50,8 +52,12 @@ const Form = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   let chinhanhdau = "";
+  let code = "";
+  const [stateCode, setstateCode] = useState("");
+  const [stateID, setstateID] = useState("");
   const [statesotienbandau, setsotienbandau] = useState(0);
   const [statechinhanhnhan, setchinhanhnhan] = useState("");
+  const [stateCheckAccess, setstateCheckAccess] = useState(false);
   const [isloading, setisloading] = useState(false);
   const [selectedRow, setSelectedRow] = React.useState(null);
   const [stateupdatesoluong, setstateupdatesoluong] = useState({
@@ -264,10 +270,19 @@ const Form = () => {
         setStateStore(JSON.parse(resolvedResult));
 
         chinhanhdau = JSON.parse(resolvedResult)[0].id;
+        code = JSON.parse(resolvedResult)[0].code;
+
+        setStatechinhanh(chinhanhdau);
+        setstateCode(code);
       } else {
         // Nếu không phải là promise, cập nhật state ngay lập tức
+
         setStateStore(JSON.parse(objBranch));
         chinhanhdau = JSON.parse(objBranch)[0].id;
+        code = JSON.parse(objBranch)[0].code;
+
+        setStatechinhanh(chinhanhdau);
+        setstateCode(code);
       }
     } else {
       const objBranch = Get_all_store_By_userid();
@@ -278,10 +293,18 @@ const Form = () => {
 
         setStateStore(JSON.parse(resolvedResult));
         chinhanhdau = JSON.parse(resolvedResult)[0].id;
+        code = JSON.parse(resolvedResult)[0].code;
+
+        setStatechinhanh(chinhanhdau);
+        setstateCode(code);
       } else {
         // Nếu không phải là promise, cập nhật state ngay lập tức
         setStateStore(JSON.parse(objBranch));
         chinhanhdau = JSON.parse(objBranch)[0].id;
+        code = JSON.parse(objBranch)[0].code;
+
+        setStatechinhanh(chinhanhdau);
+        setstateCode(code);
       }
     }
   };
@@ -308,15 +331,33 @@ const Form = () => {
         checkaccess = resolvedResult;
       } else {
         checkaccess = resolvedResult;
-        nav("/");
       }
     } else {
       if (check === "true" || check) {
         checkaccess = true;
       } else {
         checkaccess = false;
-        nav("/");
       }
+    }
+    setstateCheckAccess(checkaccess);
+  };
+  const fetchgetAllOrder_BY_storeID = async (x, y) => {
+    const check = await getAllOrder_BY_storeID(x);
+    if (check instanceof Promise) {
+      // Nếu là promise, chờ promise hoàn thành rồi mới cập nhật state
+      const resolvedResult = await check;
+
+      const createID = CreateIdMaxValueOfarray(
+        "PX",
+        JSON.parse(resolvedResult),
+        y
+      );
+
+      setstateID(createID);
+    } else {
+      const createID = CreateIdMaxValueOfarray("PX", JSON.parse(check), y);
+
+      setstateID(createID);
     }
   };
   const fetchingapi = async () => {
@@ -324,6 +365,8 @@ const Form = () => {
     await fetchingStore();
     await fetchingGettAllProduct_by_storeID(chinhanhdau);
     await fetchingGettAllPhieu_by_StoreID(chinhanhdau);
+    
+    await fetchgetAllOrder_BY_storeID(chinhanhdau, code);
     setStatechinhanh(chinhanhdau);
     setchinhanhnhan(chinhanhdau);
   };
@@ -441,7 +484,9 @@ const Form = () => {
             onClick: async () => {
               setisloading(true);
               const createphieu = {
+                id: stateID,
                 tongtien: "0",
+                storeID: statechinhanh,
                 arrayProduct: stateProduct,
                 phieustoreID: statePhieu.maphieu,
               };
@@ -452,6 +497,7 @@ const Form = () => {
                 await fetchingGettAllProduct_by_storeID(statechinhanh);
                 setisloading(false);
                 alert(`${i18n.t("ALERT_ADDPHIEUSUCCESS")}`);
+                await fetchgetAllOrder_BY_storeID(statechinhanh, stateCode);
                 setStatePhieu({
                   sotien: 0,
                   loaiphieu: "",
@@ -656,7 +702,9 @@ const Form = () => {
   };
   const handle_getAllProduct = async (e) => {
     await fetchingGettAllProduct_by_storeID(e.target.value);
-
+    const selectedId = e.target.options[e.target.selectedIndex].id;
+    await fetchgetAllOrder_BY_storeID(e.target.value, selectedId);
+    setstateCode(selectedId);
     setStatechinhanh(e.target.value);
   };
   const handle_changechinhanhnhan = async (e) => {
@@ -721,13 +769,9 @@ const Form = () => {
             {stateStore &&
               stateStore.map((object, index) => (
                 <React.Fragment key={index}>
-                  {index === 0 ? (
-                    <option selected id="target" value={object.id}>
-                      {object.name}
-                    </option>
-                  ) : (
-                    <option value={object.id}>{object.name}</option>
-                  )}
+                  <option id={object.code} value={object.id}>
+                    {object.name}
+                  </option>
                 </React.Fragment>
               ))}
           </select>
@@ -1068,67 +1112,72 @@ const Form = () => {
           />
         </Box>
       </div>
-      <div style={{ marginTop: "3%" }}>
-        <div style={{ marginLeft: "0%" }} className="container">
-          <h3>{i18n.t("ALERT_PHIEUNHAP")}</h3>
-          <select onChange={handle_changechinhanhnhan} id="chinhanh">
-            {stateStore &&
-              stateStore.map((object, index) => (
-                <React.Fragment key={index}>
-                  {index === 0 ? (
-                    <option selected id="target" value={object.id}>
-                      {object.name}
-                    </option>
-                  ) : (
-                    <option value={object.id}>{object.name}</option>
-                  )}
-                </React.Fragment>
-              ))}
-          </select>
-        </div>
-        <Box
-          m="40px 0 0 0"
-          height="75vh"
-          sx={{
-            "& .MuiDataGrid-root": {
-              border: "none",
-            },
-            "& .MuiDataGrid-cell": {
-              borderBottom: "none",
-            },
-            "& .name-column--cell": {
-              color: colors.greenAccent[300],
-            },
-            "& .MuiDataGrid-columnHeaders": {
-              backgroundColor: colors.blueAccent[700],
-              borderBottom: "none",
-            },
-            "& .MuiDataGrid-virtualScroller": {
-              backgroundColor: colors.primary[400],
-            },
-            "& .MuiDataGrid-footerContainer": {
-              borderTop: "none",
-              backgroundColor: colors.blueAccent[700],
-            },
-            "& .MuiCheckbox-root": {
-              color: `${colors.greenAccent[200]} !important`,
-            },
-            "& .MuiDataGrid-toolbarContainer .MuiButton-text": {
-              color: `${colors.grey[100]} !important`,
-            },
-          }}
-        >
-          <DataGrid
-            editMode="row"
-            components={{
-              Toolbar: GridToolbar,
+      {stateCheckAccess ? (
+        <div style={{ marginTop: "3%" }}>
+          <div style={{ marginLeft: "0%" }} className="container">
+            <h3>{i18n.t("ALERT_PHIEUNHAP")}</h3>
+            <select onChange={handle_changechinhanhnhan} id="chinhanh">
+              {stateStore &&
+                stateStore.map((object, index) => (
+                  <React.Fragment key={index}>
+                    {index === 0 ? (
+                      <option selected id="target" value={object.id}>
+                        {object.name}
+                      </option>
+                    ) : (
+                      <option value={object.id}>{object.name}</option>
+                    )}
+                  </React.Fragment>
+                ))}
+            </select>
+          </div>
+
+          <Box
+            m="40px 0 0 0"
+            height="75vh"
+            sx={{
+              "& .MuiDataGrid-root": {
+                border: "none",
+              },
+              "& .MuiDataGrid-cell": {
+                borderBottom: "none",
+              },
+              "& .name-column--cell": {
+                color: colors.greenAccent[300],
+              },
+              "& .MuiDataGrid-columnHeaders": {
+                backgroundColor: colors.blueAccent[700],
+                borderBottom: "none",
+              },
+              "& .MuiDataGrid-virtualScroller": {
+                backgroundColor: colors.primary[400],
+              },
+              "& .MuiDataGrid-footerContainer": {
+                borderTop: "none",
+                backgroundColor: colors.blueAccent[700],
+              },
+              "& .MuiCheckbox-root": {
+                color: `${colors.greenAccent[200]} !important`,
+              },
+              "& .MuiDataGrid-toolbarContainer .MuiButton-text": {
+                color: `${colors.grey[100]} !important`,
+              },
             }}
-            pageSize={10}
-            rows={statePhieuStore}
-            columns={columnphieustore}
-          />
-        </Box>
-      </div>
+          >
+            <DataGrid
+              editMode="row"
+              components={{
+                Toolbar: GridToolbar,
+              }}
+              pageSize={10}
+              rows={statePhieuStore}
+              columns={columnphieustore}
+            />
+          </Box>
+        </div>
+      ) : (
+        ""
+      )}
     </Box>
   );
 };

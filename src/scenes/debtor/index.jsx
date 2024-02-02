@@ -31,6 +31,7 @@ import { Update_SOTIEN_Listdebtors } from "./handledoanhthu";
 import i18n from "../../i18n/i18n";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { converToName } from "../method";
 const DEBTORS = () => {
   const nav = useNavigate();
   useTranslation();
@@ -76,6 +77,17 @@ const DEBTORS = () => {
       }
     }
   };
+  const convertStoreID = (params) => {
+    const arrayObject = params.value;
+
+    return (
+      <>
+        <span>
+          {arrayObject} - {converToName[arrayObject]}
+        </span>
+      </>
+    );
+  };
   const colors = tokens(theme.palette.mode);
   const getlenghtID_Bill = () => {
     // Tách phần số từ chuỗi 'id' và chuyển đổi thành số nguyên
@@ -104,6 +116,7 @@ const DEBTORS = () => {
       field: "Owner_BranchID",
       headerName: `${i18n.t("CHUNO_CN")}`,
       flex: 1,
+      renderCell: convertStoreID,
       cellClassName: "name-column--cell",
     },
 
@@ -142,6 +155,7 @@ const DEBTORS = () => {
       [event.target.name]: value,
     });
   };
+
   const updateSotien = async () => {
     const formEdit = {
       id: stateformDebtor.id,
@@ -250,6 +264,7 @@ const DEBTORS = () => {
       }
     }
   };
+
   return (
     <Box m="20px">
       <Header title={i18n.t("TITLECONNO")} subtitle={i18n.t("DESCONNO")} />

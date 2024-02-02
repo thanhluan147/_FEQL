@@ -22,12 +22,14 @@ const Contacts = () => {
   const [statechinhanh, setStatechinhanh] = useState("");
   const [selectionModel, setSelectionModel] = React.useState([]);
   const [stateimage, setStateimg] = useState("");
+  const [stateaccess, setstateaccess] = useState(false);
   const [stateFormProduct, setStateFormProduct] = useState({
     id: "",
     name: "",
     picture: "",
     loai: "",
     soluong: 0,
+    sotien: 0,
     status: "GOOD",
     StoreID: "",
     xuatxu: "",
@@ -93,6 +95,14 @@ const Contacts = () => {
       flex: 1,
     },
     {
+      field: "sotien",
+      headerName: `Số tiền`,
+      flex: 1,
+      headerAlign: "left",
+      align: "left",
+      renderCell: StatusMoney,
+    },
+    {
       field: "behavior",
       headerAlign: "left",
       headerName: `${i18n.t("HANHVI_P")}`,
@@ -111,6 +121,29 @@ const Contacts = () => {
           maxHeight: "100%",
         }}
       />
+    );
+  }
+  function StatusMoney(params) {
+    const arrayObject = params.value;
+
+    return (
+      <>
+        {stateaccess ? (
+          <span
+            style={{
+              backgroundColor: "green",
+              width: "100%",
+              textAlign: "center",
+              borderRadius: "5%",
+              fontSize: "1.1rem",
+            }}
+          >
+            {arrayObject} VND
+          </span>
+        ) : (
+          <span>#####</span>
+        )}
+      </>
     );
   }
   const onChangeAddProductForm = (event) => {
@@ -184,6 +217,7 @@ const Contacts = () => {
         checkaccess = false;
       }
     }
+    setstateaccess(checkaccess);
   };
 
   const fetchingStore = async () => {
@@ -254,6 +288,7 @@ const Contacts = () => {
       loai: "",
       soluong: 0,
       status: "",
+      sotien: "",
       StoreID: "",
       xuatxu: "",
       behavior: "SELF ADD",

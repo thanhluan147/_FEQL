@@ -28,6 +28,7 @@ import { GET_ALL_DOANHTHU_By_storeID } from "./handledoanhthu";
 import i18n from "../../i18n/i18n";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { converToName } from "../method";
 const DOANHTHU = () => {
   const nav = useNavigate();
   useTranslation();
@@ -38,8 +39,22 @@ const DOANHTHU = () => {
   const [statePhieuStore, setStatePhieuStore] = useState([]);
   const [showPopup, setShowPopup] = useState(false);
   const [stateContentModal, setStatecontentModal] = useState([]);
+
+  const [showPopupNHAPHANG, setShowPopupNHAPHANG] = useState(false);
+  const [stateContentModalNHAPHANG, setStatecontentModalNHAPHANG] = useState(
+    []
+  );
   const [stateCheckAccess, setstateCheckAccess] = useState(false);
   const [stateHoadon, setStateHoadon] = useState([]);
+  const handleOpenPopupNHAPHANG = (content) => {
+    setShowPopupNHAPHANG(true);
+    setStatecontentModalNHAPHANG(content);
+  };
+  const handleClosePopupNHAPHANG = () => {
+    setShowPopupNHAPHANG(false);
+    setStatecontentModalNHAPHANG([]);
+  };
+
   const handleOpenPopup = (content) => {
     setShowPopup(true);
     setStatecontentModal(content);
@@ -52,7 +67,17 @@ const DOANHTHU = () => {
   const [statelenghtID_bill, setstatelenghtID_bill] = useState(0);
   let chinhanhdau = "";
   let checkaccess = false;
+  const convertStoreID = (params) => {
+    const arrayObject = params.value;
 
+    return (
+      <>
+        <span>
+          {params.value} - {converToName[arrayObject]}
+        </span>
+      </>
+    );
+  };
   const checkAccess = async () => {
     const check = HandleAccessAccount();
     if (check instanceof Promise) {
@@ -135,12 +160,18 @@ const DOANHTHU = () => {
       field: "storeID",
       headerName: `${i18n.t("MAKHO_DT")}`,
       flex: 1,
+      renderCell: convertStoreID,
       cellClassName: "name-column--cell",
     },
 
     {
       field: "sotien",
-      headerName: `${i18n.t("SOTIEN_DT")}`,
+      headerName: `${i18n.t("SOTIENDOANHTHU")}`,
+      flex: 1,
+    },
+    {
+      field: "sotienThucte",
+      headerName: `${i18n.t("SOTIENDOANHTHU")}`,
       flex: 1,
     },
 
@@ -154,6 +185,12 @@ const DOANHTHU = () => {
       field: "Listdebtors",
       headerName: `${i18n.t("DSCONNO_DT")}`,
       renderCell: ArrayObjectCell,
+      flex: 1,
+    },
+    {
+      field: "ListOfCreditors",
+      headerName: `${i18n.t("DSNOXACNHANNHAPHANG")}`,
+      renderCell: ArrayObjectCellNHAPHANG,
       flex: 1,
     },
   ];
@@ -185,7 +222,11 @@ const DOANHTHU = () => {
                 {content.map((item) => (
                   <tr key={item.id}>
                     <td>{item.id}</td>
-                    <td>{item.Debtor_BranchID}</td>
+                    <td>
+                      {item.Debtor_BranchID} -{" "}
+                      {converToName[item.Debtor_BranchID]}
+                    </td>
+
                     <td>{item.sotienNo}</td>
                     <td>{item.ThoiDiemNo}</td>
 
@@ -204,6 +245,88 @@ const DOANHTHU = () => {
       </Modal>
     );
   };
+  const CustomPopupNHAPHANG = ({ show, handleClose, content }) => {
+    const sumSotienNo = content.reduce((acc, debtor) => {
+      return acc + parseInt(debtor.sotien, 10);
+    }, 0);
+    return (
+      <Modal show={show} onHide={handleClose} centered size="lg">
+        <Modal.Header style={{ color: "black" }} closeButton>
+          <Modal.Title>Tổng số tiền nợ : {sumSotienNo}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body
+          style={{ maxWidth: "100%", overflow: "scroll", maxHeight: "500px" }}
+        >
+          <div className="table-container">
+            <table className="custom-table">
+              <thead>
+                <tr>
+                  <th>Mã phiếu nhập</th>
+                  <th>Mã chi nhánh</th>
+                  <th>Số tiền nợ</th>
+
+                  <th>Ngày lập phiếu</th>
+                </tr>
+              </thead>
+              <tbody>
+                {content.map((item) => (
+                  <tr key={item.id}>
+                    <td>{item.id}</td>
+                    <td>
+                      {item.StoreID} - {converToName[item.StoreID]}
+                    </td>
+
+                    <td>{item.sotien}</td>
+                    <td>{item.ngaylap}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose}>
+            Đóng
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    );
+  };
+  function ArrayObjectCellNHAPHANG(params) {
+    const arrayObject = params.value;
+    const numberOfItems = Array.isArray(arrayObject) ? arrayObject.length : 0;
+
+    return (
+      <>
+        <div
+          style={{
+            display: "flex",
+            width: "100%",
+            justifyContent: "space-between",
+          }}
+        >
+          <div>
+            <button
+              class="btn41-43 btn-43"
+              onClick={() => handleOpenPopupNHAPHANG(arrayObject)}
+            >
+              {" "}
+              {numberOfItems} Items
+            </button>
+            {showPopupNHAPHANG ? (
+              <CustomPopupNHAPHANG
+                show={showPopupNHAPHANG}
+                handleClose={handleClosePopupNHAPHANG}
+                content={stateContentModalNHAPHANG}
+              />
+            ) : (
+              ""
+            )}
+          </div>
+        </div>
+      </>
+    );
+  }
   function ArrayObjectCell(params) {
     const arrayObject = params.value;
     const numberOfItems = Array.isArray(arrayObject) ? arrayObject.length : 0;

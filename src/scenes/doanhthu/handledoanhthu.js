@@ -20,7 +20,7 @@ export const GET_ALL_DOANHTHU_By_storeID = async (req) => {
 };
 
 export const Update_ListOfCreditors_Listdebtors_By_id = async (req) => {
-  console.log("Update req " + JSON.stringify(req));
+
   const respod = await Axios.put(
     `${Url_BackEnd}/doanhthu/updateDoanhthuListDebCre`,
     {
@@ -39,4 +39,26 @@ export const Update_ListOfCreditors_Listdebtors_By_id = async (req) => {
   );
 
   return JSON.stringify(respod.data.All_PhieuStore);
+};
+
+export const Update_SOTIENTHUCTE_By_DATE_STOREID = async (req) => {
+  const respod = await Axios.put(
+    `${Url_BackEnd}/doanhthu/updatesotienAcceptN`,
+    {
+      storeID: req.storeID,
+      sotienThucte: req.sotienThucte,
+      thoidiem: req.thoidiem,
+      access: req.access,
+      dsmua: req.dsmua,
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        // Thêm các header khác nếu cần
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }
+  );
+
+  return JSON.stringify(respod.data);
 };

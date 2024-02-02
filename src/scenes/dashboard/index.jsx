@@ -221,7 +221,7 @@ const Dashboard = () => {
 
         if (resolvedResult === "true" || resolvedResult) {
           checkaccess = resolvedResult;
-          console.log("check access " + resolvedResult);
+          
           setstateCheckaccess(checkaccess);
         } else {
           checkaccess = resolvedResult;
@@ -297,9 +297,7 @@ const Dashboard = () => {
         minValue = obj.sotien;
       }
     });
-    console.log("find min " + minValue);
-
-    console.log("find max " + maxValue);
+   
   };
   useEffect(() => {
     fetchingapi();

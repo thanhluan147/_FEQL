@@ -18,7 +18,6 @@ export const Get_all_Product_By_StoreID = async (req) => {
   return JSON.stringify(respod.data.All_Products);
 };
 export const createProduct = async (req) => {
-  
   const respod = await Axios.post(
     `${Url_BackEnd}/product/create`,
     {
@@ -31,6 +30,7 @@ export const createProduct = async (req) => {
       StoreID: req.StoreID,
       behavior: req.behavior,
       xuatxu: req.xuatxu,
+      sotien: req.sotien,
     },
     {
       headers: {
@@ -45,7 +45,6 @@ export const createProduct = async (req) => {
 };
 
 export const EditProduct = async (req) => {
-
   const respod = await Axios.put(
     `${Url_BackEnd}/product/update`,
     {

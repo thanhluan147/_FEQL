@@ -23,6 +23,7 @@ import DOANHTHU from "./scenes/doanhthu";
 import DEBTORS from "./scenes/debtor";
 import ACCOUNT from "./scenes/account";
 import BRACNH from "./scenes/branch";
+import DETAILS from "./scenes/Details/details";
 function App() {
   const [theme, colorMode] = useMode();
   const [isSidebar, setIsSidebar] = useState(true);
@@ -33,7 +34,10 @@ function App() {
         path="/"
         element={<Father childrend={<Dashboard></Dashboard>}></Father>}
       />
-
+      <Route
+        path="/details"
+        element={<Father childrend={<DETAILS></DETAILS>}></Father>}
+      />
       <Route
         path="/team"
         element={<Father childrend={<Team></Team>}></Father>}

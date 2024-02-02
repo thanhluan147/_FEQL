@@ -15,7 +15,9 @@ import {
   Get_all_Phieu_Store_By_StoreID,
   Get_all_Phieu_Store,
   Update_PhieuStore_By_id,
+  Update_PhieuStore_By_id_CANCEL,
 } from "./handlePhieustore";
+import { Update_SOTIENTHUCTE_By_DATE_STOREID } from "../doanhthu/handledoanhthu";
 import { Get_all_Product_By_StoreID } from "../contacts/handleproduct";
 import { confirmAlert } from "react-confirm-alert";
 import { Modal, Button } from "react-bootstrap";
@@ -33,7 +35,7 @@ const Invoices = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [stateContentModal, setStatecontentModal] = useState([]);
   const [stateCheckAccess, setstateCheckAccess] = useState(false);
-  const [selectedRow, setSelectedRow] = React.useState(null);
+  const [selectedRow, setSelectedRow] = React.useState([]);
   const [stateFormProduct, setStateFormProduct] = useState();
   const handleOpenPopup = (content) => {
     setShowPopup(true);
@@ -59,6 +61,7 @@ const Invoices = () => {
 
             if (JSON.parse(respone).success) {
               alert(`${i18n.t("CAPNHAT_NP")}`);
+
               await fetchingGettAllPhieu_by_StoreID(statechinhanh);
               const check = await Get_all_Product_By_StoreID(statechinhanh);
               let lenghtState = 0;
@@ -85,25 +88,28 @@ const Invoices = () => {
                   const updateMoney = statePhieuStore.filter(
                     (item) => item.id === obj
                   );
-                  const a = updateMoney[0].arrayProduct;
 
-                  const createProductPromises = a.map(async (obj, index) => {
-                    const createproduct = {
-                      id: "POR" + (lenghtState + index),
-                      name: obj.name,
-                      picture: obj.picture,
-                      loai: obj.loai,
-                      soluong: obj.soluong,
-                      status: obj.status,
-                      StoreID: obj.StoreID,
-                      xuatxu: "...",
-                      behavior: obj.behavior,
-                    };
+                  updateMoney.forEach(async (obj) => {
+                    const a = obj.arrayProduct;
+                    const createProductPromises = a.map(async (obj, index) => {
+                      const createproduct = {
+                        id: "POR" + (lenghtState + index),
+                        name: obj.name,
+                        xuatxu: "...",
+                        picture: obj.picture,
+                        loai: obj.loai,
+                        soluong: obj.soluong,
+                        status: obj.status,
+                        sotien: obj.sotien,
+                        StoreID: obj.StoreID,
+                        behavior: obj.behavior,
+                      };
 
-                    // Trả về promise của createProduct
-                    return createProduct(createproduct);
+                      // Trả về promise của createProduct
+                      return createProduct(createproduct);
+                    });
+                    await Promise.all(createProductPromises);
                   });
-                  await Promise.all(createProductPromises);
                 });
               } else {
                 const arrayOfNumbers = JSON.parse(check).map((obj) =>
@@ -126,25 +132,61 @@ const Invoices = () => {
                 const updateMoney = statePhieuStore.filter(
                   (item) => item.id === obj
                 );
-                const a = updateMoney[0].arrayProduct;
-                const createProductPromises = a.map(async (obj, index) => {
-                  const createproduct = {
-                    id: "POR" + (lenghtState + index),
-                    name: obj.name,
-                    xuatxu: "...",
-                    picture: obj.picture,
-                    loai: obj.loai,
-                    soluong: obj.soluong,
-                    status: obj.status,
-                    StoreID: obj.StoreID,
-                    behavior: obj.behavior,
-                  };
 
-                  // Trả về promise của createProduct
-                  return createProduct(createproduct);
+                updateMoney.forEach(async (obj) => {
+                  const a = obj.arrayProduct;
+
+                  const createProductPromises = a.map(async (obj, index) => {
+                    const createproduct = {
+                      id: "POR" + lenghtState,
+                      name: obj.name,
+                      xuatxu: "...",
+                      picture: obj.picture,
+                      loai: obj.loai,
+                      soluong: obj.soluong,
+                      status: obj.status,
+                      sotien: obj.sotien,
+                      StoreID: obj.StoreID,
+                      behavior: obj.behavior,
+                    };
+                    lenghtState = lenghtState + 1;
+                    // Trả về promise của createProduct
+                    return createProduct(createproduct);
+                  });
+                  await Promise.all(createProductPromises);
                 });
-                await Promise.all(createProductPromises);
               });
+
+              const updateDataSOTIENTHUC = async (obj) => {
+                if (parseFloat(obj.sotien) > 0) {
+                  const UpdateVaoSotienthuc = {
+                    storeID: obj.StoreID,
+                    sotienThucte: parseFloat(obj.sotien),
+                    thoidiem: obj.ngaylap,
+                    access: stateCheckAccess,
+                    dsmua: obj,
+                  };
+                  return Update_SOTIENTHUCTE_By_DATE_STOREID(
+                    UpdateVaoSotienthuc
+                  );
+                }
+                return Promise.resolve(); // Nếu sotien không lớn hơn 0, trả về Promise đã giải quyết ngay lập tức
+              };
+
+              const updateSelectedRows = async (selectedRow) => {
+                const promises = selectedRow.map(updateDataSOTIENTHUC);
+                await Promise.all(promises);
+              };
+
+              // Sử dụng hàm updateSelectedRows
+              updateSelectedRows(selectedRow)
+                .then(() => {
+                  console.log("Update completed");
+                })
+                .catch((error) => {
+                  console.error("Error during update:", error);
+                });
+              setSelectionModel([]);
             }
           },
         },
@@ -155,7 +197,34 @@ const Invoices = () => {
       ],
     });
   };
+  const showAlertHuy = async () => {
+    confirmAlert({
+      title: `${i18n.t("TITLE_ALERT_NP")}`,
+      message: `${i18n.t("DES_ALERT_NP")}`,
+      buttons: [
+        {
+          label: "Yes",
+          onClick: async () => {
+            const respone = await Update_PhieuStore_By_id_CANCEL(
+              selectionModel
+            );
 
+            if (JSON.parse(respone).success) {
+              alert(`${i18n.t("CAPNHAT_NP")}`);
+
+              await fetchingGettAllPhieu_by_StoreID(statechinhanh);
+
+              setSelectionModel([]);
+            }
+          },
+        },
+        {
+          label: "No",
+          onClick: () => alert(`${i18n.t("CLICKNO_NP")}`),
+        },
+      ],
+    });
+  };
   const CustomPopup = ({ show, handleClose, content }) => {
     return (
       <Modal show={show} onHide={handleClose} centered size="lg">
@@ -174,6 +243,7 @@ const Invoices = () => {
                   <th>{i18n.t("SOLUONG_P")}</th>
 
                   <th>{i18n.t("HINHANH_P")}</th>
+                  <th>{i18n.t("SOTIEN_P")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -190,6 +260,7 @@ const Invoices = () => {
                         ""
                       )}
                     </td>
+                    <th>{item.sotien}</th>
                   </tr>
                 ))}
               </tbody>
@@ -207,12 +278,12 @@ const Invoices = () => {
 
   const columns = [
     { field: "id", flex: 1, headerName: `${i18n.t("MAKHO_NP")}` },
-    {
-      field: "userID",
-      headerName: `${i18n.t("MTK_NP")}`,
-      flex: 1,
-      cellClassName: "name-column--cell",
-    },
+    // {
+    //   field: "userID",
+    //   headerName: `${i18n.t("MTK_NP")}`,
+    //   flex: 1,
+    //   cellClassName: "name-column--cell",
+    // },
 
     {
       field: "status",
@@ -220,7 +291,18 @@ const Invoices = () => {
       flex: 1,
       renderCell: StatusObjectCell,
     },
+    {
+      field: "sotien",
+      headerName: `${i18n.t("SOTIEN_NP")}`,
+      renderCell: StatusMoney,
+      flex: 1,
+    },
+    {
+      field: "ngaylap",
+      headerName: `${i18n.t("THOIDIEMTAOPHIEU")}`,
 
+      flex: 1,
+    },
     {
       field: "createDate",
       headerName: `${i18n.t("NGAYLAPPHIEU_NP")}`,
@@ -240,10 +322,7 @@ const Invoices = () => {
       renderCell: ArrayObjectCell,
     },
   ];
-  function SotienObjectCell(params) {
-    const Object = params.value;
-    return <span>{Object} VND</span>;
-  }
+
   function UpdatedateObjectCell(params) {
     const arrayObject = params.value;
     const originalDateString = arrayObject;
@@ -262,6 +341,23 @@ const Invoices = () => {
     return <span>{formattedDateString}</span>;
   }
 
+  function StatusMoney(params) {
+    const arrayObject = params.value;
+
+    return (
+      <span
+        style={{
+          backgroundColor: "green",
+          width: "100%",
+          textAlign: "center",
+          borderRadius: "5%",
+          fontSize: "1.1rem",
+        }}
+      >
+        {arrayObject} VND
+      </span>
+    );
+  }
   function StatusObjectCell(params) {
     const arrayObject = params.value;
     if (arrayObject === "ACCEPT") {
@@ -269,6 +365,21 @@ const Invoices = () => {
         <span
           style={{
             backgroundColor: "green",
+            width: "100%",
+            textAlign: "center",
+            borderRadius: "5%",
+            fontSize: "1.1rem",
+          }}
+        >
+          {arrayObject}
+        </span>
+      );
+    }
+    if (arrayObject === "CANCEL") {
+      return (
+        <span
+          style={{
+            backgroundColor: "#ed3333",
             width: "100%",
             textAlign: "center",
             borderRadius: "5%",
@@ -402,27 +513,42 @@ const Invoices = () => {
     fetchingapi();
   }, []);
   const handleSelectionModelChange = (newSelectionModel) => {
-    if (newSelectionModel.length > 0) {
-      const selectedId = newSelectionModel[0];
-      const selectedRowData = statePhieuStore.find(
-        (row) => row.id === selectedId
+    // Lấy thông tin của các hàng được chọn
+    const selectedRows = newSelectionModel.map((selectedId) =>
+      statePhieuStore.find((row) => row.id === selectedId)
+    );
+
+    setSelectedRow(selectedRows);
+
+    // if (
+    //   newSelectionModel.some(
+    //     (selectedId) =>
+    //       statePhieuStore.find((row) => row.id === selectedId)?.status ===
+    //       "ACCEPT"
+    //   )
+    // ) {
+    //   return;
+    // }
+
+    const hasAcceptedOrCancelled = newSelectionModel.some((selectedId) => {
+      const selectedRow = statePhieuStore.find((row) => row.id === selectedId);
+      return (
+        selectedRow &&
+        (selectedRow.status === "ACCEPT" || selectedRow.status === "CANCEL")
       );
+    });
 
-      setSelectedRow(selectedRowData);
-    } else {
-      setSelectedRow(null);
-    }
-
-    if (
-      newSelectionModel.some(
-        (selectedId) =>
-          statePhieuStore.find((row) => row.id === selectedId)?.status ===
-          "ACCEPT"
-      )
-    ) {
+    if (hasAcceptedOrCancelled) {
+      // Một trong những phần tử có status là "ACCEPT" hoặc "CANCEL"
       return;
     }
+    console.log("newSelectionModel " + newSelectionModel);
     setSelectionModel(newSelectionModel);
+    // const updateMoney = statePhieuStore.filter(
+    //   (item) => item.id === "PN-PTT-20240201-2"
+    // );
+    // console.log("statePhieuStore " + JSON.stringify(statePhieuStore));
+    // console.log("update money click " + JSON.stringify(updateMoney));
   };
 
   return (
@@ -436,9 +562,22 @@ const Invoices = () => {
             data-toggle="modal"
             data-target="#staticBackdropEdit"
             onClick={showAlert}
-            disabled={selectionModel.length !== 1}
+            disabled={selectionModel.length === 0}
           >
             {i18n.t("BTN_XACNHANYEUCAU_NP")}
+          </button>
+        ) : (
+          ""
+        )}
+        {stateCheckAccess ? (
+          <button
+            type="button"
+            class="btn btn-danger"
+            style={{ marginLeft: "1%" }}
+            disabled={selectionModel.length === 0}
+            onClick={showAlertHuy}
+          >
+            {i18n.t("HUYYEUCAU")}
           </button>
         ) : (
           ""

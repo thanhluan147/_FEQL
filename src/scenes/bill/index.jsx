@@ -27,6 +27,7 @@ import { GET_ALLBILL_BY_NOIMUA, Get_all_Bill } from "./handlebills";
 import i18n from "../../i18n/i18n";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { ConvertStoreIdTONAME, converToName } from "../method";
 const DOANHTHU = () => {
   useTranslation();
   const nav = useNavigate();
@@ -86,7 +87,18 @@ const DOANHTHU = () => {
 
     setstatelenghtID_bill(lenghtState);
   };
+  const convertStoreID = (params) => {
+    const arrayObject = params.value;
 
+    return (
+      <>
+        <span>
+          {" "}
+          {arrayObject} - {converToName[arrayObject]}
+        </span>
+      </>
+    );
+  };
   const formatDatetime = (params) => {
     const arrayObject = params.value.toString();
 
@@ -132,7 +144,7 @@ const DOANHTHU = () => {
     {
       field: "noiban",
       headerName: `${i18n.t("NOIBAN_HD")}`,
-
+      renderCell: convertStoreID,
       flex: 1,
     },
 

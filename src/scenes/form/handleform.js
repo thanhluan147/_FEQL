@@ -1,6 +1,7 @@
 import Axios from "axios";
 import Url_BackEnd from "../../URL";
 export const createPhieu = async (req) => {
+  
   const respod = await Axios.post(
     `${Url_BackEnd}/phieustore/create`,
     {
@@ -11,6 +12,7 @@ export const createPhieu = async (req) => {
       sotien: req.sotien,
       arrayProduct: req.arrayProduct,
       StoreID: req.StoreID,
+      ngaylap: req.ngaylap,
       updateDate: "...",
     },
     {

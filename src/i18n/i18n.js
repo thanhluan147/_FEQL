@@ -15,7 +15,7 @@ i18n.use(initReactI18next).init({
         QLXK: "Quản lý xuất kho",
         DT: "Doanh thu",
         QLHD: "Quản lý hóa đơn",
-        QLDT: "Quản lý danh thu",
+        QLDT: "Quản lý doanh thu",
         QLCN: "Quản lý con nợ",
         HV: "Hành vi",
         NK: "Nhập kho",
@@ -39,6 +39,7 @@ i18n.use(initReactI18next).init({
         ALERT_THEMNHANVIEN_TEAM: "Nhân viên đã được thêm thành công",
 
         //BRANCH
+        CTTONGQUAN: "Chi tiết tổng quan chi nhánh",
         TITLEBRANCH: "Chi nhánh",
         DESBRANCH: "Quản lý các thông tin chi nhánh",
         STT_B: "Số thứ tự",
@@ -47,6 +48,17 @@ i18n.use(initReactI18next).init({
         DIACHI_B: "Địa chỉ",
         MASOTHUE_B: "Mã số thuế",
         THOIDIEMTAO_B: "Thời điểm tạo",
+
+        //DETAILS BRANCH
+        MA_KHO: "Mã kho",
+        CT_NV: "Chi tiết nhân viên",
+        CT_KHO: "Chi tiết kho",
+        CT_NK: "Chi tiết nhập kho",
+        CT_XK: "Chi tiết xuất kho",
+        CT_HD: "Chi tiết hóa đơn",
+        CT_DOANHTHU: "Chi tiết doanh thu",
+        CT_CONNO: "Chi tiết nợ",
+        THOIDIEMTAOPHIEU: "Thời điểm tạo phiếu",
 
         //KHO
         TITLEKHO: "Tồn kho",
@@ -64,6 +76,9 @@ i18n.use(initReactI18next).init({
         ALERT_THEMSANPHAM_P: "Thêm sản phẩm thành công",
 
         //NHẬP KHO
+        ERROR_PHIEU: "*Vui lòng chọn loại phiếu",
+        ERROR_DATEFORM: "*Kiểu dử liệu phải là YYYY-MM-DD",
+        ERROR_DULIEU: "*chưa có dử liệu, không thể gửi",
         TITLENHAPKHO: "Nhập kho",
         DESNHAPKHO: "Quản lý nhập kho",
         MAKHO_NP: "Mã phiếu lập",
@@ -81,6 +96,9 @@ i18n.use(initReactI18next).init({
         CLICKNO_NP: "Bạn chọn không!",
 
         //Xuất KHO
+        XOAPHIEUXUATKHO: "Xóa phiếu xuất kho",
+        XACNHANYEUCAU: "Xác nhận yêu cầu",
+        HUYYEUCAU: "Hủy yêu cầu",
         TITLEXUATKHO: "Xuất kho",
         DESXUATKHO: "Quản lý xuất kho",
         MAPX_PX: "Mã phiếu xuất",
@@ -110,6 +128,9 @@ i18n.use(initReactI18next).init({
         NGAYLAP_HD: "Ngày lập hóa đơn",
 
         //DOANH THU
+        SOTIENTRATUCONNO: "Số tiền trả từ con nợ",
+        SOTIENDOANHTHU: "Số tiền doanh thu",
+        DSNOXACNHANNHAPHANG: "Danh sách con nợ xác nhận nhập hàng",
         TITLEDOANHTHU: "Doanh thu",
         DESDOANHTHU: "Chi tiết doanh thu từng cửa hàng",
         MADT_DT: "Mã doanh thu",
@@ -119,6 +140,7 @@ i18n.use(initReactI18next).init({
         DSCONNO_DT: "Danh sách con nợ",
 
         //CON NỢ DEBTOR
+        THOIDIEMLAP: "Thời điểm lập phiếu",
         TITLECONNO: "Danh sách nợ",
         DESCONNO: "Chi tiết Nợ của từng cửa hàng",
         MA_CN: "Mã phiếu nợ",
@@ -133,6 +155,10 @@ i18n.use(initReactI18next).init({
         ALERT_CAPNHATSUCCESS: "Đã cập nhật vào doanh thu thành công ",
 
         //Nhập kho
+        ERROR_PHIEU: "*Vui lòng chọn loại phiếu",
+        ERROR_DATEFORM: "*Kiểu dử liệu phải là YYYY-MM-DD",
+        ERROR_DULIEU: "*chưa có dử liệu, không thể gửi",
+
         TITLENHAP: "Gửi yêu cầu Nhập sản phẩm",
         TONGSOTIEN_NHAP: "Tổng số tiền",
         LOAIPHIEU_NHAP: "Loại phiếu",
@@ -210,6 +236,7 @@ i18n.use(initReactI18next).init({
         TDT_TEAM: "생성 시간",
         ALERT_THEMNHANVIEN_TEAM: "직원이 성공적으로 추가되었습니다",
 
+        THOIDIEMTAOPHIEU: "전표 생성 시점",
         //BRANCH
         TITLEBRANCH: "지점",
         DESBRANCH: "지점 정보 관리",
@@ -220,6 +247,16 @@ i18n.use(initReactI18next).init({
         MASOTHUE_B: "세금 번호",
         THOIDIEMTAO_B: "생성 시간",
 
+        //DETAILS BRANCH
+        CTTONGQUAN: "지점 전체적인 상황 세부 정보",
+        MA_KHO: "창고 코드",
+        CT_NV: "직원 세부 사항",
+        CT_KHO: "창고 세부 정보",
+        CT_NK: "창고 입고 세부 정보",
+        CT_XK: "창고 출고 세부 정보",
+        CT_HD: "영수증 세부 정보",
+        CT_DOANHTHU: "매출 세부 정보",
+        CT_CONNO: "미수금 세부 정보",
         //KHO
         TITLEKHO: "재고",
         DESKHO: "재고 관리",
@@ -236,6 +273,11 @@ i18n.use(initReactI18next).init({
         ALERT_THEMSANPHAM_P: "상품 추가 성공",
 
         //NHẬP KHO
+        ERROR_PHIEU: "*전표 유형을 선택하십시오",
+        ERROR_DATEFORM: "*데이터 유형은 YYYY-MM-DD여야 합니다",
+        ERROR_DULIEU: "*데이터가 없어서 보낼 수 없습니다",
+
+        THOIDIEMLAP: "전표 작성 시점",
         TITLENHAPKHO: "입고",
         DESNHAPKHO: "입고 관리",
         MAKHO_NP: "전표 코드",
@@ -252,6 +294,9 @@ i18n.use(initReactI18next).init({
         CLICKNO_NP: "당신은 아니라고 선택하셨습니다!",
 
         //Xuất KHO
+        XOAPHIEUXUATKHO: "출고 전표 삭제",
+        XACNHANYEUCAU: "요청 확인",
+        HUYYEUCAU: "요청 취소",
         TITLEXUATKHO: "출고",
         DESXUATKHO: "출고 관리",
         MAPX_PX: "출고 번호",
@@ -305,7 +350,9 @@ i18n.use(initReactI18next).init({
         BTN_CAPNHATSOTIEN: "금액 업데이트",
 
         ALERT_CAPNHATSUCCESS: "매출에 성공적으로 업데이트되었습니다",
-
+        SOTIENTRATUCONNO: "대출에서 지불한 금액",
+        SOTIENDOANHTHU: "매출 금액",
+        DSNOXACNHANNHAPHANG: "입고 확인 대기 중인 미수금 목록",
         //NHẬP
         TITLENHAP: "제품 입고 요청 보내기",
         TONGSOTIEN_NHAP: "총 금액",

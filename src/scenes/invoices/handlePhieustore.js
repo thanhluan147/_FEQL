@@ -58,6 +58,26 @@ export const Update_PhieuStore_By_id = async (req) => {
     `${Url_BackEnd}/phieustore/UpdatePhieuStore`,
     {
       arrayUpdate: req,
+      status: "ACCEPT",
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        // Thêm các header khác nếu cần
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }
+  );
+
+  return JSON.stringify(respod.data);
+};
+
+export const Update_PhieuStore_By_id_CANCEL = async (req) => {
+  const respod = await Axios.put(
+    `${Url_BackEnd}/phieustore/UpdatePhieuStore`,
+    {
+      arrayUpdate: req,
+      status: "CANCEL",
     },
     {
       headers: {

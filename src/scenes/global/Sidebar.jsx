@@ -335,17 +335,14 @@ const Sidebar = () => {
                     selected={selected}
                     setSelected={setSelected}
                   />
-                  {!check ? (
-                    ""
-                  ) : (
-                    <Item
-                      title={i18n.t("XK")}
-                      to="/orders"
-                      icon={<ReceiptOutlinedIcon />}
-                      selected={selected}
-                      setSelected={setSelected}
-                    />
-                  )}
+
+                  <Item
+                    title={i18n.t("XK")}
+                    to="/orders"
+                    icon={<ReceiptOutlinedIcon />}
+                    selected={selected}
+                    setSelected={setSelected}
+                  />
 
                   {/* <Item
                     title="Calendar"

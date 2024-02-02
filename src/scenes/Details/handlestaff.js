@@ -1,17 +1,15 @@
 import Axios from "axios";
 import Url_BackEnd from "../../URL";
-export const createPhieu = async (req) => {
+export const HandleCreateStaff = async (req) => {
   const respod = await Axios.post(
-    `${Url_BackEnd}/phieustore/create`,
+    `${Url_BackEnd}/Staff/create`,
     {
       id: req.id,
-      status: req.status,
-      userID: req.userID,
-      loaiphieu: req.loaiphieu,
-      sotien: req.sotien,
-      arrayProduct: req.arrayProduct,
-      StoreID: req.StoreID,
-      updateDate: "...",
+      name: req.name,
+      phone: req.phone,
+      Role: req.Role,
+      branchID: req.branchID,
+      ngayvao: req.ngayvao,
     },
     {
       headers: {
@@ -22,35 +20,19 @@ export const createPhieu = async (req) => {
     }
   );
 
-  return JSON.stringify(respod.data);
-};
-export const getAllOrder_BY_storeID = async (req) => {
-  const respod = await Axios.post(
-    `${Url_BackEnd}/order/getAllOrderByStoreId`,
-    {
-      storeID: req,
-    },
-    {
-      headers: {
-        "Content-Type": "application/json",
-        // Thêm các header khác nếu cần
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    }
-  );
-
-  return JSON.stringify(respod.data.All_Order);
+  return respod.data;
 };
 
-export const createOrder = async (req) => {
-  const respod = await Axios.post(
-    `${Url_BackEnd}/order/create`,
+export const HandleEditStaff = async (req) => {
+ 
+  const respod = await Axios.put(
+    `${Url_BackEnd}/Staff/updateStaff`,
     {
       id: req.id,
-      tongtien: req.tongtien,
-      storeID: req.storeID,
-      arrayProduct: req.arrayProduct,
-      phieustoreID: req.phieustoreID,
+      name: req.name,
+      phone: req.phone,
+      Role: req.Role,
+      branchID: req.branchID,
     },
     {
       headers: {
@@ -61,5 +43,23 @@ export const createOrder = async (req) => {
     }
   );
 
-  return JSON.stringify(respod.data);
+  return respod;
+};
+
+export const HandleDeletedStaff = async (req) => {
+  const respod = await Axios.post(
+    `${Url_BackEnd}/Staff/deletedstaff/`,
+    {
+      arraydeleted: req,
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        // Thêm các header khác nếu cần
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }
+  );
+
+  return respod.data;
 };

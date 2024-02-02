@@ -29,6 +29,9 @@ import { useTranslation } from "react-i18next";
 import { EditProduct } from "../contacts/handleproduct";
 import { DeletePhieuOrder } from "./handlePhieustore";
 import { useNavigate } from "react-router-dom";
+import { getAllOrder_BY_storeID } from "../Order/handleform";
+import { CreateIdMaxValueOfarray } from "../method";
+import { UPdateProductStatusOrder } from "./handlePhieustore";
 const Invoices = () => {
   useTranslation();
   const theme = useTheme();
@@ -40,7 +43,7 @@ const Invoices = () => {
   const [stateContentModal, setStatecontentModal] = useState([]);
   const [stateCheckAccess, setstateCheckAccess] = useState(false);
   const [stateHoadon, setStateHoadon] = useState([]);
-  const [selectedRow, setSelectedRow] = React.useState(null);
+  const [selectedRow, setSelectedRow] = React.useState([]);
   const [isloading, setisloading] = useState(false);
   const [stateFormBills, setStateFormbills] = useState({
     id: "",
@@ -53,6 +56,9 @@ const Invoices = () => {
     giamua: 0,
     phieuxuatID: "",
   });
+  let chinhanhdau = "";
+  let code = "";
+  const [stateCode, setstateCode] = useState("");
   const [statelenghtID_bill, setstatelenghtID_bill] = useState(0);
 
   // Sử dụng state để lưu trạng thái của checkbox
@@ -292,7 +298,20 @@ const Invoices = () => {
         alert("Đã xóa thành công");
         setisloading(false);
       }
-      await fetchingGettAllPhieuXuat();
+      await fetchingOrderBy_storeID(statechinhanh);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const AcceptRequest = async () => {
+    try {
+      const checkde = await UPdateProductStatusOrder(selectedRow);
+
+      if (JSON.parse(checkde).success) {
+        alert("Đã update thành công");
+        setSelectionModel([]);
+      }
+      await fetchingOrderBy_storeID(statechinhanh);
     } catch (error) {
       console.log(error);
     }
@@ -351,9 +370,10 @@ const Invoices = () => {
   };
 
   const fetchingapi = async () => {
-    await fetchingGettAllPhieuXuat();
+    //  await fetchingOrderBy_storeID(statc);
     await fetchingStore();
     await fetchingGetAllHoaDon();
+    await fetchingOrderBy_storeID(chinhanhdau);
   };
   useEffect(() => {
     checkAccess();
@@ -392,7 +412,7 @@ const Invoices = () => {
     await createDEBTOR(convertedDate, addformbill);
     if (JSON.parse(check).success) {
       await Update_PhieuOrder_By_id(selectionModel);
-      await fetchingGettAllPhieuXuat();
+      await fetchingOrderBy_storeID(statechinhanh);
       setstatelenghtID_bill(statelenghtID_bill + 1);
       alert(`${i18n.t("ALERT_LAPHOADONSUCCESS")}`);
 
@@ -438,22 +458,23 @@ const Invoices = () => {
       const resolvedResult = await check;
 
       const arrayOfNumbers = resolvedResult.map((obj) =>
-        parseInt(obj.id.replace(/[^\d]/g, ""), 10)
+        parseInt(obj.id.split("-")[2])
       );
+      if (arrayOfNumbers) {
+        // Tìm giá trị lớn nhất trong mảng 'arrayOfNumbers'
+        let maxNumber = Math.max(...arrayOfNumbers);
+        const result = 1 / 0;
 
-      // Tìm giá trị lớn nhất trong mảng 'arrayOfNumbers'
-      let maxNumber = Math.max(...arrayOfNumbers);
-      const result = 1 / 0;
+        const negativeInfinity = -1 / 0;
 
-      const negativeInfinity = -1 / 0;
-
-      if (maxNumber === negativeInfinity || maxNumber === result) {
-        maxNumber = 0;
+        if (maxNumber === negativeInfinity || maxNumber === result) {
+          maxNumber = 0;
+        }
+        lenghtState = maxNumber + 1;
       }
-      lenghtState = maxNumber + 1;
 
       const FormcreateDebTor = {
-        id: "DEB" + lenghtState,
+        id: "DEB" + "-" + stateCode + "-" + lenghtState,
         Debtor_BranchID: stateFormBills.noimua,
         Owner_BranchID: stateFormBills.noiban,
         sotienNo: stateFormBills.giaban,
@@ -482,24 +503,27 @@ const Invoices = () => {
         thoidiem: x,
       };
       await createDebtor(FormcreateDebTor);
+      await Update_DOANHTHU_BY_storeID_thoidiem(updatesotiennoiban);
+      await Update_DOANHTHU_BY_storeID_thoidiem(updatesotiennoimua);
       await Update_ListOfCreditors_Listdebtors_By_id(updateDoanhThu);
     } else {
       const arrayOfNumbers = JSON.parse(check).map((obj) =>
-        parseInt(obj.id.replace(/[^\d]/g, ""), 10)
+        parseInt(obj.id.split("-")[2])
       );
+      if (arrayOfNumbers) {
+        let maxNumber = Math.max(...arrayOfNumbers);
+        const result = 1 / 0;
 
-      let maxNumber = Math.max(...arrayOfNumbers);
-      const result = 1 / 0;
+        const negativeInfinity = -1 / 0;
 
-      const negativeInfinity = -1 / 0;
-
-      if (maxNumber === negativeInfinity || maxNumber === result) {
-        maxNumber = 0;
+        if (maxNumber === negativeInfinity || maxNumber === result) {
+          maxNumber = 0;
+        }
+        lenghtState = maxNumber + 1;
       }
-      lenghtState = maxNumber + 1;
 
       const FormcreateDebTor = {
-        id: "DEB" + lenghtState,
+        id: "DEB" + "-" + stateCode + "-" + lenghtState,
         Debtor_BranchID: stateFormBills.noimua,
         Owner_BranchID: stateFormBills.noiban,
         sotienNo: stateFormBills.giaban,
@@ -529,18 +553,36 @@ const Invoices = () => {
         thoidiem: x,
       };
       await createDebtor(FormcreateDebTor);
+      await Update_DOANHTHU_BY_storeID_thoidiem(updatesotiennoiban);
+      await Update_DOANHTHU_BY_storeID_thoidiem(updatesotiennoimua);
       await Update_ListOfCreditors_Listdebtors_By_id(updateDoanhThu);
     }
   };
-  const handleSelectionModelChange = (newSelectionModel) => {
-    if (newSelectionModel.length > 0) {
-      const selectedId = newSelectionModel[0];
-      const selectedRowData = statePhieuStore.find(
-        (row) => row.id === selectedId
-      );
-      setSelectedRow(selectedRowData);
+  const fetchingOrderBy_storeID = async (x) => {
+    const check = await getAllOrder_BY_storeID(x);
+
+    if (check instanceof Promise) {
+      // Nếu là promise, chờ promise hoàn thành rồi mới cập nhật state
+      const resolvedResult = await check;
+
+      setStatePhieuStore(JSON.parse(resolvedResult));
     } else {
-      setSelectedRow(null);
+      setStatePhieuStore(JSON.parse(check));
+    }
+  };
+  const handle_getAllProduct = async (e) => {
+    await fetchingOrderBy_storeID(e.target.value);
+    const selectedId = e.target.options[e.target.selectedIndex].id;
+    setstateCode(selectedId);
+    setStatechinhanh(e.target.value);
+  };
+  const handleSelectionModelChange = (newSelectionModel) => {
+    // Lấy thông tin của các hàng được chọn
+    const selectedRows = newSelectionModel.map((selectedId) =>
+      statePhieuStore.find((row) => row.id === selectedId)
+    );
+    if (selectedRows) {
+      setSelectedRow(selectedRows);
     }
 
     if (
@@ -554,6 +596,7 @@ const Invoices = () => {
     }
     setSelectionModel(newSelectionModel);
   };
+
   const fetchingStore = async () => {
     const objBranch = Get_all_Store();
 
@@ -561,9 +604,21 @@ const Invoices = () => {
       // Nếu là promise, chờ promise hoàn thành rồi mới cập nhật state
       const resolvedResult = await objBranch;
       setStateStore(JSON.parse(resolvedResult));
+
+      chinhanhdau = JSON.parse(resolvedResult)[0].id;
+      setStatechinhanh(chinhanhdau);
+      code = JSON.parse(resolvedResult)[0].code;
+
+      setstateCode(code);
     } else {
       // Nếu không phải là promise, cập nhật state ngay lập tức
       setStateStore(JSON.parse(objBranch));
+
+      chinhanhdau = JSON.parse(objBranch)[0].id;
+      setStatechinhanh(chinhanhdau);
+      code = JSON.parse(objBranch)[0].code;
+
+      setstateCode(code);
     }
   };
   return (
@@ -618,9 +673,31 @@ const Invoices = () => {
             disabled={selectionModel.length !== 1}
             onClick={deletedphieu}
           >
-            {i18n.t("Xóa phiếu xuất kho")}
+            {i18n.t("XOAPHIEUXUATKHO")}
           </button>
         )}
+        <button
+          type="button"
+          style={{ marginLeft: "1%" }}
+          class="btn btn-info"
+          disabled={selectionModel.length === 0}
+          onClick={AcceptRequest}
+        >
+          {i18n.t("XACNHANYEUCAU")}
+        </button>
+        <div className="container">
+          <h3>{i18n.t("CN")}</h3>
+          <select onChange={handle_getAllProduct} id="chinhanh">
+            {stateStore &&
+              stateStore.map((object, index) => (
+                <React.Fragment key={index}>
+                  <option id={object.code} value={object.id}>
+                    {object.name}
+                  </option>
+                </React.Fragment>
+              ))}
+          </select>
+        </div>
       </div>
       <div
         class="modal fade"
