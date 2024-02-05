@@ -31,7 +31,11 @@ import { DeletePhieuOrder } from "./handlePhieustore";
 import { useNavigate } from "react-router-dom";
 import { getAllOrder_BY_storeID } from "../Order/handleform";
 import { CreateIdMaxValueOfarray } from "../method";
-import { UPdateProductStatusOrder } from "./handlePhieustore";
+import {
+  UPdateProductStatusOrder,
+  Get_all_Order_By_StoreID_Year_Month,
+} from "./handlePhieustore";
+
 const Invoices = () => {
   useTranslation();
   const theme = useTheme();
@@ -45,6 +49,7 @@ const Invoices = () => {
   const [stateHoadon, setStateHoadon] = useState([]);
   const [selectedRow, setSelectedRow] = React.useState([]);
   const [isloading, setisloading] = useState(false);
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [stateFormBills, setStateFormbills] = useState({
     id: "",
     OrderID: "",
@@ -64,6 +69,54 @@ const Invoices = () => {
   // Sử dụng state để lưu trạng thái của checkbox
   const [isCheckedNoiban, setIsCheckedNoiban] = useState(false);
   const [isCheckedNoimua, setIsCheckedNoimua] = useState(false);
+
+  const getMonthNameInVietnamese = (month) => {
+    const monthNames = [
+      "01",
+      "02",
+      "03",
+      "04",
+      "05",
+      "06",
+      "07",
+      "08",
+      "09",
+      "10",
+      "11",
+      "12",
+    ];
+    return monthNames[month];
+  };
+  const handleDecrease = async () => {
+    const newDate = new Date(currentDate);
+    newDate.setMonth(newDate.getMonth() - 1);
+
+    if (newDate.getMonth() === 11) {
+      newDate.setFullYear(newDate.getFullYear());
+    }
+    setCurrentDate(newDate);
+    const formattedDate = `${newDate.getFullYear()}-${getMonthNameInVietnamese(
+      newDate.getMonth()
+    )}`;
+    await fetchingOrderBy_storeID_By_year_month(statechinhanh, formattedDate);
+  };
+
+  const formattedDate = `${currentDate.getFullYear()}-${getMonthNameInVietnamese(
+    currentDate.getMonth()
+  )}`;
+
+  const handleIncrease = async () => {
+    const newDate = new Date(currentDate);
+    newDate.setMonth(newDate.getMonth() + 1);
+    if (newDate.getMonth() === 0) {
+      newDate.setFullYear(newDate.getFullYear());
+    }
+    setCurrentDate(newDate);
+    const formattedDate = `${newDate.getFullYear()}-${getMonthNameInVietnamese(
+      newDate.getMonth()
+    )}`;
+    await fetchingOrderBy_storeID_By_year_month(statechinhanh, formattedDate);
+  };
 
   // Hàm xử lý sự kiện khi checkbox thay đổi trạng thái
   const handleCheckboxNoibanChange = () => {
@@ -298,7 +351,8 @@ const Invoices = () => {
         alert("Đã xóa thành công");
         setisloading(false);
       }
-      await fetchingOrderBy_storeID(statechinhanh);
+
+      await fetchingOrderBy_storeID_By_year_month(statechinhanh, formattedDate);
     } catch (error) {
       console.log(error);
     }
@@ -311,7 +365,8 @@ const Invoices = () => {
         alert("Đã update thành công");
         setSelectionModel([]);
       }
-      await fetchingOrderBy_storeID(statechinhanh);
+
+      await fetchingOrderBy_storeID_By_year_month(statechinhanh, formattedDate);
     } catch (error) {
       console.log(error);
     }
@@ -373,7 +428,7 @@ const Invoices = () => {
     //  await fetchingOrderBy_storeID(statc);
     await fetchingStore();
     await fetchingGetAllHoaDon();
-    await fetchingOrderBy_storeID(chinhanhdau);
+    await fetchingOrderBy_storeID_By_year_month(chinhanhdau, formattedDate);
   };
   useEffect(() => {
     checkAccess();
@@ -381,10 +436,27 @@ const Invoices = () => {
     getlenghtID_Bill();
   }, []);
   const createBill = async () => {
+    const currentDate2 = new Date();
+
+    // Lấy thông tin về ngày, giờ, phút, giây và milliseconds
+    const year2 = currentDate2.getFullYear();
+    const month2 = (currentDate2.getMonth() + 1).toString().padStart(2, "0"); // Tháng bắt đầu từ 0
+    const day2 = currentDate2.getDate().toString().padStart(2, "0");
+    const hours2 = currentDate2.getHours().toString().padStart(2, "0");
+    const minutes2 = currentDate2.getMinutes().toString().padStart(2, "0");
+    const seconds2 = currentDate2.getSeconds().toString().padStart(2, "0");
+    const milliseconds2 = currentDate2
+      .getMilliseconds()
+      .toString()
+      .padStart(3, "0");
+
+    // Tạo chuỗi datetime
+    const datetimeString = `${year2}-${month2}-${day2} ${hours2}:${minutes2}:${seconds2}.${milliseconds2}`;
+
     const addformbill = {
       id: stateFormBills.id,
       OrderID: stateFormBills.OrderID,
-
+      createbill: datetimeString,
       userID: stateFormBills.userID,
       noiban: stateFormBills.noiban,
       noimua: stateFormBills.noimua,
@@ -412,7 +484,8 @@ const Invoices = () => {
     await createDEBTOR(convertedDate, addformbill);
     if (JSON.parse(check).success) {
       await Update_PhieuOrder_By_id(selectionModel);
-      await fetchingOrderBy_storeID(statechinhanh);
+
+      await fetchingOrderBy_storeID_By_year_month(statechinhanh, formattedDate);
       setstatelenghtID_bill(statelenghtID_bill + 1);
       alert(`${i18n.t("ALERT_LAPHOADONSUCCESS")}`);
 
@@ -558,8 +631,12 @@ const Invoices = () => {
       await Update_ListOfCreditors_Listdebtors_By_id(updateDoanhThu);
     }
   };
-  const fetchingOrderBy_storeID = async (x) => {
-    const check = await getAllOrder_BY_storeID(x);
+  const fetchingOrderBy_storeID_By_year_month = async (x, y) => {
+    const request = {
+      storeID: x,
+      thoidiem: y,
+    };
+    const check = await Get_all_Order_By_StoreID_Year_Month(request);
 
     if (check instanceof Promise) {
       // Nếu là promise, chờ promise hoàn thành rồi mới cập nhật state
@@ -571,7 +648,7 @@ const Invoices = () => {
     }
   };
   const handle_getAllProduct = async (e) => {
-    await fetchingOrderBy_storeID(e.target.value);
+    await fetchingOrderBy_storeID_By_year_month(e.target.value, formattedDate);
     const selectedId = e.target.options[e.target.selectedIndex].id;
     setstateCode(selectedId);
     setStatechinhanh(e.target.value);
@@ -864,7 +941,40 @@ const Invoices = () => {
           </div>
         </div>
       </div>
+      <Box mt="40px">
+        {" "}
+        <h4>{i18n.t("LANCUOICAPNHATYYY")}</h4>
+        <div>
+          <Button
+            onClick={handleDecrease}
+            sx={{
+              backgroundColor: colors.blueAccent[700],
+              color: colors.grey[100],
+              fontSize: "14px",
+              fontWeight: "bold",
+              padding: "10px 20px",
+            }}
+          >
+            {"<"}
+          </Button>
+          <label style={{ width: "200px", textAlign: "center" }}>
+            {formattedDate}
+          </label>
 
+          <Button
+            onClick={handleIncrease}
+            sx={{
+              backgroundColor: colors.blueAccent[700],
+              color: colors.grey[100],
+              fontSize: "14px",
+              fontWeight: "bold",
+              padding: "10px 20px",
+            }}
+          >
+            {">"}
+          </Button>
+        </div>
+      </Box>
       <Box
         m="40px 0 0 0"
         height="75vh"

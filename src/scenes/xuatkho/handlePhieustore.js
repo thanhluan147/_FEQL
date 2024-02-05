@@ -102,6 +102,25 @@ export const Get_all_Phieu_Store_By_StoreID = async (req) => {
   return JSON.stringify(respod.data.All_PhieuStore);
 };
 
+export const Get_all_Order_By_StoreID_Year_Month = async (req) => {
+  const respod = await Axios.post(
+    `${Url_BackEnd}/order/getALlOrderByYearMonth`,
+    {
+      storeID: req.storeID,
+      thoidiem: req.thoidiem,
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        // Thêm các header khác nếu cần
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }
+  );
+
+  return JSON.stringify(respod.data.All_Order);
+};
+
 export const Update_PhieuStore_By_id = async (req) => {
   const respod = await Axios.put(
     `${Url_BackEnd}/phieustore/UpdatePhieuStore`,

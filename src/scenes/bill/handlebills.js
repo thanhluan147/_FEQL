@@ -43,6 +43,24 @@ export const GET_ALLBILL_BY_NOIMUA = async (req) => {
 
   return JSON.stringify(respod.data.All_Bill);
 };
+export const GET_ALLBILL_BY_NOIMUA_year_month = async (req) => {
+  const respod = await Axios.post(
+    `${Url_BackEnd}/bills/getAllBillsByYearMonth`,
+    {
+      storeID: req.storeID,
+      thoidiem: req.thoidiem,
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        // Thêm các header khác nếu cần
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }
+  );
+
+  return JSON.stringify(respod.data.All_Bills);
+};
 
 export const Get_all_Bill_By_userID = async (req) => {
   const respod = await Axios.get(`${Url_BackEnd}/bills/getallbillsByuserID`, {

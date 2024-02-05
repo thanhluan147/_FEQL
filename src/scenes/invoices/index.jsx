@@ -25,6 +25,7 @@ import "bootstrap/dist/css/bootstrap.min.css"; // Import CSS của Bootstrap
 import { createProduct } from "../contacts/handleproduct";
 import i18n from "../../i18n/i18n";
 import { useTranslation } from "react-i18next";
+import { Get_all_Phieu_Store_By_Year_Month } from "./handlePhieustore";
 const Invoices = () => {
   useTranslation();
   const theme = useTheme();
@@ -37,6 +38,7 @@ const Invoices = () => {
   const [stateCheckAccess, setstateCheckAccess] = useState(false);
   const [selectedRow, setSelectedRow] = React.useState([]);
   const [stateFormProduct, setStateFormProduct] = useState();
+  const [currentDate, setCurrentDate] = useState(new Date());
   const handleOpenPopup = (content) => {
     setShowPopup(true);
     setStatecontentModal(content);
@@ -45,7 +47,59 @@ const Invoices = () => {
     setShowPopup(false);
     setStatecontentModal([]);
   };
+  const getMonthNameInVietnamese = (month) => {
+    const monthNames = [
+      "01",
+      "02",
+      "03",
+      "04",
+      "05",
+      "06",
+      "07",
+      "08",
+      "09",
+      "10",
+      "11",
+      "12",
+    ];
+    return monthNames[month];
+  };
+  const handleDecrease = async () => {
+    const newDate = new Date(currentDate);
+    newDate.setMonth(newDate.getMonth() - 1);
 
+    if (newDate.getMonth() === 11) {
+      newDate.setFullYear(newDate.getFullYear());
+    }
+    setCurrentDate(newDate);
+    const formattedDate = `${newDate.getFullYear()}-${getMonthNameInVietnamese(
+      newDate.getMonth()
+    )}`;
+    await fetchingGettAllPhieu_by_StoreID_by_Year_month(
+      statechinhanh,
+      formattedDate
+    );
+  };
+
+  const formattedDate = `${currentDate.getFullYear()}-${getMonthNameInVietnamese(
+    currentDate.getMonth()
+  )}`;
+
+  const handleIncrease = async () => {
+    const newDate = new Date(currentDate);
+    newDate.setMonth(newDate.getMonth() + 1);
+    if (newDate.getMonth() === 0) {
+      newDate.setFullYear(newDate.getFullYear());
+    }
+    setCurrentDate(newDate);
+    const formattedDate = `${newDate.getFullYear()}-${getMonthNameInVietnamese(
+      newDate.getMonth()
+    )}`;
+    await fetchingGettAllPhieu_by_StoreID_by_Year_month(
+      statechinhanh,
+      formattedDate
+    );
+  };
   const colors = tokens(theme.palette.mode);
   let checkaccess = false;
   let chinhanhdau = "";
@@ -62,7 +116,10 @@ const Invoices = () => {
             if (JSON.parse(respone).success) {
               alert(`${i18n.t("CAPNHAT_NP")}`);
 
-              await fetchingGettAllPhieu_by_StoreID(statechinhanh);
+              await fetchingGettAllPhieu_by_StoreID_by_Year_month(
+                statechinhanh,
+                formattedDate
+              );
               const check = await Get_all_Product_By_StoreID(statechinhanh);
               let lenghtState = 0;
               if (check instanceof Promise) {
@@ -212,7 +269,10 @@ const Invoices = () => {
             if (JSON.parse(respone).success) {
               alert(`${i18n.t("CAPNHAT_NP")}`);
 
-              await fetchingGettAllPhieu_by_StoreID(statechinhanh);
+              await fetchingGettAllPhieu_by_StoreID_by_Year_month(
+                statechinhanh,
+                formattedDate
+              );
 
               setSelectionModel([]);
             }
@@ -487,11 +547,18 @@ const Invoices = () => {
     }
   };
   const handle_getAllPhieustore = async (e) => {
-    await fetchingGettAllPhieu_by_StoreID(e.target.value);
+    await fetchingGettAllPhieu_by_StoreID_by_Year_month(
+      e.target.value,
+      formattedDate
+    );
     setStatechinhanh(e.target.value);
   };
-  const fetchingGettAllPhieu_by_StoreID = async (x) => {
-    const check = await Get_all_Phieu_Store_By_StoreID(x);
+  const fetchingGettAllPhieu_by_StoreID_by_Year_month = async (x, y) => {
+    const request = {
+      storeID: x,
+      thoidiem: y,
+    };
+    const check = await Get_all_Phieu_Store_By_Year_Month(request);
 
     if (check instanceof Promise) {
       // Nếu là promise, chờ promise hoàn thành rồi mới cập nhật state
@@ -506,7 +573,11 @@ const Invoices = () => {
   const fetchingapi = async () => {
     await checkAccess();
     await fetchingPhieuStore();
-    await fetchingGettAllPhieu_by_StoreID(chinhanhdau);
+
+    await fetchingGettAllPhieu_by_StoreID_by_Year_month(
+      chinhanhdau,
+      formattedDate
+    );
     setStatechinhanh(chinhanhdau);
   };
   useEffect(() => {
@@ -542,7 +613,7 @@ const Invoices = () => {
       // Một trong những phần tử có status là "ACCEPT" hoặc "CANCEL"
       return;
     }
-    console.log("newSelectionModel " + newSelectionModel);
+
     setSelectionModel(newSelectionModel);
     // const updateMoney = statePhieuStore.filter(
     //   (item) => item.id === "PN-PTT-20240201-2"
@@ -552,102 +623,142 @@ const Invoices = () => {
   };
 
   return (
-    <Box style={{ overflow: "auto" }} m="20px">
-      <Header title={i18n.t("TITLENHAPKHO")} subtitle={i18n.t("DESNHAPKHO")} />
-      <div style={{ width: "100%", display: "flex" }}>
-        {stateCheckAccess ? (
-          <button
-            type="button"
-            class="btn btn-primary"
-            data-toggle="modal"
-            data-target="#staticBackdropEdit"
-            onClick={showAlert}
-            disabled={selectionModel.length === 0}
-          >
-            {i18n.t("BTN_XACNHANYEUCAU_NP")}
-          </button>
-        ) : (
-          ""
-        )}
-        {stateCheckAccess ? (
-          <button
-            type="button"
-            class="btn btn-danger"
-            style={{ marginLeft: "1%" }}
-            disabled={selectionModel.length === 0}
-            onClick={showAlertHuy}
-          >
-            {i18n.t("HUYYEUCAU")}
-          </button>
-        ) : (
-          ""
-        )}
-
-        <div style={{ marginLeft: "0px" }} className="container">
-          <h3>{i18n.t("CN")}</h3>
-          <select onChange={handle_getAllPhieustore} id="chinhanh">
-            {stateStore &&
-              stateStore.map((object, index) => (
-                <React.Fragment key={index}>
-                  {index === 0 ? (
-                    <option selected id="target" value={object.id}>
-                      {object.name}
-                    </option>
-                  ) : (
-                    <option value={object.id}>{object.name}</option>
-                  )}
-                </React.Fragment>
-              ))}
-          </select>
-        </div>
-      </div>
-
-      <Box
-        m="40px 0 0 0"
-        height="75vh"
-        sx={{
-          "& .MuiDataGrid-root": {
-            border: "none",
-          },
-          "& .MuiDataGrid-cell": {
-            borderBottom: "none",
-          },
-          "& .name-column--cell": {
-            color: colors.greenAccent[300],
-          },
-          "& .MuiDataGrid-columnHeaders": {
-            backgroundColor: colors.blueAccent[700],
-            borderBottom: "none",
-          },
-          "& .MuiDataGrid-virtualScroller": {
-            backgroundColor: colors.primary[400],
-          },
-          "& .MuiDataGrid-footerContainer": {
-            borderTop: "none",
-            backgroundColor: colors.blueAccent[700],
-          },
-          "& .MuiCheckbox-root": {
-            color: `${colors.greenAccent[200]} !important`,
-          },
-          "& .MuiDataGrid-toolbarContainer .MuiButton-text": {
-            color: `${colors.grey[100]} !important`,
-          },
-        }}
-      >
-        <DataGrid
-          editMode="row"
-          checkboxSelection
-          selectionModel={selectionModel}
-          onSelectionModelChange={handleSelectionModelChange}
-          components={{
-            Toolbar: GridToolbar,
-          }}
-          pageSize={10}
-          rows={statePhieuStore}
-          columns={columns}
+    <>
+      {" "}
+      <Box style={{ overflow: "auto" }} m="20px">
+        <Header
+          title={i18n.t("TITLENHAPKHO")}
+          subtitle={i18n.t("DESNHAPKHO")}
         />
+        <div style={{ width: "100%", display: "flex" }}>
+          {stateCheckAccess ? (
+            <button
+              type="button"
+              class="btn btn-primary"
+              data-toggle="modal"
+              data-target="#staticBackdropEdit"
+              onClick={showAlert}
+              disabled={selectionModel.length === 0}
+            >
+              {i18n.t("BTN_XACNHANYEUCAU_NP")}
+            </button>
+          ) : (
+            ""
+          )}
+          {stateCheckAccess ? (
+            <button
+              type="button"
+              class="btn btn-danger"
+              style={{ marginLeft: "1%" }}
+              disabled={selectionModel.length === 0}
+              onClick={showAlertHuy}
+            >
+              {i18n.t("HUYYEUCAU")}
+            </button>
+          ) : (
+            ""
+          )}
+
+          <div style={{ marginLeft: "0px" }} className="container">
+            <h3>{i18n.t("CN")}</h3>
+            <select onChange={handle_getAllPhieustore} id="chinhanh">
+              {stateStore &&
+                stateStore.map((object, index) => (
+                  <React.Fragment key={index}>
+                    {index === 0 ? (
+                      <option selected id="target" value={object.id}>
+                        {object.name}
+                      </option>
+                    ) : (
+                      <option value={object.id}>{object.name}</option>
+                    )}
+                  </React.Fragment>
+                ))}
+            </select>
+          </div>
+        </div>
+
+        <Box mt="40px">
+          {" "}
+          <h4>{i18n.t("LANCUOICAPNHATYYY")}</h4>
+          <div>
+            <Button
+              onClick={handleDecrease}
+              sx={{
+                backgroundColor: colors.blueAccent[700],
+                color: colors.grey[100],
+                fontSize: "14px",
+                fontWeight: "bold",
+                padding: "10px 20px",
+              }}
+            >
+              {"<"}
+            </Button>
+            <label style={{ width: "200px", textAlign: "center" }}>
+              {formattedDate}
+            </label>
+
+            <Button
+              onClick={handleIncrease}
+              sx={{
+                backgroundColor: colors.blueAccent[700],
+                color: colors.grey[100],
+                fontSize: "14px",
+                fontWeight: "bold",
+                padding: "10px 20px",
+              }}
+            >
+              {">"}
+            </Button>
+          </div>
+        </Box>
+        <Box
+          m="40px 0 0 0"
+          height="75vh"
+          sx={{
+            "& .MuiDataGrid-root": {
+              border: "none",
+            },
+            "& .MuiDataGrid-cell": {
+              borderBottom: "none",
+            },
+            "& .name-column--cell": {
+              color: colors.greenAccent[300],
+            },
+            "& .MuiDataGrid-columnHeaders": {
+              backgroundColor: colors.blueAccent[700],
+              borderBottom: "none",
+            },
+            "& .MuiDataGrid-virtualScroller": {
+              backgroundColor: colors.primary[400],
+            },
+            "& .MuiDataGrid-footerContainer": {
+              borderTop: "none",
+              backgroundColor: colors.blueAccent[700],
+            },
+            "& .MuiCheckbox-root": {
+              color: `${colors.greenAccent[200]} !important`,
+            },
+            "& .MuiDataGrid-toolbarContainer .MuiButton-text": {
+              color: `${colors.grey[100]} !important`,
+            },
+          }}
+        >
+          <DataGrid
+            editMode="row"
+            checkboxSelection
+            selectionModel={selectionModel}
+            onSelectionModelChange={handleSelectionModelChange}
+            components={{
+              Toolbar: GridToolbar,
+            }}
+            pageSize={10}
+            rows={statePhieuStore}
+            columns={columns}
+          />
+        </Box>
       </Box>
-    </Box>
+    </>
   );
 };
 

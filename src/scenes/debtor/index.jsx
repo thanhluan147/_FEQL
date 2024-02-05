@@ -32,6 +32,7 @@ import i18n from "../../i18n/i18n";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { converToName } from "../method";
+import { GET_ALLDEBTOR_BY_Debtor_Year_month } from "./handleDebtor";
 const DEBTORS = () => {
   const nav = useNavigate();
   useTranslation();
@@ -45,6 +46,7 @@ const DEBTORS = () => {
   const [stateCheckAccess, setstateCheckAccess] = useState(false);
   const [stateHoadon, setStateHoadon] = useState([]);
   const [selectedRow, setSelectedRow] = React.useState(null);
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [stateformDebtor, setstateformDebtor] = useState({
     sotienNo: "",
   });
@@ -56,6 +58,61 @@ const DEBTORS = () => {
   let chinhanhdau = "";
   let checkaccess = false;
 
+  const getMonthNameInVietnamese = (month) => {
+    const monthNames = [
+      "01",
+      "02",
+      "03",
+      "04",
+      "05",
+      "06",
+      "07",
+      "08",
+      "09",
+      "10",
+      "11",
+      "12",
+    ];
+    return monthNames[month];
+  };
+  const handleDecrease = async () => {
+    const newDate = new Date(currentDate);
+    newDate.setMonth(newDate.getMonth() - 1);
+
+    if (newDate.getMonth() === 11) {
+      newDate.setFullYear(newDate.getFullYear());
+    }
+    setCurrentDate(newDate);
+    const formattedDate = `${newDate.getFullYear()}-${getMonthNameInVietnamese(
+      newDate.getMonth()
+    )}`;
+    await fetchingGetAllDEBTOR_by_STOREID_year_month(
+      statechinhanh,
+      formattedDate
+    );
+    // await fetchingOrderBy_storeID_By_year_month(statechinhanh, formattedDate);
+  };
+
+  const formattedDate = `${currentDate.getFullYear()}-${getMonthNameInVietnamese(
+    currentDate.getMonth()
+  )}`;
+
+  const handleIncrease = async () => {
+    const newDate = new Date(currentDate);
+    newDate.setMonth(newDate.getMonth() + 1);
+    if (newDate.getMonth() === 0) {
+      newDate.setFullYear(newDate.getFullYear());
+    }
+    setCurrentDate(newDate);
+    const formattedDate = `${newDate.getFullYear()}-${getMonthNameInVietnamese(
+      newDate.getMonth()
+    )}`;
+    await fetchingGetAllDEBTOR_by_STOREID_year_month(
+      statechinhanh,
+      formattedDate
+    );
+    //await fetchingOrderBy_storeID_By_year_month(statechinhanh, formattedDate);
+  };
   const checkAccess = async () => {
     const check = HandleAccessAccount();
     if (check instanceof Promise) {
@@ -168,7 +225,10 @@ const DEBTORS = () => {
       ThoiDiemNo: stateformDebtor.ThoiDiemNo,
     };
     const check = await Update_SOTIEN_DOANHTHU_By_TWOid(formEdit);
-    await fetchingGetAllDEBTOR_by_STOREID(statechinhanh);
+    await fetchingGetAllDEBTOR_by_STOREID_year_month(
+      statechinhanh,
+      formattedDate
+    );
 
     if (JSON.parse(check).success) {
       alert(`${i18n.t("ALERT_CAPNHATSUCCESS")}`);
@@ -189,11 +249,19 @@ const DEBTORS = () => {
     }
   };
   const handle_getAllDOANHTHU = async (e) => {
-    await fetchingGetAllDEBTOR_by_STOREID(e.target.value);
+    await fetchingGetAllDEBTOR_by_STOREID_year_month(
+      e.target.value,
+      formattedDate
+    );
     setStatechinhanh(e.target.value);
   };
-  const fetchingGetAllDEBTOR_by_STOREID = async (x) => {
-    const check = await GET_ALLDEBTOR_BY_Debtor_BranchID(x);
+  const fetchingGetAllDEBTOR_by_STOREID_year_month = async (x, y) => {
+    const req = {
+      storeID: x,
+      thoidiem: y,
+    };
+
+    const check = await GET_ALLDEBTOR_BY_Debtor_Year_month(req);
 
     if (check instanceof Promise) {
       // Nếu là promise, chờ promise hoàn thành rồi mới cập nhật state
@@ -208,7 +276,10 @@ const DEBTORS = () => {
   const fetchingapi = async () => {
     await checkAccess();
     await fetchingStore();
-    await fetchingGetAllDEBTOR_by_STOREID(chinhanhdau);
+    await fetchingGetAllDEBTOR_by_STOREID_year_month(
+      chinhanhdau,
+      formattedDate
+    );
     setStatechinhanh(chinhanhdau);
   };
   useEffect(() => {
@@ -368,7 +439,40 @@ const DEBTORS = () => {
           </div>
         </div>
       </div>
+      <Box mt="40px">
+        {" "}
+        <h4>{i18n.t("LANCUOICAPNHATYYY")}</h4>
+        <div>
+          <Button
+            onClick={handleDecrease}
+            sx={{
+              backgroundColor: colors.blueAccent[700],
+              color: colors.grey[100],
+              fontSize: "14px",
+              fontWeight: "bold",
+              padding: "10px 20px",
+            }}
+          >
+            {"<"}
+          </Button>
+          <label style={{ width: "200px", textAlign: "center" }}>
+            {formattedDate}
+          </label>
 
+          <Button
+            onClick={handleIncrease}
+            sx={{
+              backgroundColor: colors.blueAccent[700],
+              color: colors.grey[100],
+              fontSize: "14px",
+              fontWeight: "bold",
+              padding: "10px 20px",
+            }}
+          >
+            {">"}
+          </Button>
+        </div>
+      </Box>
       <Box
         m="40px 0 0 0"
         height="75vh"

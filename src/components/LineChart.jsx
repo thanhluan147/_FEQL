@@ -19,7 +19,7 @@ const LineChart = ({
       return {
         ...item,
         x: item.thoidiem.split(" ")[0],
-        y: item.sotien,
+        y: item.sotienThucte,
       };
     });
 
@@ -39,6 +39,7 @@ const LineChart = ({
 
   useEffect(() => {
     // Tìm giá trị lớn nhất
+
     if (stateDoanhthu.length !== 0) {
       handleMockdata();
     }

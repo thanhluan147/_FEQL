@@ -23,7 +23,11 @@ import { Get_all_Order } from "./handlePhieustore";
 import { createBills } from "./handlebills";
 import { Get_all_Bill_By_userID } from "./handlebills";
 import { Update_PhieuOrder_By_id } from "./handlebills";
-import { GET_ALLBILL_BY_NOIMUA, Get_all_Bill } from "./handlebills";
+import {
+  GET_ALLBILL_BY_NOIMUA,
+  Get_all_Bill,
+  GET_ALLBILL_BY_NOIMUA_year_month,
+} from "./handlebills";
 import i18n from "../../i18n/i18n";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -32,6 +36,7 @@ const DOANHTHU = () => {
   useTranslation();
   const nav = useNavigate();
   const theme = useTheme();
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [stateStore, setStateStore] = useState([]);
   const [selectionModel, setSelectionModel] = React.useState([]);
   const [statechinhanh, setStatechinhanh] = useState("");
@@ -45,6 +50,61 @@ const DOANHTHU = () => {
   let chinhanhdau = "";
   let checkaccess = false;
 
+  const getMonthNameInVietnamese = (month) => {
+    const monthNames = [
+      "01",
+      "02",
+      "03",
+      "04",
+      "05",
+      "06",
+      "07",
+      "08",
+      "09",
+      "10",
+      "11",
+      "12",
+    ];
+    return monthNames[month];
+  };
+  const handleDecrease = async () => {
+    const newDate = new Date(currentDate);
+    newDate.setMonth(newDate.getMonth() - 1);
+
+    if (newDate.getMonth() === 11) {
+      newDate.setFullYear(newDate.getFullYear());
+    }
+    setCurrentDate(newDate);
+    const formattedDate = `${newDate.getFullYear()}-${getMonthNameInVietnamese(
+      newDate.getMonth()
+    )}`;
+    await fetchingGetAllHoaDon_by_STOREID_year_month(
+      statechinhanh,
+      formattedDate
+    );
+    // await fetchingOrderBy_storeID_By_year_month(statechinhanh, formattedDate);
+  };
+
+  const formattedDate = `${currentDate.getFullYear()}-${getMonthNameInVietnamese(
+    currentDate.getMonth()
+  )}`;
+
+  const handleIncrease = async () => {
+    const newDate = new Date(currentDate);
+    newDate.setMonth(newDate.getMonth() + 1);
+    if (newDate.getMonth() === 0) {
+      newDate.setFullYear(newDate.getFullYear());
+    }
+    setCurrentDate(newDate);
+    const formattedDate = `${newDate.getFullYear()}-${getMonthNameInVietnamese(
+      newDate.getMonth()
+    )}`;
+    await fetchingGetAllHoaDon_by_STOREID_year_month(
+      statechinhanh,
+      formattedDate
+    );
+    // await fetchingOrderBy_storeID_By_year_month(statechinhanh, formattedDate);
+  };
   const checkAccess = async () => {
     const check = HandleAccessAccount();
     if (check instanceof Promise) {
@@ -170,11 +230,19 @@ const DOANHTHU = () => {
   ];
 
   const handle_getAllHoadon = async (e) => {
-    await fetchingGetAllHoaDon_by_STOREID(e.target.value);
+    await fetchingGetAllHoaDon_by_STOREID_year_month(
+      e.target.value,
+      formattedDate
+    );
     setStatechinhanh(e.target.value);
   };
-  const fetchingGetAllHoaDon_by_STOREID = async (x) => {
-    const check = await GET_ALLBILL_BY_NOIMUA(x);
+  const fetchingGetAllHoaDon_by_STOREID_year_month = async (x, y) => {
+    const request = {
+      storeID: x,
+      thoidiem: y,
+    };
+    const check = await GET_ALLBILL_BY_NOIMUA_year_month(request);
+
     if (check instanceof Promise) {
       // Nếu là promise, chờ promise hoàn thành rồi mới cập nhật state
       const resolvedResult = await check;
@@ -188,7 +256,10 @@ const DOANHTHU = () => {
   const fetchingapi = async () => {
     await checkAccess();
     await fetchingStore();
-    await fetchingGetAllHoaDon_by_STOREID(chinhanhdau);
+    await fetchingGetAllHoaDon_by_STOREID_year_month(
+      chinhanhdau,
+      formattedDate
+    );
     setStatechinhanh(chinhanhdau);
   };
   useEffect(() => {
@@ -270,7 +341,40 @@ const DOANHTHU = () => {
           </select>
         </div>
       </div>
+      <Box mt="40px">
+        {" "}
+        <h4>{i18n.t("THOIDIEMLAP")} YYYY-MM</h4>
+        <div>
+          <Button
+            onClick={handleDecrease}
+            sx={{
+              backgroundColor: colors.blueAccent[700],
+              color: colors.grey[100],
+              fontSize: "14px",
+              fontWeight: "bold",
+              padding: "10px 20px",
+            }}
+          >
+            {"<"}
+          </Button>
+          <label style={{ width: "200px", textAlign: "center" }}>
+            {formattedDate}
+          </label>
 
+          <Button
+            onClick={handleIncrease}
+            sx={{
+              backgroundColor: colors.blueAccent[700],
+              color: colors.grey[100],
+              fontSize: "14px",
+              fontWeight: "bold",
+              padding: "10px 20px",
+            }}
+          >
+            {">"}
+          </Button>
+        </div>
+      </Box>
       <Box
         m="40px 0 0 0"
         height="75vh"

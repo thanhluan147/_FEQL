@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import { DataGrid, GridToolbar } from "@mui/x-data-grid";
+import { DataGrid, GridToolbar, GridToolbarExport } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
 import { mockDataContacts } from "../../data/mockData";
 import Header from "../../components/Header";
@@ -15,6 +15,8 @@ import { DeleteProduct, EditProduct } from "./handleproduct";
 import React from "react";
 import i18n from "../../i18n/i18n";
 import { useTranslation } from "react-i18next";
+import { saveAs } from "file-saver";
+import * as XLSX from "xlsx";
 const Contacts = () => {
   useTranslation();
   const [stateStore, setStateStore] = useState([]);
@@ -341,7 +343,22 @@ const Contacts = () => {
   useEffect(() => {
     fetchingapi();
   }, []);
+  const handleExportClick = () => {
+    exportToExcel();
+  };
+  const exportToExcel = () => {
+    const ws = XLSX.utils.json_to_sheet(stateProduct, {
+      header: Columns.map((col) => col.field),
+    });
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Sheet 1");
 
+    const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([excelBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8",
+    });
+    saveAs(blob, "exported_data.xlsx");
+  };
   return (
     <Box m="20px">
       <Header title={i18n.t("TITLEKHO")} subtitle={i18n.t("DESKHO")} />
@@ -622,6 +639,7 @@ const Contacts = () => {
           },
         }}
       >
+        {/* <button onClick={handleExportClick}>Export to Excel</button> */}
         <DataGrid
           checkboxSelection
           editMode="row"
@@ -630,7 +648,13 @@ const Contacts = () => {
           rows={stateProduct}
           columns={Columns}
           pageSize={10}
-          components={{ Toolbar: GridToolbar }}
+          components={{
+            Toolbar: () => (
+              <GridToolbar>
+                <GridToolbarExport onClick={exportToExcel} />
+              </GridToolbar>
+            ),
+          }}
         />
       </Box>
     </Box>

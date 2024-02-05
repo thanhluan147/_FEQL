@@ -140,6 +140,7 @@ i18n.use(initReactI18next).init({
         DSCONNO_DT: "Danh sách con nợ",
 
         //CON NỢ DEBTOR
+        LANCUOICAPNHATYYY: "Lần cuối cập nhật YYYY-MM",
         THOIDIEMLAP: "Thời điểm lập phiếu",
         TITLECONNO: "Danh sách nợ",
         DESCONNO: "Chi tiết Nợ của từng cửa hàng",
@@ -394,6 +395,11 @@ i18n.use(initReactI18next).init({
         TONGQUAN: "매출 전체적인 상황",
         TONGQUANNO: "전체적인 미수금 상황",
         THOIDIEMNO: "미수금 시기",
+
+        //CON NỢ DEBTOR
+        LANCUOICAPNHAT: "최신 업데이트 YYYY-MM",
+        //CON NỢ DEBTOR
+        LANCUOICAPNHATYYY: "최신 업데이트 YYYY-MM",
       },
     },
   },

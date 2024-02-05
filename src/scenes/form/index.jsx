@@ -60,6 +60,35 @@ const Form = () => {
     }
   };
   const handleBlurdate = () => {
+    const currentDate = new Date();
+
+    // Lấy thông tin về ngày, giờ, phút, giây và milliseconds
+    const year = currentDate.getFullYear();
+    const month = (currentDate.getMonth() + 1).toString().padStart(2, "0"); // Tháng bắt đầu từ 0
+    const day = currentDate.getDate().toString().padStart(2, "0");
+
+    if (
+      parseFloat(statePhieu.thoidiem.split("-")[0]) < parseFloat(year) ||
+      parseFloat(statePhieu.thoidiem.split("-")[0]) > parseFloat(year)
+    ) {
+      // console.log("năm đã nhỏ hơn");
+      setisShowerrorDate(true);
+      return;
+    }
+    // console.log("chheck month " + statePhieu.thoidiem.split("-")[1]);
+    // console.log("month ht " + parseFloat(month));
+    if (parseFloat(statePhieu.thoidiem.split("-")[1]) > parseFloat(month)) {
+      // console.log("tháng đã lớn hơn hơn");
+      setisShowerrorDate(true);
+      return;
+    } else {
+      if (parseFloat(statePhieu.thoidiem.split("-")[2]) > parseFloat(day)) {
+        // console.log("ngày đã lớn hơn");
+        setisShowerrorDate(true);
+        return;
+      }
+    }
+
     // Kiểm tra lỗi khi mất focus (kết thúc nhập)
     if (!/^\d{4}-\d{2}-\d{2}$/.test(statePhieu.thoidiem)) {
       setisShowerrorDate(true);

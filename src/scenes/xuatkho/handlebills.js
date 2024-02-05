@@ -12,6 +12,7 @@ export const createBills = async (req) => {
       noimua: req.noimua,
       giaban: req.giaban,
       giamua: req.giamua,
+      createbill: req.createbill,
       phieuxuatID: req.phieuxuatID,
     },
     {

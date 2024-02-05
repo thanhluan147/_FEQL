@@ -52,7 +52,7 @@ const Dashboard = () => {
   const [stateCheckaccess, setstateCheckaccess] = useState(false);
   const [min, setmin] = useState(0);
   const [max, setmax] = useState(0);
-
+  const [statesotienNhap, setstatesotienNhap] = useState(0);
   const textAreaRef = useRef();
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
@@ -108,6 +108,8 @@ const Dashboard = () => {
     return monthNames[month];
   };
   const handleIncrease = async () => {
+    setmin(0);
+    setmax(0);
     const newDate = new Date(currentDate);
     newDate.setMonth(newDate.getMonth() + 1);
     if (newDate.getMonth() === 0) {
@@ -126,48 +128,63 @@ const Dashboard = () => {
         storeID: storeID,
         thoidiem: thoidiem,
       };
-      const objBranch = GET_ALL_DOANHTHU_By_storeID_date(fetch);
+      const objBranch = await GET_ALL_DOANHTHU_By_storeID_date(fetch);
 
       if (objBranch instanceof Promise) {
         // Nếu là promise, chờ promise hoàn thành rồi mới cập nhật state
         const resolvedResult = await objBranch;
 
+        let sumallSotienNhapKho = 0;
         setstateDoanhthu(JSON.parse(resolvedResult));
+        JSON.parse(resolvedResult).forEach((obj) => {
+          obj.ListOfCreditors.forEach((item) => {
+            sumallSotienNhapKho += parseFloat(item.sotien);
+          });
+        });
+        setstatesotienNhap(sumallSotienNhapKho);
 
         let maxValue = 0;
         let minValue = 0;
         JSON.parse(resolvedResult).forEach((obj) => {
-          if (obj.sotien > maxValue) {
-            maxValue = obj.sotien;
+          if (obj.sotienThucte > maxValue) {
+            maxValue = obj.sotienThucte;
           }
-          if (obj.sotien < minValue) {
-            minValue = obj.sotien;
+          if (obj.sotienThucte < minValue) {
+            minValue = obj.sotienThucte;
           }
         });
         setmin(minValue);
         setmax(maxValue);
         const sumSotien = JSON.parse(resolvedResult).reduce(
-          (total, obj) => total + obj.sotien,
+          (total, obj) => total + obj.sotienThucte,
           0
         );
 
         setstatetongdoanhthu(sumSotien);
       } else {
+        let sumallSotienNhapKho = 0;
         setstateDoanhthu(JSON.parse(objBranch));
+        JSON.parse(objBranch).forEach((obj) => {
+          obj.ListOfCreditors.forEach((item) => {
+            sumallSotienNhapKho += parseFloat(item.sotien);
+          });
+        });
+        setstatesotienNhap(sumallSotienNhapKho);
+
         let maxValue = 0;
         let minValue = 0;
         JSON.parse(objBranch).forEach((obj) => {
-          if (obj.sotien > maxValue) {
-            maxValue = obj.sotien;
+          if (obj.sotienThucte > maxValue) {
+            maxValue = obj.sotienThucte;
           }
-          if (obj.sotien < minValue) {
-            minValue = obj.sotien;
+          if (obj.sotienThucte < minValue) {
+            minValue = obj.sotienThucte;
           }
         });
         setmin(minValue);
         setmax(maxValue);
         const sumSotien = JSON.parse(objBranch).reduce(
-          (total, obj) => total + obj.sotien,
+          (total, obj) => total + obj.sotienThucte,
           0
         );
 
@@ -193,6 +210,8 @@ const Dashboard = () => {
     }
   };
   const handleDecrease = async () => {
+    setmin(0);
+    setmax(0);
     const newDate = new Date(currentDate);
     newDate.setMonth(newDate.getMonth() - 1);
 
@@ -221,7 +240,7 @@ const Dashboard = () => {
 
         if (resolvedResult === "true" || resolvedResult) {
           checkaccess = resolvedResult;
-          
+
           setstateCheckaccess(checkaccess);
         } else {
           checkaccess = resolvedResult;
@@ -297,7 +316,6 @@ const Dashboard = () => {
         minValue = obj.sotien;
       }
     });
-   
   };
   useEffect(() => {
     fetchingapi();
@@ -452,12 +470,8 @@ const Dashboard = () => {
               justifyContent="center"
             >
               <StatBox
-                title={
-                  statetongdoanhthu > 0
-                    ? (statetongdoanhthu / 1.15).toFixed(2)
-                    : 0
-                }
-                subtitle={i18n.t("TONGTIENMUA")}
+                title={statesotienNhap}
+                subtitle="Tổng số tiền lợi nhuận nhập kho"
                 progress="0.80"
                 increase="+43%"
                 icon={
