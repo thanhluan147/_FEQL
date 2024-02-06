@@ -365,7 +365,7 @@ const Form = () => {
     await fetchingStore();
     await fetchingGettAllProduct_by_storeID(chinhanhdau);
     await fetchingGettAllPhieu_by_StoreID(chinhanhdau);
-    
+
     await fetchgetAllOrder_BY_storeID(chinhanhdau, code);
     setStatechinhanh(chinhanhdau);
     setchinhanhnhan(chinhanhdau);
@@ -483,10 +483,36 @@ const Form = () => {
             label: "Yes",
             onClick: async () => {
               setisloading(true);
+              // Tạo một đối tượng Date hiện tại
+              const currentDate = new Date();
+
+              // Lấy thông tin về ngày, giờ, phút, giây và milliseconds
+              const year = currentDate.getFullYear();
+              const month = (currentDate.getMonth() + 1)
+                .toString()
+                .padStart(2, "0"); // Tháng bắt đầu từ 0
+              const day = currentDate.getDate().toString().padStart(2, "0");
+              const hours = currentDate.getHours().toString().padStart(2, "0");
+              const minutes = currentDate
+                .getMinutes()
+                .toString()
+                .padStart(2, "0");
+              const seconds = currentDate
+                .getSeconds()
+                .toString()
+                .padStart(2, "0");
+              const milliseconds = currentDate
+                .getMilliseconds()
+                .toString()
+                .padStart(3, "0");
+
+              // Tạo chuỗi datetime
+              const datetimeString = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${milliseconds}`;
               const createphieu = {
                 id: stateID,
                 tongtien: "0",
                 storeID: statechinhanh,
+                CreateAt: datetimeString,
                 arrayProduct: stateProduct,
                 phieustoreID: statePhieu.maphieu,
               };

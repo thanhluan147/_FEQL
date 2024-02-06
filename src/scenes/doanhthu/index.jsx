@@ -30,6 +30,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { converToName } from "../method";
 import { GET_ALL_DOANHTHU_By_storeID_date } from "../debtor/handledoanhthu";
+import * as XLSX from "xlsx";
 const DOANHTHU = () => {
   const nav = useNavigate();
   useTranslation();
@@ -83,7 +84,49 @@ const DOANHTHU = () => {
     );
     // await fetchingOrderBy_storeID_By_year_month(statechinhanh, formattedDate);
   };
+  const handleExportExcel = () => {
+    const currentDate = new Date();
 
+    // Lấy thông tin về ngày, giờ, phút, giây và milliseconds
+    const year = currentDate.getFullYear();
+    const month = (currentDate.getMonth() + 1).toString().padStart(2, "0"); // Tháng bắt đầu từ 0
+    const day = currentDate.getDate().toString().padStart(2, "0");
+
+    // Tạo chuỗi datetime
+    const datetimeString = `${year}-${month}-${day}`;
+    const rows = stateHoadon.map((staff) => {
+      return {
+        [i18n.t("MADT_DT")]: staff.id,
+        [i18n.t("MAKHO_DT")]: converToName[staff.storeID],
+        [i18n.t("SOTIENTRATUCONNO")]: staff.sotien,
+        [i18n.t("SOTIENDOANHTHU")]: staff.sotienThucte,
+
+        [i18n.t("NGAYLAP_DT")]: staff.thoidiem,
+
+        // Thêm các trường khác nếu cần
+      };
+    });
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(rows);
+
+    // Điều chỉnh chiều rộng của cột (ví dụ: cột 'A' sẽ rộng hơn)
+    ws["!cols"] = [
+      { width: 15 },
+
+      { width: 300 },
+      { width: 20 },
+      { width: 30 },
+      { width: 30 },
+      { width: 20 },
+    ];
+
+    XLSX.utils.book_append_sheet(wb, ws, "Revenues Data");
+    XLSX.writeFile(
+      wb,
+      "Revenues_" + converToName[statechinhanh] + "_" + datetimeString + ".xlsx"
+    );
+  };
   const formattedDate = `${currentDate.getFullYear()}-${getMonthNameInVietnamese(
     currentDate.getMonth()
   )}`;
@@ -225,7 +268,7 @@ const DOANHTHU = () => {
 
     {
       field: "sotien",
-      headerName: `${i18n.t("SOTIENDOANHTHU")}`,
+      headerName: `${i18n.t("SOTIENTRATUCONNO")}`,
       flex: 1,
     },
     {
@@ -592,6 +635,7 @@ const DOANHTHU = () => {
           },
         }}
       >
+        <button onClick={handleExportExcel}>Export Excel</button>
         <DataGrid
           editMode="row"
           selectionModel={selectionModel}

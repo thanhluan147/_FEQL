@@ -128,6 +128,7 @@ i18n.use(initReactI18next).init({
         NGAYLAP_HD: "Ngày lập hóa đơn",
 
         //DOANH THU
+        CONNO: "Con nợ",
         SOTIENTRATUCONNO: "Số tiền trả từ con nợ",
         SOTIENDOANHTHU: "Số tiền doanh thu",
         DSNOXACNHANNHAPHANG: "Danh sách con nợ xác nhận nhập hàng",
@@ -399,6 +400,7 @@ i18n.use(initReactI18next).init({
         //CON NỢ DEBTOR
         LANCUOICAPNHAT: "최신 업데이트 YYYY-MM",
         //CON NỢ DEBTOR
+        CONNO: "미수금",
         LANCUOICAPNHATYYY: "최신 업데이트 YYYY-MM",
       },
     },

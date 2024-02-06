@@ -33,6 +33,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { converToName } from "../method";
 import { GET_ALLDEBTOR_BY_Debtor_Year_month } from "./handleDebtor";
+import * as XLSX from "xlsx";
 const DEBTORS = () => {
   const nav = useNavigate();
   useTranslation();
@@ -133,6 +134,38 @@ const DEBTORS = () => {
         nav("/");
       }
     }
+  };
+  const handleExportExcel = () => {
+    const rows = stateHoadon.map((staff) => {
+      return {
+        [i18n.t("MA_CN")]: staff.id,
+        [i18n.t("CHUNO_CN")]: converToName[staff.Owner_BranchID],
+        [i18n.t("CONNO")]: converToName[staff.Debtor_BranchID],
+        [i18n.t("THOIDIEMNO_CN")]: staff.ThoiDiemNo,
+        [i18n.t("SOTIENNO_CN")]: staff.sotienNo,
+        [i18n.t("LANCUOICAPNHAT")]: staff.LastPaymentDate,
+        // Thêm các trường khác nếu cần
+      };
+    });
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(rows);
+
+    // Điều chỉnh chiều rộng của cột (ví dụ: cột 'A' sẽ rộng hơn)
+    ws["!cols"] = [
+      { width: 15 },
+      { width: 30 },
+      { width: 30 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+    ];
+
+    XLSX.utils.book_append_sheet(wb, ws, "Debtor Data");
+    XLSX.writeFile(
+      wb,
+      "Debtor_" + converToName[statechinhanh] + "_Data" + ".xlsx"
+    );
   };
   const convertStoreID = (params) => {
     const arrayObject = params.value;
@@ -505,6 +538,7 @@ const DEBTORS = () => {
           },
         }}
       >
+        <button onClick={handleExportExcel}>Export Excel</button>
         <DataGrid
           editMode="row"
           checkboxSelection

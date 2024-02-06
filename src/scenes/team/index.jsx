@@ -1,5 +1,6 @@
 import { Box, Button, Typography, useTheme } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
+import * as XLSX from "xlsx";
 import { tokens } from "../../theme";
 import { mockDataTeam } from "../../data/mockData";
 import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
@@ -9,6 +10,7 @@ import Header from "../../components/Header";
 import styled from "styled-components";
 import { GridToolbar } from "@mui/x-data-grid";
 import React from "react";
+
 import {
   Get_all_branch_By_userid,
   Get_all_User_By_branchID,
@@ -108,6 +110,45 @@ const Team = () => {
     // Thực hiện xử lý theo nhu cầu của bạn
   };
 
+  const handleExportExcel = () => {
+    // Chuẩn bị dữ liệu để xuất
+    const rows = stateStaff.map((staff) => {
+      // Chỉ lấy các trường dữ liệu bạn muốn xuất
+      return {
+        [i18n.t("MNV_TEAM")]: staff.id,
+        [i18n.t("TNV_TEAM")]: staff.name,
+        [i18n.t("SDT_TEAM")]: staff.phone,
+        [i18n.t("CV_TEAM")]: staff.Role,
+        [i18n.t("NV_TEAM")]: staff.ngayvao,
+        // Thêm các trường khác nếu cần
+      };
+    });
+
+    // Tạo một workbook mới
+    const wb = XLSX.utils.book_new();
+    // Tạo một worksheet từ dữ liệu
+    const ws = XLSX.utils.json_to_sheet(rows);
+
+    // Điều chỉnh chiều rộng của cột (ví dụ: cột 'A' sẽ rộng hơn)
+    ws["!cols"] = [
+      { width: 15 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+    ];
+
+    // // Định dạng màu cho hàng tiêu đề (ví dụ: hàng 1 có màu vàng)
+    // ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 1 } }];
+    // ws["A1"].s = { fill: { fgColor: { rgb: "FFFF00" } } }; // Màu vàng
+    // ws["B1"].s = { fill: { fgColor: { rgb: "FFFF00" } } }; // Màu vàng
+
+    // Thêm worksheet vào workbook
+    XLSX.utils.book_append_sheet(wb, ws, "Staff_Data");
+
+    // Tạo tệp Excel từ workbook
+    XLSX.writeFile(wb, "Staff_Data.xlsx");
+  };
   let checkaccess = false;
   let chinhanhdau = "";
   const fetchingBranch = async () => {
@@ -529,6 +570,7 @@ const Team = () => {
           },
         }}
       >
+        <button onClick={handleExportExcel}>Export to Excel</button>
         <DataGrid
           checkboxSelection
           editMode="row"

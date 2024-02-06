@@ -43,6 +43,7 @@ export const getAllOrder_BY_storeID = async (req) => {
 };
 
 export const createOrder = async (req) => {
+  console.log("check req " + JSON.stringify(req));
   const respod = await Axios.post(
     `${Url_BackEnd}/order/create`,
     {
@@ -50,6 +51,7 @@ export const createOrder = async (req) => {
       tongtien: req.tongtien,
       storeID: req.storeID,
       arrayProduct: req.arrayProduct,
+      CreateAt: req.CreateAt,
       phieustoreID: req.phieustoreID,
     },
     {

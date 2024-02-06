@@ -54,6 +54,8 @@ export const Get_all_Phieu_Store_By_StoreID = async (req) => {
 };
 
 export const Get_all_Phieu_Store_By_Year_Month = async (req) => {
+  console.log("check req " + JSON.stringify(req));
+  console.log("respod ");
   const respod = await Axios.post(
     `${Url_BackEnd}/phieustore/getPhieuStoreByYearMonth`,
     {
@@ -68,6 +70,7 @@ export const Get_all_Phieu_Store_By_Year_Month = async (req) => {
       },
     }
   );
+  console.log(" respod.data.All_phieustore " + respod.data.All_phieustore);
 
   return JSON.stringify(respod.data.All_phieustore);
 };

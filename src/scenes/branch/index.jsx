@@ -9,6 +9,7 @@ import Header from "../../components/Header";
 import styled from "styled-components";
 import { GridToolbar } from "@mui/x-data-grid";
 import React from "react";
+import * as XLSX from "xlsx";
 import {
   Get_all_branch_By_userid,
   Get_all_User_By_branchID,
@@ -86,6 +87,27 @@ const BRACNH = () => {
       cellClassName: "name-column--cell",
     },
   ];
+  const handleExportExcel = () => {
+    const rows = stateBranch.map((staff) => {
+      return {
+        [i18n.t("MA_B")]: staff.branchID, // Thay đổi tên cột 'id'
+        [i18n.t("TEN_B")]: staff.name, // Thay đổi tên cột 'name'
+        [i18n.t("DIACHI_B")]: staff.diachi,
+        [i18n.t("MASOTHUE_B")]: staff.masothue,
+
+        // Thêm các trường khác nếu cần
+      };
+    });
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(rows);
+
+    // Điều chỉnh chiều rộng của cột (ví dụ: cột 'A' sẽ rộng hơn)
+    ws["!cols"] = [{ width: 15 }, { width: 30 }, { width: 40 }, { width: 20 }];
+
+    XLSX.utils.book_append_sheet(wb, ws, "Branch Data");
+    XLSX.writeFile(wb, "Branch_Data.xlsx");
+  };
   const [stateBranch, setStateBranch] = useState([]);
   const handleLogin = (x) => {
     const storeID = x; // Giá trị bạn muốn truyền
@@ -202,6 +224,7 @@ const BRACNH = () => {
           },
         }}
       >
+        <button onClick={handleExportExcel}>Export Excel</button>
         <DataGrid
           components={{
             Toolbar: GridToolbar,

@@ -35,7 +35,7 @@ import {
   UPdateProductStatusOrder,
   Get_all_Order_By_StoreID_Year_Month,
 } from "./handlePhieustore";
-
+import * as XLSX from "xlsx";
 const Invoices = () => {
   useTranslation();
   const theme = useTheme();
@@ -429,6 +429,7 @@ const Invoices = () => {
     await fetchingStore();
     await fetchingGetAllHoaDon();
     await fetchingOrderBy_storeID_By_year_month(chinhanhdau, formattedDate);
+    setStatechinhanh(chinhanhdau);
   };
   useEffect(() => {
     checkAccess();
@@ -485,7 +486,7 @@ const Invoices = () => {
     if (JSON.parse(check).success) {
       await Update_PhieuOrder_By_id(selectionModel);
 
-      await fetchingOrderBy_storeID_By_year_month(statechinhanh, formattedDate);
+      await fetchingOrderBy_storeID_By_year_month(statechinhanh, convertedDate);
       setstatelenghtID_bill(statelenghtID_bill + 1);
       alert(`${i18n.t("ALERT_LAPHOADONSUCCESS")}`);
 
@@ -503,7 +504,42 @@ const Invoices = () => {
       setSelectionModel([]);
     }
   };
+  const handleExportExcel = () => {
+    // Chuẩn bị dữ liệu để xuất
+    const rows = statePhieuStore.map((staff) => {
+      // Chỉ lấy các trường dữ liệu bạn muốn xuất
+      return {
+        // Thêm các trường khác nếu cần
+        [i18n.t("MAPX_PX")]: staff.id,
+        [i18n.t("TINHTRANG_PX")]: staff.status,
 
+        [i18n.t("MAPX_PX")]: staff.phieustoreID,
+
+        [i18n.t("NGAYLAP_PX")]: staff.CreateAt,
+        [i18n.t("NGAYCAPNHAT_PX")]: staff.updateDate,
+      };
+    });
+
+    // Tạo một workbook mới
+    const wb = XLSX.utils.book_new();
+    // Tạo một worksheet từ dữ liệu
+    const ws = XLSX.utils.json_to_sheet(rows);
+    ws["!cols"] = [
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+    ];
+
+    // Thêm worksheet vào workbook
+    XLSX.utils.book_append_sheet(wb, ws, "Xuất kho Data");
+
+    // Tạo tệp Excel từ workbook
+    XLSX.writeFile(wb, "XuatKho_Data.xlsx");
+  };
   const createDEBTOR = async (x, addformbill) => {
     const check = await Get_all_DEBTOR();
     // Tạo một đối tượng Date hiện tại
@@ -632,6 +668,7 @@ const Invoices = () => {
     }
   };
   const fetchingOrderBy_storeID_By_year_month = async (x, y) => {
+    console.log("check x y " + x + y);
     const request = {
       storeID: x,
       thoidiem: y,
@@ -641,9 +678,10 @@ const Invoices = () => {
     if (check instanceof Promise) {
       // Nếu là promise, chờ promise hoàn thành rồi mới cập nhật state
       const resolvedResult = await check;
-
+      console.log("resolvedResult " + resolvedResult);
       setStatePhieuStore(JSON.parse(resolvedResult));
     } else {
+      console.log("check " + check);
       setStatePhieuStore(JSON.parse(check));
     }
   };
@@ -1007,6 +1045,7 @@ const Invoices = () => {
           },
         }}
       >
+        <button onClick={handleExportExcel}>Export Excel</button>
         <DataGrid
           editMode="row"
           checkboxSelection

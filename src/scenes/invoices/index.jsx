@@ -26,6 +26,8 @@ import { createProduct } from "../contacts/handleproduct";
 import i18n from "../../i18n/i18n";
 import { useTranslation } from "react-i18next";
 import { Get_all_Phieu_Store_By_Year_Month } from "./handlePhieustore";
+import * as XLSX from "xlsx";
+import { converToName } from "../method";
 const Invoices = () => {
   useTranslation();
   const theme = useTheme();
@@ -63,6 +65,43 @@ const Invoices = () => {
       "12",
     ];
     return monthNames[month];
+  };
+  const handleExportExcel = () => {
+    // Chuẩn bị dữ liệu để xuất
+    const rows = statePhieuStore.map((staff) => {
+      // Chỉ lấy các trường dữ liệu bạn muốn xuất
+      return {
+        // Thêm các trường khác nếu cần
+        [i18n.t("MAKHO_NP")]: staff.id,
+        [i18n.t("TINHTRANG_NP")]: staff.status,
+        [i18n.t("CN")]: converToName[staff.StoreID],
+        [i18n.t("SOTIEN_NP")]: staff.sotien,
+        [i18n.t("MAKHO_NP")]: staff.StoreID,
+        [i18n.t("NGAYCAPNHAT_NP")]: staff.updateDate,
+
+        [i18n.t("NGAYLAPPHIEU_NP")]: staff.ngaylap,
+      };
+    });
+
+    // Tạo một workbook mới
+    const wb = XLSX.utils.book_new();
+    // Tạo một worksheet từ dữ liệu
+    const ws = XLSX.utils.json_to_sheet(rows);
+    ws["!cols"] = [
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+    ];
+
+    // Thêm worksheet vào workbook
+    XLSX.utils.book_append_sheet(wb, ws, "Phieustore Data");
+
+    // Tạo tệp Excel từ workbook
+    XLSX.writeFile(wb, "Phieu_Store.xlsx");
   };
   const handleDecrease = async () => {
     const newDate = new Date(currentDate);
@@ -563,9 +602,10 @@ const Invoices = () => {
     if (check instanceof Promise) {
       // Nếu là promise, chờ promise hoàn thành rồi mới cập nhật state
       const resolvedResult = await check;
-
+      console.log("check " + resolvedResult);
       setStatePhieuStore(JSON.parse(resolvedResult));
     } else {
+      console.log("check " + check);
       setStatePhieuStore(JSON.parse(check));
     }
   };
@@ -712,6 +752,7 @@ const Invoices = () => {
             </Button>
           </div>
         </Box>
+
         <Box
           m="40px 0 0 0"
           height="75vh"
@@ -744,6 +785,7 @@ const Invoices = () => {
             },
           }}
         >
+          <button onClick={handleExportExcel}>Export Excel</button>
           <DataGrid
             editMode="row"
             checkboxSelection

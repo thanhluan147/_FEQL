@@ -16,6 +16,7 @@ import {
   Get_all_Phieu_Store,
   Update_PhieuStore_By_id,
 } from "./handlePhieustore";
+import * as XLSX from "xlsx";
 import { confirmAlert } from "react-confirm-alert";
 import { Modal, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css"; // Import CSS của Bootstrap
@@ -66,6 +67,35 @@ const DOANHTHU = () => {
       "12",
     ];
     return monthNames[month];
+  };
+  const handleExportExcel = () => {
+    const rows = stateHoadon.map((staff) => {
+      return {
+        [i18n.t("MAHD_HD")]: staff.id,
+        [i18n.t("MAPX_PX")]: staff.OrderID,
+        [i18n.t("NOIBAN_HD")]: converToName[staff.noiban],
+        [i18n.t("MODAL_NOIMUA")]: converToName[staff.noimua],
+        [i18n.t("GIABAN_HD")]: staff.giaban,
+
+        // Thêm các trường khác nếu cần
+      };
+    });
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(rows);
+
+    // Điều chỉnh chiều rộng của cột (ví dụ: cột 'A' sẽ rộng hơn)
+    ws["!cols"] = [
+      { width: 15 },
+      { width: 20 },
+      { width: 30 },
+      { width: 30 },
+      { width: 20 },
+      { width: 20 },
+    ];
+
+    XLSX.utils.book_append_sheet(wb, ws, "Bills Data");
+    XLSX.writeFile(wb, "Bills_" + converToName[statechinhanh] + ".xlsx");
   };
   const handleDecrease = async () => {
     const newDate = new Date(currentDate);
@@ -196,7 +226,7 @@ const DOANHTHU = () => {
     { field: "id", flex: 1, headerName: `${i18n.t("MAHD_HD")}` },
     {
       field: "phieuxuatID",
-      headerName: `Phiếu xuất`,
+      headerName: `${i18n.t("MAPX_PX")}`,
       flex: 1,
       cellClassName: "name-column--cell",
     },
@@ -407,6 +437,7 @@ const DOANHTHU = () => {
           },
         }}
       >
+        <button onClick={handleExportExcel}>Export Excel</button>
         <DataGrid
           editMode="row"
           checkboxSelection

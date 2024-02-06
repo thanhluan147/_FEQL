@@ -85,7 +85,7 @@ const Contacts = () => {
     },
     {
       field: "xuatxu",
-      headerName: `Xuất xứ`,
+      headerName: `${i18n.t("XUATSU_X")}`,
       flex: 1,
       headerAlign: "left",
       align: "left",
@@ -98,7 +98,7 @@ const Contacts = () => {
     },
     {
       field: "sotien",
-      headerName: `Số tiền`,
+      headerName: `${i18n.t("SOTIEN_NP")}`,
       flex: 1,
       headerAlign: "left",
       align: "left",
@@ -298,7 +298,38 @@ const Contacts = () => {
 
     setStateimg("");
   };
+  const handleExportExcel = () => {
+    const rows = stateProduct.map((staff) => {
+      return {
+        [i18n.t("MASP_P")]: staff.id,
+        [i18n.t("TEN_P")]: staff.name,
+        [i18n.t("LOAI_P")]: staff.loai,
+        [i18n.t("TINHTRANG_P")]: staff.status,
+        [i18n.t("SOLUONG_P")]: staff.soluong,
+        [i18n.t("SOTIEN_NP")]: staff.sotien,
 
+        [i18n.t("XUATSU_X")]: staff.xuatxu,
+        // Thêm các trường khác nếu cần
+      };
+    });
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(rows);
+
+    // Điều chỉnh chiều rộng của cột (ví dụ: cột 'A' sẽ rộng hơn)
+    ws["!cols"] = [
+      { width: 15 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+    ];
+
+    XLSX.utils.book_append_sheet(wb, ws, "Product Data");
+    XLSX.writeFile(wb, "Product_Data.xlsx");
+  };
   const handleSaveClick = async () => {
     const selectedRows = stateProduct.filter((row) =>
       selectionModel.includes(row.id)
@@ -451,7 +482,7 @@ const Contacts = () => {
                   name="status"
                 ></input>
 
-                <label htmlFor="xuatxu">Xuất xứ</label>
+                <label htmlFor="xuatxu">{i18n.t("XUATSU_X")}</label>
                 <input
                   type="text"
                   name="xuatxu"
@@ -546,7 +577,7 @@ const Contacts = () => {
                   value={stateFormProduct.soluong}
                   onChange={onChangeAddProductForm}
                 ></input>
-                <label htmlFor="xuatxu">Xuất xứ</label>
+                <label htmlFor="xuatxu">{i18n.t("XUATSU_X")}</label>
                 <input
                   type="text"
                   name="xuatxu"
@@ -640,6 +671,7 @@ const Contacts = () => {
         }}
       >
         {/* <button onClick={handleExportClick}>Export to Excel</button> */}
+        <button onClick={handleExportExcel}>Export Excel</button>
         <DataGrid
           checkboxSelection
           editMode="row"
