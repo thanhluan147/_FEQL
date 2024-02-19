@@ -289,6 +289,13 @@ const DETAILS = () => {
       editable: true,
     },
     {
+      field: "AccountBank",
+      headerName: `${i18n.t("TTNH")}`,
+      flex: 1,
+      cellClassName: "name-column--cell",
+      editable: true,
+    },
+    {
       field: "ngayvao",
       headerName: `${i18n.t("NV_TEAM")}`,
       flex: 1,

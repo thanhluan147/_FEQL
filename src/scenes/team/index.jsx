@@ -32,7 +32,7 @@ const Team = () => {
   const colors = tokens(theme.palette.mode);
   const [isError, setisError] = useState(false);
   const columns = [
-    { field: "id", headerName: `${i18n.t("MNV_TEAM")}`, editable: true },
+    { field: "id", headerName: `CCCD`, editable: true },
     {
       field: "name",
       headerName: `${i18n.t("TNV_TEAM")}`,
@@ -50,6 +50,13 @@ const Team = () => {
     {
       field: "Role",
       headerName: `${i18n.t("CV_TEAM")}`,
+      flex: 1,
+      cellClassName: "name-column--cell",
+      editable: true,
+    },
+    {
+      field: "AccountBank",
+      headerName: `${i18n.t("TTNH")}`,
       flex: 1,
       cellClassName: "name-column--cell",
       editable: true,
@@ -119,7 +126,9 @@ const Team = () => {
         [i18n.t("TNV_TEAM")]: staff.name,
         [i18n.t("SDT_TEAM")]: staff.phone,
         [i18n.t("CV_TEAM")]: staff.Role,
+        [i18n.t("TTNH")]: staff.AccountBank,
         [i18n.t("NV_TEAM")]: staff.ngayvao,
+
         // Thêm các trường khác nếu cần
       };
     });
@@ -236,11 +245,15 @@ const Team = () => {
     phone: "",
     Role: "",
     branchID: "",
+    AccountBank: "",
     id: "",
+    idnew: "",
   });
   const editstaff = async () => {
-    await HandleEditStaff(EditStaffForm);
+    const check = await HandleEditStaff(EditStaffForm);
     await fetchingGettAllStaft_by_branchID(statechinhanh);
+    console.log("check " + check);
+    alert("Update Success");
   };
 
   const handleEdit = () => {
@@ -257,12 +270,23 @@ const Team = () => {
       Role: selectedRows[0].Role,
       branchID: selectedRows[0].branchID,
       id: selectedRows[0].id,
+      idnew: selectedRows[0].id,
+      AccountBank: selectedRows[0].AccountBank,
     });
     // Thực hiện xử lý theo nhu cầu của bạn
   };
   const addStaff = async () => {
+    const objectWithIdZero = stateStaff.find(
+      (obj) => obj.id === addStaffForm.id
+    );
+
+    if (objectWithIdZero) {
+      alert("CCCD đã tồn tại");
+      return;
+    }
     {
       if (
+        !addStaffForm.id ||
         !addStaffForm.name ||
         !addStaffForm.ngayvao ||
         !addStaffForm.phone ||
@@ -293,30 +317,14 @@ const Team = () => {
     branchID: "",
     id: "",
     ngayvao: "",
+    AccountBank: "",
   });
   const onChangeStaffForm = (event) => {
-    // Tách phần số từ chuỗi 'id' và chuyển đổi thành số nguyên
-    const arrayOfNumbers = stateStaff.map((obj) =>
-      parseInt(obj.id.replace(/[^\d]/g, ""), 10)
-    );
-
-    // Tìm giá trị lớn nhất trong mảng 'arrayOfNumbers'
-    let maxNumber = Math.max(...arrayOfNumbers);
-    const result = 1 / 0;
-
-    const negativeInfinity = -1 / 0;
-
-    if (maxNumber === negativeInfinity || maxNumber === result) {
-      maxNumber = 0;
-    }
-
-    let lenghtState = maxNumber + 1;
     setisError(false);
     setAddStaffForm({
       ...addStaffForm,
       [event.target.name]: event.target.value,
       branchID: statechinhanh,
-      id: "ID" + lenghtState,
     });
   };
 
@@ -388,6 +396,15 @@ const Team = () => {
                 </button>
               </div>
               <div class="modal-body" style={{ color: "black" }}>
+                <label htmlFor="CCCD" name="idnew">
+                  CCCD
+                </label>
+                <input
+                  type="text"
+                  name="idnew"
+                  value={EditStaffForm.idnew}
+                  onChange={onChangeEditStaffForm}
+                ></input>
                 <label htmlFor="name" name="name">
                   {i18n.t("TNV_TEAM")}
                 </label>
@@ -410,6 +427,13 @@ const Team = () => {
                   value={EditStaffForm.Role}
                   onChange={onChangeEditStaffForm}
                   name="Role"
+                ></input>
+                <label htmlFor="AccountBank"> {i18n.t("TTNH")}</label>
+                <input
+                  type="text"
+                  value={EditStaffForm.AccountBank}
+                  onChange={onChangeEditStaffForm}
+                  name="AccountBank"
                 ></input>
               </div>
               <div class="modal-footer">
@@ -460,7 +484,10 @@ const Team = () => {
                   <span aria-hidden="true">&times;</span>
                 </button>
               </div>
-              <div class="modal-body" style={{ color: "black" }}>
+              <div
+                class="modal-body"
+                style={{ color: "black", width: "320px" }}
+              >
                 {isError ? (
                   <span style={{ color: "red" }}>
                     *Lỗi xảy vui lòng điền đầy đủ thông tin
@@ -469,6 +496,13 @@ const Team = () => {
                   ""
                 )}
 
+                <label htmlFor="id"> {i18n.t("MNV_TEAM")}</label>
+                <input
+                  type="text"
+                  name="id"
+                  value={addStaffForm.id}
+                  onChange={onChangeStaffForm}
+                ></input>
                 <label htmlFor="name"> {i18n.t("TNV_TEAM")}</label>
                 <input
                   type="text"
@@ -488,6 +522,14 @@ const Team = () => {
                   type="text"
                   name="Role"
                   value={addStaffForm.Role}
+                  onChange={onChangeStaffForm}
+                ></input>
+                <label htmlFor="AccountBank">{i18n.t("TTNH")}</label>
+                <input
+                  type="text"
+                  name="AccountBank"
+                  placeholder="Tên ngân hàng - Số ngân hàng"
+                  value={addStaffForm.AccountBank}
                   onChange={onChangeStaffForm}
                 ></input>
                 <label htmlFor="ngayvao">{i18n.t("NV_TEAM")}</label>

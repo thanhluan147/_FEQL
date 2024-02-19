@@ -233,15 +233,12 @@ const BRACNH = () => {
         <button
           data-toggle="modal"
           data-target="#staticBackdrop"
+          disabled
           style={{ backgroundColor: "#0d6efd", color: "white" }}
         >
           Thêm chi nhánh
         </button>
-        <button
-   
-          className="btn-danger"
-          style={{ color: "white" }}
-        >
+        <button className="btn-danger" style={{ color: "white" }} disabled>
           Xóa chi nhánh
         </button>
         <div

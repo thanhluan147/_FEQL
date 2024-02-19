@@ -10,6 +10,7 @@ export const HandleCreateStaff = async (req) => {
       Role: req.Role,
       branchID: req.branchID,
       ngayvao: req.ngayvao,
+      AccountBank: req.AccountBank,
     },
     {
       headers: {
@@ -24,6 +25,7 @@ export const HandleCreateStaff = async (req) => {
 };
 
 export const HandleEditStaff = async (req) => {
+  console.log("chjecl req " + JSON.stringify(req));
   const respod = await Axios.put(
     `${Url_BackEnd}/Staff/updateStaff`,
     {
@@ -32,6 +34,8 @@ export const HandleEditStaff = async (req) => {
       phone: req.phone,
       Role: req.Role,
       branchID: req.branchID,
+      AccountBank: req.AccountBank,
+      idnew: req.idnew,
     },
     {
       headers: {

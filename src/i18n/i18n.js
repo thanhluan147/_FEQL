@@ -24,8 +24,10 @@ i18n.use(initReactI18next).init({
         BTN_XACNHAN: "Xác nhận",
         BTN_DONG: "Đóng",
         //TEAM
+        LBNH: "Tên ngân hàng - Số ngân hàng",
         TITLETEAM: "Thông tin nhân viên",
         DESTEAM: "Quản lý các thành viên tại cửa hàng",
+        TTNH: "Thông tin ngân hàng",
         THEMNV: "Thêm nhân viên",
         XOANV: "Xóa nhân viên",
         SUANV: "Sửa thông tin nhân viên",
@@ -224,6 +226,8 @@ i18n.use(initReactI18next).init({
         BTN_XACNHAN: "확인",
         BTN_DONG: "닫기",
         //TEAM
+        LBNH: "은행 이름 - 은행 번호",
+        TTNH: "은행 정보",
         TITLETEAM: "팀 정보",
         DESTEAM: "가게 구성원 관리",
         THEMNV: "직원 추가",
