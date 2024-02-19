@@ -27,6 +27,7 @@ import InputIcon from "@mui/icons-material/Input";
 import OutputIcon from "@mui/icons-material/Output";
 import { useTranslation } from "react-i18next";
 import i18n from "../../i18n/i18n";
+
 const Item = ({ title, to, icon, selected, setSelected }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);

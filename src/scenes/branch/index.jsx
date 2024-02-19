@@ -224,8 +224,89 @@ const BRACNH = () => {
           },
         }}
       >
-        <button onClick={handleExportExcel}>Export Excel</button>
+        <button
+          style={{ backgroundColor: "green", color: "white" }}
+          onClick={handleExportExcel}
+        >
+          Export Excel
+        </button>
+        <button
+          data-toggle="modal"
+          data-target="#staticBackdrop"
+          style={{ backgroundColor: "#0d6efd", color: "white" }}
+        >
+          Thêm chi nhánh
+        </button>
+        <button
+   
+          className="btn-danger"
+          style={{ color: "white" }}
+        >
+          Xóa chi nhánh
+        </button>
+        <div
+          class="modal fade"
+          id="staticBackdrop"
+          data-backdrop="static"
+          data-keyboard="false"
+          tabindex="-1"
+          aria-labelledby="staticBackdropLabel"
+          aria-hidden="true"
+        >
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5
+                  style={{ color: "black" }}
+                  class="modal-title"
+                  id="staticBackdropLabel"
+                >
+                  Thêm chi nhánh
+                </h5>
+                <button
+                  type="button"
+                  class="close"
+                  data-dismiss="modal"
+                  aria-label="Close"
+                >
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body" style={{ color: "black" }}>
+                <label htmlFor="name">Mã chi nhánh</label>
+                <input type="text" name="name"></input>
+                <label htmlFor="phone">Tên chi nhánh</label>
+                <input type="text" name="phone"></input>
+                <label htmlFor="Role">Mã số thuế</label>
+                <input type="text" name="Role"></input>
+                <label htmlFor="ngayvao">{i18n.t("NV_TEAM")}</label>
+                <input
+                  type="text"
+                  name="ngayvao"
+                  placeholder="YYYY/MM/DD"
+                ></input>
+              </div>
+              <div class="modal-footer">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  data-dismiss="modal"
+                >
+                  {i18n.t("BTN_DONG")}
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  data-dismiss="modal"
+                >
+                  {i18n.t("BTN_XACNHAN")}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
         <DataGrid
+          checkboxSelection
           components={{
             Toolbar: GridToolbar,
           }}

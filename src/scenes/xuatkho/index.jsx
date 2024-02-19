@@ -793,7 +793,7 @@ const Invoices = () => {
         )}
         <button
           type="button"
-          style={{ marginLeft: "1%" }}
+          style={{ marginLeft: "1%", color: "whitesmoke" }}
           class="btn btn-info"
           disabled={selectionModel.length === 0}
           onClick={AcceptRequest}

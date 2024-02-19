@@ -458,7 +458,7 @@ const Form = () => {
     await fetchingStore();
 
     await fetchingGettAllPhieu_by_StoreID(chinhanhdau);
-    await fetchingGettAllProduct_by_storeID("ST01");
+    await fetchingGettAllProduct_by_storeID("ST00");
   };
   useEffect(() => {
     fetchingapi();
