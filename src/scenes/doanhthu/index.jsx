@@ -354,7 +354,7 @@ const DOANHTHU = () => {
     return (
       <Modal show={show} onHide={handleClose} centered size="lg">
         <Modal.Header style={{ color: "black" }} closeButton>
-          <Modal.Title>Tổng số tiền nợ : {sumSotienNo}</Modal.Title>
+          <Modal.Title>Tổng số tiền đã trả : {sumSotienNo}</Modal.Title>
         </Modal.Header>
         <Modal.Body
           style={{ maxWidth: "100%", overflow: "scroll", maxHeight: "500px" }}
@@ -365,8 +365,7 @@ const DOANHTHU = () => {
                 <tr>
                   <th>Mã phiếu nhập</th>
                   <th>Mã chi nhánh</th>
-                  <th>Số tiền nợ</th>
-
+                  <th>Số tiền trả</th>
                   <th>Ngày lập phiếu</th>
                 </tr>
               </thead>

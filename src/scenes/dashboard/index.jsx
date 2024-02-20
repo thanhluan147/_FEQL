@@ -30,12 +30,16 @@ import { Get_all_Store } from "../contacts/handlestore";
 import i18n from "../../i18n/i18n";
 import { useTranslation } from "react-i18next";
 import { GET_ALL_DOANHTHU_By_storeID_date } from "../debtor/handledoanhthu";
+import { Get_all_COST_Phieu_Store_By_Year_Month } from "../invoices/handlePhieustore";
 import io from "socket.io-client";
 import { GET_Notifi_BY_ID, Update_Notifi_By_id } from "./handlenotifi";
 import Url_realtime from "../../URL_REALTIME";
+import { converToName } from "../method";
+import { GET_ALLDEBTOR_BY_Debtor_Year_month } from "../debtor/handleDebtor";
 var socket = io(`${Url_realtime}`, {
   transports: ["websocket", "polling", "flashsocket"],
 });
+
 const Dashboard = () => {
   useTranslation();
   const theme = useTheme();
@@ -46,6 +50,7 @@ const Dashboard = () => {
   const [stateStore, setStateStore] = useState([]);
   const [stateDoanhthu, setstateDoanhthu] = useState([]);
   const [statetongdoanhthu, setstatetongdoanhthu] = useState(0);
+  const [statetCostBuy, setstateCostBuy] = useState(0);
   const [statechinhanh, setStatechinhanh] = useState("");
   const [inputValue, setInputValue] = useState("");
   const [textAreaValue, setTextAreaValue] = useState("");
@@ -120,8 +125,29 @@ const Dashboard = () => {
       newDate.getMonth()
     )}`;
     await fetchingdoanhthu(statechinhanh, formattedDate);
+    await fetchingCost(statechinhanh, formattedDate);
+    await fetchingGetAllDEBTOR_by_STOREID_year_month(
+      statechinhanh,
+      formattedDate
+    );
   };
+  const fetchingGetAllDEBTOR_by_STOREID_year_month = async (x, y) => {
+    const req = {
+      storeID: x,
+      thoidiem: y,
+    };
 
+    const check = await GET_ALLDEBTOR_BY_Debtor_Year_month(req);
+
+    if (check instanceof Promise) {
+      // Nếu là promise, chờ promise hoàn thành rồi mới cập nhật state
+      const resolvedResult = await check;
+
+      setStateDebtor(JSON.parse(resolvedResult));
+    } else {
+      setStateDebtor(JSON.parse(check));
+    }
+  };
   const fetchingdoanhthu = async (storeID, thoidiem) => {
     {
       const fetch = {
@@ -192,6 +218,36 @@ const Dashboard = () => {
       }
     }
   };
+  const fetchingCost = async (storeID, thoidiem) => {
+    {
+      const fetch = {
+        storeID: storeID,
+        thoidiem: thoidiem,
+      };
+      const objBranch = await Get_all_COST_Phieu_Store_By_Year_Month(fetch);
+
+      if (objBranch instanceof Promise) {
+        // Nếu là promise, chờ promise hoàn thành rồi mới cập nhật state
+        const resolvedResult = await objBranch;
+
+        let sumallSotienNhapKho = 0;
+        // setstateDoanhthu(JSON.parse(resolvedResult));
+        JSON.parse(resolvedResult).forEach((obj) => {
+          sumallSotienNhapKho += parseFloat(obj.sotien);
+        });
+
+        setstateCostBuy(sumallSotienNhapKho);
+      } else {
+        let sumallSotienNhapKho = 0;
+        // setstateDoanhthu(JSON.parse(resolvedResult));
+        JSON.parse(objBranch).forEach((obj) => {
+          sumallSotienNhapKho += parseFloat(obj.sotien);
+        });
+
+        setstateCostBuy(sumallSotienNhapKho);
+      }
+    }
+  };
   const fetchingStore = async () => {
     {
       const objBranch = Get_all_Store();
@@ -223,6 +279,11 @@ const Dashboard = () => {
       newDate.getMonth()
     )}`;
     await fetchingdoanhthu(statechinhanh, formattedDate);
+    await fetchingCost(statechinhanh, formattedDate);
+    await fetchingGetAllDEBTOR_by_STOREID_year_month(
+      statechinhanh,
+      formattedDate
+    );
   };
 
   const formattedDate = `${currentDate.getFullYear()}-${getMonthNameInVietnamese(
@@ -295,14 +356,25 @@ const Dashboard = () => {
 
   const fetchingapi = async () => {
     await checkAccess();
-    await fetchingDebtor();
+    // await fetchingDebtor();
     await fetchingStore();
     await fetchingnoti();
     await fetchingdoanhthu(chinhanhdau, formattedDate);
+    await fetchingCost(chinhanhdau, formattedDate);
+    await fetchingGetAllDEBTOR_by_STOREID_year_month(
+      chinhanhdau,
+      formattedDate
+    );
     setStatechinhanh(chinhanhdau);
   };
   const handle_getAllDoanhthu = async (e) => {
     await fetchingdoanhthu(e.target.value, formattedDate);
+    await fetchingCost(e.target.value, formattedDate);
+    await fetchingGetAllDEBTOR_by_STOREID_year_month(
+      e.target.value,
+      formattedDate
+    );
+
     setStatechinhanh(e.target.value);
   };
   const findmaxdoanhthu = () => {
@@ -334,6 +406,7 @@ const Dashboard = () => {
       {stateCheckaccess ? (
         <Box m="20px">
           {/* HEADER */}
+
           <Box
             display="flex"
             justifyContent="space-between"
@@ -359,6 +432,7 @@ const Dashboard = () => {
           </Button>
         </Box> */}
           </Box>
+
           <Box mb="20px">
             <div style={{ marginLeft: "-.75%" }} className="container">
               <h3>{i18n.t("CN")}</h3>
@@ -411,6 +485,7 @@ const Dashboard = () => {
               </Button>
             </div>
           </Box>
+
           {/* GRID & CHARTS */}
           <Box
             display="grid"
@@ -471,7 +546,7 @@ const Dashboard = () => {
             >
               <StatBox
                 title={statesotienNhap}
-                subtitle="Tổng số tiền lợi nhuận nhập kho"
+                subtitle={i18n.t("TSTLN")}
                 progress="0.80"
                 increase="+43%"
                 icon={
@@ -488,40 +563,19 @@ const Dashboard = () => {
               alignItems="center"
               justifyContent="center"
             >
-              <div
-                style={{
-                  display: "grid",
-                  marginTop: "3%",
-                  height: "100%",
-                  width: "100%",
-                }}
-              >
-                <textarea
-                  ref={textAreaRef}
-                  value={textAreaValue}
-                  rows={10}
-                  readOnly
-                  style={{
-                    fontSize: ".9rem",
-                    fontStyle: "oblique",
-                    fontWeight: "",
-                    color: "white",
-                    backgroundColor: "#1f2a40",
-                  }}
-                />
-                <label>
-                  <input
-                    type="text"
-                    value={inputValue}
-                    onChange={handleInputChange}
+              <StatBox
+                title={statetCostBuy}
+                subtitle={i18n.t("CostBuy")}
+                progress="0.80"
+                increase="+43%"
+                icon={
+                  <ShoppingBasketIcon
+                    sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
                   />
-
-                  <Button color="success" onClick={handleButtonClick}>
-                    <SendIcon />
-                  </Button>
-                </label>
-              </div>
+                }
+              />
             </Box>
+
             {/* ROW 2 */}
             <Box
               gridColumn="span 8"
@@ -611,10 +665,12 @@ const Dashboard = () => {
                         {transaction.id}
                       </Typography>
                       <Typography color={colors.grey[100]}>
-                        Con nợ: {transaction.Debtor_BranchID}
+                        {i18n.t("CONNO")}:{" "}
+                        {converToName[transaction.Debtor_BranchID]}
                       </Typography>
                       <Typography color={colors.grey[100]}>
-                        Chủ nợ: {transaction.Owner_BranchID}
+                        {i18n.t("CHUNO_CN")}:{" "}
+                        {converToName[transaction.Owner_BranchID]}
                       </Typography>
                     </Box>
                     <Box>
@@ -641,65 +697,91 @@ const Dashboard = () => {
             </Box>
 
             {/* ROW 3 */}
-            {/* <Box
-          gridColumn="span 4"
-          gridRow="span 2"
-          backgroundColor={colors.primary[400]}
-          p="30px"
-        >
-          <Typography variant="h5" fontWeight="600">
-            Campaign
-          </Typography>
-          <Box
-            display="flex"
-            flexDirection="column"
-            alignItems="center"
-            mt="25px"
-          >
-            <ProgressCircle size="125" />
-            <Typography
-              variant="h5"
-              color={colors.greenAccent[500]}
-              sx={{ mt: "15px" }}
+
+            <Box
+              gridColumn="span 4"
+              gridRow="span 2"
+              backgroundColor={colors.primary[400]}
+              alignItems="center"
+              justifyContent="center"
             >
-              $48,352 revenue generated
-            </Typography>
-            <Typography>Includes extra misc expenditures and costs</Typography>
-          </Box>
-        </Box>
-        <Box
-          gridColumn="span 4"
-          gridRow="span 2"
-          backgroundColor={colors.primary[400]}
-        >
-          <Typography
-            variant="h5"
-            fontWeight="600"
-            sx={{ padding: "30px 30px 0 30px" }}
-          >
-            Sales Quantity
-          </Typography>
-          <Box height="250px" mt="-20px">
-            <BarChart isDashboard={true} />
-          </Box>
-        </Box>
-        <Box
-          gridColumn="span 4"
-          gridRow="span 2"
-          backgroundColor={colors.primary[400]}
-          padding="30px"
-        >
-          <Typography
-            variant="h5"
-            fontWeight="600"
-            sx={{ marginBottom: "15px" }}
-          >
-            Geography Based Traffic
-          </Typography>
-          <Box height="200px">
-            <GeographyChart isDashboard={true} />
-          </Box>
-        </Box> */}
+              <Typography
+                variant="h5"
+                fontWeight="600"
+                color={colors.grey[100]}
+                p={1}
+                textAlign="center"
+              >
+                {i18n.t("Notice")}
+                <hr></hr>
+              </Typography>
+              <div
+                style={{
+                  display: "grid",
+                  width: "100%",
+                }}
+              >
+                <textarea
+                  ref={textAreaRef}
+                  value={textAreaValue}
+                  rows={9}
+                  readOnly
+                  style={{
+                    fontSize: ".9rem",
+                    fontStyle: "oblique",
+                    fontWeight: "",
+                    color: "white",
+                    border: "aliceblue",
+                    backgroundColor: "#1f2a40",
+                  }}
+                />
+                <label>
+                  <input
+                    type="text"
+                    value={inputValue}
+                    onChange={handleInputChange}
+                  />
+
+                  <Button color="success" onClick={handleButtonClick}>
+                    <SendIcon />
+                  </Button>
+                </label>
+              </div>
+            </Box>
+
+            {/* <Box
+              gridColumn="span 4"
+              gridRow="span 2"
+              backgroundColor={colors.primary[400]}
+            >
+              <Typography
+                variant="h5"
+                fontWeight="600"
+                sx={{ padding: "30px 30px 0 30px" }}
+              >
+                Sales Quantity
+              </Typography>
+              <Box height="250px" mt="-20px">
+                <BarChart isDashboard={true} />
+              </Box>
+            </Box> */}
+            {/* <Box
+              gridColumn="span 4"
+              gridRow="span 2"
+              backgroundColor={colors.primary[400]}
+              padding="30px"
+            >
+              <Typography
+                variant="h5"
+                fontWeight="600"
+                sx={{ marginBottom: "15px" }}
+              >
+                Geography Based Traffic
+              </Typography>
+              <Box height="200px">
+                <GeographyChart isDashboard={true} />
+              </Box>
+            </Box> */}
           </Box>
         </Box>
       ) : (

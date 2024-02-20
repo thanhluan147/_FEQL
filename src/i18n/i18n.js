@@ -20,6 +20,8 @@ i18n.use(initReactI18next).init({
         HV: "Hành vi",
         NK: "Nhập kho",
         XK: "Xuất kho",
+        TKCT: "Tồn kho công ty",
+        TSTLN: "Tổng số tiền lợi nhuận nhập kho",
         //BUTTON
         BTN_XACNHAN: "Xác nhận",
         BTN_DONG: "Đóng",
@@ -203,10 +205,19 @@ i18n.use(initReactI18next).init({
         TONGQUAN: "Tổng quan doanh thu",
         TONGQUANNO: "Tổng quan nợ",
         THOIDIEMNO: "Thời điểm nợ",
+        SLDC: "Số lượng điều chỉnh",
+        clickdouble: "Bấm 2 lần vào ảnh sẽ phóng to ảnh ở đây....",
+        CostBuy: "Số tiền đã mua",
+        Notice: "Thông báo",
       },
     },
     ko: {
       translation: {
+        Notice: "알림",
+        CostBuy: "사용된 금액",
+        clickdouble: "이미지를 두 번 클릭하면 이미지가 여기로 확대됩니다",
+        SLDC: "조절 수량",
+        TKCT: "회사 재고",
         QLNV: "인사 관리",
         QLCNHANH: "지점 관리",
         QLK: "창고 관리",
@@ -392,7 +403,7 @@ i18n.use(initReactI18next).init({
 
         //Doashboard
         TITLEDOASHBOARD: "대시 보드",
-
+        TSTLN: "창고 입고 이익 총액",
         DESDOASHBOARD: "대시 보드에 오신 것을 환영합니다",
         TONGDOANHTHU: "총 매출",
         SOTIENLOINHUAN: "순이익 금액",

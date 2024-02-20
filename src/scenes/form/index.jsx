@@ -9,6 +9,7 @@ import {
 } from "@mui/material";
 import { Formik } from "formik";
 import * as yup from "yup";
+import React from "react";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import Header from "../../components/Header";
 import "./style.css";
@@ -32,7 +33,10 @@ const Form = () => {
   useTranslation();
   const [stateID, setstateID] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-
+  const [selectionModel, setSelectionModel] = React.useState([]);
+  const [stateupdatesoluong, setstateupdatesoluong] = useState({
+    usoluong: 0,
+  });
   const formatDate = (event) => {
     // Kiểm tra định dạng
     // if (!/^\d{4}-\d{2}-\d{2}$/.test(inputDate)) {
@@ -46,7 +50,9 @@ const Form = () => {
       [event.target.name]: event.target.value,
     });
   };
-
+  const handleSelectionModelChange = (newSelectionModel) => {
+    setSelectionModel(newSelectionModel);
+  };
   const Columnsv = [
     { field: "id", headerName: `${i18n.t("MASP_P")}`, flex: 0.5 },
 
@@ -227,6 +233,33 @@ const Form = () => {
       ...statePhieu,
       [event.target.name]: event.target.value,
     });
+  };
+  const onchangeupdatesoluong = (event) => {
+    setstateupdatesoluong({
+      ...stateupdatesoluong,
+      [event.target.name]: event.target.value,
+    });
+  };
+  const handleEditProduct = (productId) => {
+    const checksoluongrow = stateProduct.filter(
+      (item) => item.id === productId
+    );
+    if (
+      checksoluongrow[0].soluong < stateupdatesoluong.usoluong ||
+      stateupdatesoluong.usoluong < 0
+    ) {
+      alert("Số lượng nhập có giá trị lớn hơn số lượng đang có hoặc nhỏ hơn 0");
+      return;
+    }
+    const updatedRows = stateProduct.map((row) =>
+      row.id === productId
+        ? { ...row, soluong: stateupdatesoluong.usoluong }
+        : row
+    );
+    setstateupdatesoluong({
+      usoluong: 0,
+    });
+    setStateProduct(updatedRows);
   };
   const showAlert = async () => {
     try {
@@ -426,6 +459,24 @@ const Form = () => {
   const handleFormSubmit = (values) => {
     console.log(values);
   };
+  const handleGetSelectedData = () => {
+    const selectedData = selectionModel.map((selectedId) => {
+      return stateProductview.find((row) => row.id === selectedId);
+    });
+    // Đồng thời thay đổi giá trị sotien thành 0 trong selectedData
+    const updatedSelectedData = selectedData.map((selectedItem) => {
+      // Kiểm tra xem có selectedItem không trả về undefined
+      if (selectedItem) {
+        // Tạo một bản sao của đối tượng để không ảnh hưởng đến stateProductfetch
+        const updatedItem = { ...selectedItem, behavior: "ADMIN ADD" };
+        return updatedItem;
+      }
+      return selectedItem; // Trả về nguyên bản nếu không tìm thấy đối tượng
+    });
+    setStateProduct(updatedSelectedData);
+    setSelectionModel([]);
+    // selectedData là mảng chứa dữ liệu của các hàng được chọn
+  };
   const convertoBase64 = (e) => {
     const file = e.target.files[0];
 
@@ -559,11 +610,21 @@ const Form = () => {
                 </FormControl>
               </Box>
               <div className="table-container">
+                <label htmlFor="usoluong">*{i18n.t("SLDC")}</label>
+                <br></br>
+                <input
+                  placeholder="Số lượng"
+                  onChange={onchangeupdatesoluong}
+                  value={stateupdatesoluong.usoluong}
+                  name="usoluong"
+                  type="number"
+                ></input>
                 {isshowErrorTable ? (
                   <span style={{ color: "red" }}>{i18n.t("ERROR_DULIEU")}</span>
                 ) : (
                   ""
                 )}
+
                 <table className="custom-table">
                   <thead>
                     <tr>
@@ -601,6 +662,13 @@ const Form = () => {
                             class="bn632-hover bn28"
                           >
                             Xóa
+                          </button>
+                          <button
+                            style={{ backgroundColor: "green" }}
+                            class="bn632-hover bn2"
+                            onClick={() => handleEditProduct(item.id)}
+                          >
+                            Điều chỉnh
                           </button>
                         </th>
                       </tr>
@@ -736,53 +804,63 @@ const Form = () => {
           )}
         </Formik>
       </Box>
-      <Box
-        m="40px 0 0 0"
-        height="75vh"
-        sx={{
-          "& .MuiDataGrid-root": {
-            border: "none",
-          },
-          "& .MuiDataGrid-cell": {
-            borderBottom: "none",
-          },
-          "& .name-column--cell": {
-            color: colors.greenAccent[300],
-          },
-          "& .MuiDataGrid-columnHeaders": {
-            backgroundColor: colors.blueAccent[700],
-            borderBottom: "none",
-          },
-          "& .MuiDataGrid-virtualScroller": {
-            backgroundColor: colors.primary[400],
-          },
-          "& .MuiDataGrid-footerContainer": {
-            borderTop: "none",
-            backgroundColor: colors.blueAccent[700],
-          },
-          "& .MuiCheckbox-root": {
-            color: `${colors.greenAccent[200]} !important`,
-          },
-          "& .MuiDataGrid-toolbarContainer .MuiButton-text": {
-            color: `${colors.grey[100]} !important`,
-          },
-        }}
-      >
-        <DataGrid
-          checkboxSelection
-          editMode="row"
-          rows={stateProductview}
-          columns={Columnsv}
-          pageSize={10}
-          // components={{
-          //   Toolbar: () => (
-          //     <GridToolbar>
-          //       <GridToolbarExport onClick={exportToExcel} />
-          //     </GridToolbar>
-          //   ),
-          // }}
-        />
-      </Box>
+      <div style={{ padding: "20px" }}>
+        <h3>{i18n.t("TKCT")}</h3>
+        <Box
+          m="40px 0 0 0"
+          height="75vh"
+          sx={{
+            "& .MuiDataGrid-root": {
+              border: "none",
+            },
+            "& .MuiDataGrid-cell": {
+              borderBottom: "none",
+            },
+            "& .name-column--cell": {
+              color: colors.greenAccent[300],
+            },
+            "& .MuiDataGrid-columnHeaders": {
+              backgroundColor: colors.blueAccent[700],
+              borderBottom: "none",
+            },
+            "& .MuiDataGrid-virtualScroller": {
+              backgroundColor: colors.primary[400],
+            },
+            "& .MuiDataGrid-footerContainer": {
+              borderTop: "none",
+              backgroundColor: colors.blueAccent[700],
+            },
+            "& .MuiCheckbox-root": {
+              color: `${colors.greenAccent[200]} !important`,
+            },
+            "& .MuiDataGrid-toolbarContainer .MuiButton-text": {
+              color: `${colors.grey[100]} !important`,
+            },
+          }}
+        >
+          <button onClick={handleGetSelectedData}>Get Selected Data</button>
+
+          <DataGrid
+            checkboxSelection
+            editMode="row"
+            components={{
+              Toolbar: GridToolbar,
+            }}
+            selectionModel={selectionModel}
+            onSelectionModelChange={handleSelectionModelChange}
+            rows={stateProductview}
+            columns={Columnsv}
+            pageSize={10}
+            // components={{
+            //   Toolbar: () => (
+            //     <GridToolbar>
+            //       <GridToolbarExport onClick={exportToExcel} />
+            //     </GridToolbar>
+            //   ),
+            // }}
+          />
+        </Box>
+      </div>
     </>
   );
 };

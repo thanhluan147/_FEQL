@@ -881,6 +881,8 @@ const Form = () => {
               </FormControl>
             </Box>
             <div className="table-container">
+              <label htmlFor="usoluong">*{i18n.t("SLDC")}</label>
+              <br></br>
               <input
                 placeholder="Số lượng"
                 onChange={onchangeupdatesoluong}

@@ -10,7 +10,7 @@ import Header from "../../components/Header";
 import styled from "styled-components";
 import { GridToolbar } from "@mui/x-data-grid";
 import React from "react";
-
+import { useRef } from "react";
 import {
   Get_all_branch_By_userid,
   Get_all_User_By_branchID,
@@ -31,6 +31,9 @@ const Team = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const [isError, setisError] = useState(false);
+  const [stateimage, setStateimg] = useState("");
+  const [stateViewimg, setstateViewimg] = useState("");
+  const draggedItem = useRef(null);
   const columns = [
     { field: "id", headerName: `CCCD`, editable: true },
     {
@@ -40,7 +43,15 @@ const Team = () => {
       cellClassName: "name-column--cell",
       editable: true,
     },
-
+    {
+      field: "picture",
+      headerName: `${i18n.t("HINHANH_P")}` + " CCCD",
+      flex: 1,
+      width: 130,
+      renderCell: ImageCell,
+      headerAlign: "left",
+      align: "left",
+    },
     {
       field: "phone",
       headerName: `${i18n.t("SDT_TEAM")}`,
@@ -103,6 +114,27 @@ const Team = () => {
     const formattedDateString = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
     return <span>{formattedDateString}</span>;
   }
+  function ImageCell(params) {
+    return (
+      <>
+        <img
+          src={params.value}
+          onDoubleClick={clickdoublegetimg}
+          alt="Image"
+          style={{
+            width: "60%",
+            height: "auto",
+            maxWidth: "100%",
+            maxHeight: "100%",
+            cursor: "pointer",
+          }}
+        />
+      </>
+    );
+  }
+  const clickdoublegetimg = (e) => {
+    setstateViewimg(e.target.src);
+  };
   const handleSaveClick = async () => {
     try {
       const selectedRows = stateStaff.filter((row) =>
@@ -239,7 +271,24 @@ const Team = () => {
   useEffect(() => {
     fetchingapi();
   }, []);
-
+  const convertoBase64 = (e) => {
+    const render = new FileReader();
+    render.readAsDataURL(e.target.files[0]);
+    render.onload = () => {
+      setAddStaffForm({
+        ...addStaffForm,
+        picture: render.result,
+      });
+      setEditStaffForm({
+        ...EditStaffForm,
+        picture: render.result,
+      });
+      setStateimg(render.result);
+    };
+    render.onerror = (error) => {
+      console.log("error" + error);
+    };
+  };
   const [EditStaffForm, setEditStaffForm] = useState({
     name: "",
     phone: "",
@@ -248,12 +297,14 @@ const Team = () => {
     AccountBank: "",
     id: "",
     idnew: "",
+    picture: "",
   });
   const editstaff = async () => {
     const check = await HandleEditStaff(EditStaffForm);
     await fetchingGettAllStaft_by_branchID(statechinhanh);
-    console.log("check " + check);
+
     alert("Update Success");
+    setStateimg("");
   };
 
   const handleEdit = () => {
@@ -272,7 +323,9 @@ const Team = () => {
       id: selectedRows[0].id,
       idnew: selectedRows[0].id,
       AccountBank: selectedRows[0].AccountBank,
+      picture: selectedRows[0].picture,
     });
+    setStateimg(selectedRows[0].picture);
     // Thực hiện xử lý theo nhu cầu của bạn
   };
   const addStaff = async () => {
@@ -306,10 +359,14 @@ const Team = () => {
         Role: "",
         branchID: "",
         id: "",
+        AccountBank: "",
         ngayvao: "",
+        picture: "",
       });
+      setStateimg("");
     }
   };
+
   const [addStaffForm, setAddStaffForm] = useState({
     name: "",
     phone: "",
@@ -318,9 +375,11 @@ const Team = () => {
     id: "",
     ngayvao: "",
     AccountBank: "",
+    picture: "",
   });
   const onChangeStaffForm = (event) => {
     setisError(false);
+    console.log("event.target.value " + event.target.value);
     setAddStaffForm({
       ...addStaffForm,
       [event.target.name]: event.target.value,
@@ -405,6 +464,20 @@ const Team = () => {
                   value={EditStaffForm.idnew}
                   onChange={onChangeEditStaffForm}
                 ></input>
+                <label htmlFor="picture">{i18n.t("HINHANH_P")}</label>
+                <input
+                  accept="image/*"
+                  onChange={convertoBase64}
+                  type="file"
+                  id="picture"
+                  name="picture"
+                  onFocus={convertoBase64}
+                ></input>
+                {stateimage ? (
+                  <img width={200} height={100} src={stateimage}></img>
+                ) : (
+                  ""
+                )}
                 <label htmlFor="name" name="name">
                   {i18n.t("TNV_TEAM")}
                 </label>
@@ -496,13 +569,27 @@ const Team = () => {
                   ""
                 )}
 
-                <label htmlFor="id"> {i18n.t("MNV_TEAM")}</label>
+                <label htmlFor="id"> {i18n.t("MNV_TEAM")} OR CCCD</label>
                 <input
                   type="text"
                   name="id"
                   value={addStaffForm.id}
                   onChange={onChangeStaffForm}
                 ></input>
+                <label htmlFor="picture">{i18n.t("HINHANH_P")} CCCD</label>
+                <input
+                  accept="image/*"
+                  onChange={convertoBase64}
+                  type="file"
+                  id="picture"
+                  name="picture"
+                  onFocus={convertoBase64}
+                ></input>
+                {stateimage ? (
+                  <img width={200} height={100} src={stateimage}></img>
+                ) : (
+                  ""
+                )}
                 <label htmlFor="name"> {i18n.t("TNV_TEAM")}</label>
                 <input
                   type="text"
@@ -578,6 +665,21 @@ const Team = () => {
                 </React.Fragment>
               ))}
           </select>
+          <br></br>
+          <div style={{ position: "relative", top: "-176%" }}>
+            <div className="BoxIMG drop-target">
+              {" "}
+              {stateViewimg ? (
+                <img
+                  src={stateViewimg}
+                  alt="Image"
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              ) : (
+                `${i18n.t("clickdouble")}`
+              )}
+            </div>
+          </div>
         </div>
       </div>
       <Box
@@ -614,6 +716,7 @@ const Team = () => {
       >
         <button onClick={handleExportExcel}>Export to Excel</button>
         <DataGrid
+          zIndex={10}
           checkboxSelection
           editMode="row"
           selectionModel={selectionModel}

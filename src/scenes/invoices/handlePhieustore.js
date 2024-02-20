@@ -54,8 +54,6 @@ export const Get_all_Phieu_Store_By_StoreID = async (req) => {
 };
 
 export const Get_all_Phieu_Store_By_Year_Month = async (req) => {
-  console.log("check req " + JSON.stringify(req));
-  console.log("respod ");
   const respod = await Axios.post(
     `${Url_BackEnd}/phieustore/getPhieuStoreByYearMonth`,
     {
@@ -70,7 +68,26 @@ export const Get_all_Phieu_Store_By_Year_Month = async (req) => {
       },
     }
   );
-  console.log(" respod.data.All_phieustore " + respod.data.All_phieustore);
+
+  return JSON.stringify(respod.data.All_phieustore);
+};
+
+export const Get_all_COST_Phieu_Store_By_Year_Month = async (req) => {
+  const respod = await Axios.post(
+    `${Url_BackEnd}/phieustore/getPhieuGiamuaAccept`,
+    {
+      storeID: req.storeID,
+      thoidiem: req.thoidiem,
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        // Thêm các header khác nếu cần
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }
+  );
+  
 
   return JSON.stringify(respod.data.All_phieustore);
 };

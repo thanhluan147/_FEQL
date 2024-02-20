@@ -602,10 +602,10 @@ const Invoices = () => {
     if (check instanceof Promise) {
       // Nếu là promise, chờ promise hoàn thành rồi mới cập nhật state
       const resolvedResult = await check;
-      console.log("check " + resolvedResult);
+    
       setStatePhieuStore(JSON.parse(resolvedResult));
     } else {
-      console.log("check " + check);
+     
       setStatePhieuStore(JSON.parse(check));
     }
   };

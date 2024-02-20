@@ -73,5 +73,29 @@
     margin: 0 auto;
   }
 
+  .temp{
+    cursor: pointer;
+  }
+  /* .temp:hover{
+
+    position: absolute;
+
   
+    width: 100%;
+    height: auto;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  background-color: #e74c3c;
+
+  } */
   
+  .BoxIMG{
+    width: 280px;
+    position: absolute;
+    height: 164px;
+    background-color: #45a049;
+    left: 40%;
+    top:-49%;
+    border-style: dotted;
+  }

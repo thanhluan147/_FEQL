@@ -1,0 +1,9 @@
+.BoxIMG{
+    width: 280px;
+    position: absolute;
+    height: 164px;
+    background-color: #45a049;
+    left: 40%;
+    
+    border-style: dotted;
+  }

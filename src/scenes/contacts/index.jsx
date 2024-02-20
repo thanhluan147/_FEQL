@@ -17,6 +17,7 @@ import i18n from "../../i18n/i18n";
 import { useTranslation } from "react-i18next";
 import { saveAs } from "file-saver";
 import * as XLSX from "xlsx";
+import "./style.css";
 const Contacts = () => {
   useTranslation();
   const [stateStore, setStateStore] = useState([]);
@@ -25,6 +26,7 @@ const Contacts = () => {
   const [selectionModel, setSelectionModel] = React.useState([]);
   const [stateimage, setStateimg] = useState("");
   const [stateaccess, setstateaccess] = useState(false);
+  const [stateViewimg, setstateViewimg] = useState("");
   const [stateFormProduct, setStateFormProduct] = useState({
     id: "",
     name: "",
@@ -115,12 +117,14 @@ const Contacts = () => {
     return (
       <img
         src={params.value}
+        onDoubleClick={clickdoublegetimg}
         alt="Image"
         style={{
           width: "60%",
           height: "auto",
           maxWidth: "100%",
           maxHeight: "100%",
+          cursor: "pointer",
         }}
       />
     );
@@ -148,6 +152,9 @@ const Contacts = () => {
       </>
     );
   }
+  const clickdoublegetimg = (e) => {
+    setstateViewimg(e.target.src);
+  };
   const onChangeAddProductForm = (event) => {
     // Tách phần số từ chuỗi 'id' và chuyển đổi thành số nguyên
     const arrayOfNumbers = stateProduct.map((obj) =>
@@ -636,6 +643,21 @@ const Contacts = () => {
                 </React.Fragment>
               ))}
           </select>
+        </div>
+        <br></br>
+        <div style={{ position: "relative", top: "-176%", left: "-49%" }}>
+          <div className="BoxIMG drop-target">
+            {" "}
+            {stateViewimg ? (
+              <img
+                src={stateViewimg}
+                alt="Image"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            ) : (
+              `${i18n.t("clickdouble")}`
+            )}
+          </div>
         </div>
       </div>
       <Box
