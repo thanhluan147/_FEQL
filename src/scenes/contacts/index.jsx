@@ -27,6 +27,7 @@ const Contacts = () => {
   const [stateimage, setStateimg] = useState("");
   const [stateaccess, setstateaccess] = useState(false);
   const [stateViewimg, setstateViewimg] = useState("");
+  const [isloading, setIsloading] = useState(false);
   const [stateFormProduct, setStateFormProduct] = useState({
     id: "",
     name: "",
@@ -338,11 +339,21 @@ const Contacts = () => {
     XLSX.writeFile(wb, "Product_Data.xlsx");
   };
   const handleSaveClick = async () => {
-    const selectedRows = stateProduct.filter((row) =>
-      selectionModel.includes(row.id)
-    );
-    await DeleteProduct(selectedRows);
-    fetchingGettAllProduct_by_storeID(statechinhanh);
+    try {
+      setIsloading(true);
+      const selectedRows = stateProduct.filter((row) =>
+        selectionModel.includes(row.id)
+      );
+      const check = await DeleteProduct(selectedRows);
+
+      if (JSON.parse(check).success) {
+        alert("Deleted success");
+        setIsloading(false);
+        fetchingGettAllProduct_by_storeID(statechinhanh);
+      }
+    } catch (error) {
+      console.log(error);
+    }
 
     // Thực hiện xử lý theo nhu cầu của bạn
   };
@@ -379,7 +390,9 @@ const Contacts = () => {
     await fetchingGettAllProduct_by_storeID(statechinhanh);
   };
   useEffect(() => {
-    fetchingapi();
+    try {
+      fetchingapi();
+    } catch (error) {}
   }, []);
   const handleExportClick = () => {
     exportToExcel();
@@ -409,14 +422,24 @@ const Contacts = () => {
         >
           {i18n.t("THEMSP_P")}
         </button>
-        <button
-          type="button"
-          class="btn btn-primary"
-          style={{ marginLeft: "1%" }}
-          onClick={handleSaveClick}
-        >
-          {i18n.t("XOASP_P")}
-        </button>
+        {!isloading ? (
+          <button
+            type="button"
+            class="btn btn-primary"
+            style={{ marginLeft: "1%" }}
+            onClick={handleSaveClick}
+          >
+            {i18n.t("XOASP_P")}
+          </button>
+        ) : (
+          <button
+            style={{ marginLeft: "1%", backgroundColor: "grey" }}
+            class="buttonload btn btn-primary"
+          >
+            <i class="fa fa-spinner fa-spin"></i> Deleting..
+          </button>
+        )}
+
         <button
           type="button"
           style={{ marginLeft: "1%" }}

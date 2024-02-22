@@ -143,6 +143,24 @@ const Invoices = () => {
   let checkaccess = false;
   let chinhanhdau = "";
   const showAlert = async () => {
+    console.log("selectionModel " + selectionModel);
+    const hasAcceptedOrCancelled = selectionModel.some((selectedId) => {
+      const selectedRow = statePhieuStore.find((row) => row.id === selectedId);
+      return (
+        selectedRow &&
+        selectedRow.status === "PENDING" &&
+        selectedRow.loaiphieu === "NK"
+        //Loại phiếu trigger nhập từ kho
+        // ||
+        //   selectedRow.loaiphieu === "NK"
+      );
+    });
+
+    if (hasAcceptedOrCancelled) {
+      // Một trong những phần tử có status là "ACCEPT" hoặc "CANCEL"
+      alert("Các đơn này cần phải được xuất kho và lập hóa đơn !!");
+      return;
+    }
     confirmAlert({
       title: `${i18n.t("TITLE_ALERT_NP")}`,
       message: `${i18n.t("DES_ALERT_NP")}`,
@@ -191,7 +209,7 @@ const Invoices = () => {
                       const createproduct = {
                         id: "POR" + (lenghtState + index),
                         name: obj.name,
-                        xuatxu: "...",
+                        xuatxu: obj.xuatxu,
                         picture: obj.picture,
                         loai: obj.loai,
                         soluong: obj.soluong,
@@ -222,36 +240,35 @@ const Invoices = () => {
                   maxNumber = 0;
                 }
                 lenghtState = maxNumber + 1;
-              }
+                selectionModel.forEach(async (obj) => {
+                  const updateMoney = statePhieuStore.filter(
+                    (item) => item.id === obj
+                  );
 
-              selectionModel.forEach(async (obj) => {
-                const updateMoney = statePhieuStore.filter(
-                  (item) => item.id === obj
-                );
+                  updateMoney.forEach(async (obj) => {
+                    const a = obj.arrayProduct;
 
-                updateMoney.forEach(async (obj) => {
-                  const a = obj.arrayProduct;
-
-                  const createProductPromises = a.map(async (obj, index) => {
-                    const createproduct = {
-                      id: "POR" + lenghtState,
-                      name: obj.name,
-                      xuatxu: "...",
-                      picture: obj.picture,
-                      loai: obj.loai,
-                      soluong: obj.soluong,
-                      status: obj.status,
-                      sotien: obj.sotien,
-                      StoreID: obj.StoreID,
-                      behavior: obj.behavior,
-                    };
-                    lenghtState = lenghtState + 1;
-                    // Trả về promise của createProduct
-                    return createProduct(createproduct);
+                    const createProductPromises = a.map(async (obj, index) => {
+                      const createproduct = {
+                        id: "POR" + lenghtState,
+                        name: obj.name,
+                        xuatxu: obj.xuatxu,
+                        picture: obj.picture,
+                        loai: obj.loai,
+                        soluong: obj.soluong,
+                        status: obj.status,
+                        sotien: obj.sotien,
+                        StoreID: obj.StoreID,
+                        behavior: obj.behavior,
+                      };
+                      lenghtState = lenghtState + 1;
+                      // Trả về promise của createProduct
+                      return createProduct(createproduct);
+                    });
+                    await Promise.all(createProductPromises);
                   });
-                  await Promise.all(createProductPromises);
                 });
-              });
+              }
 
               const updateDataSOTIENTHUC = async (obj) => {
                 if (parseFloat(obj.sotien) > 0) {
@@ -296,7 +313,7 @@ const Invoices = () => {
   const showAlertHuy = async () => {
     confirmAlert({
       title: `${i18n.t("TITLE_ALERT_NP")}`,
-      message: `${i18n.t("DES_ALERT_NP")}`,
+      message: `${i18n.t("DES_ALERT_NP_H")}`,
       buttons: [
         {
           label: "Yes",
@@ -324,11 +341,11 @@ const Invoices = () => {
       ],
     });
   };
-  const CustomPopup = ({ show, handleClose, content }) => {
+  const CustomPopup = ({ show, handleClose, content, money }) => {
     return (
       <Modal show={show} onHide={handleClose} centered size="lg">
         <Modal.Header closeButton>
-          <Modal.Title>Popup Title</Modal.Title>
+          <Modal.Title style={{ color: "black" }}></Modal.Title>
         </Modal.Header>
         <Modal.Body
           style={{ maxWidth: "100%", overflow: "scroll", maxHeight: "500px" }}
@@ -342,7 +359,8 @@ const Invoices = () => {
                   <th>{i18n.t("SOLUONG_P")}</th>
 
                   <th>{i18n.t("HINHANH_P")}</th>
-                  <th>{i18n.t("SOTIEN_P")}</th>
+                  <th>{i18n.t("SOTIEN_NP")}</th>
+                  <th>{i18n.t("XUATSU_X")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -360,6 +378,7 @@ const Invoices = () => {
                       )}
                     </td>
                     <th>{item.sotien}</th>
+                    <th>{item.xuatxu}</th>
                   </tr>
                 ))}
               </tbody>
@@ -389,6 +408,12 @@ const Invoices = () => {
       headerName: `${i18n.t("TINHTRANG_NP")}`,
       flex: 1,
       renderCell: StatusObjectCell,
+    },
+    {
+      field: "loaiphieu",
+      headerName: `${i18n.t("LOAIPHIEU_NHAP")}`,
+      flex: 1,
+      renderCell: StatusObjectCellLoai,
     },
     {
       field: "sotien",
@@ -504,10 +529,60 @@ const Invoices = () => {
       );
     }
   }
+  function StatusObjectCellLoai(params) {
+    const arrayObject = params.value;
+    if (arrayObject === "NK") {
+      return (
+        <span
+          style={{
+            backgroundColor: "#4CAF50",
+            width: "100%",
+            textAlign: "center",
+            borderRadius: "5%",
+            fontSize: "1.1rem",
+          }}
+        >
+          {arrayObject}
+        </span>
+      );
+    }
+    if (arrayObject === "NN") {
+      return (
+        <span
+          style={{
+            backgroundColor: "#a52a2ad9",
+            width: "100%",
+            textAlign: "center",
+            borderRadius: "5%",
+            fontSize: "1.1rem",
+          }}
+        >
+          {arrayObject}
+        </span>
+      );
+    } else {
+      return (
+        <span
+          style={{
+            backgroundColor: "orange",
+            width: "100%",
+            textAlign: "center",
+            borderRadius: "5%",
+            fontSize: "1.1rem",
+          }}
+        >
+          {arrayObject}
+        </span>
+      );
+    }
+  }
   function ArrayObjectCell(params) {
     const arrayObject = params.value;
     const numberOfItems = Array.isArray(arrayObject) ? arrayObject.length : 0;
-
+    let sotien = 0;
+    arrayObject.forEach((element) => {
+      sotien += parseFloat(element.sotien);
+    });
     return (
       <>
         <div>
@@ -602,10 +677,9 @@ const Invoices = () => {
     if (check instanceof Promise) {
       // Nếu là promise, chờ promise hoàn thành rồi mới cập nhật state
       const resolvedResult = await check;
-    
+
       setStatePhieuStore(JSON.parse(resolvedResult));
     } else {
-     
       setStatePhieuStore(JSON.parse(check));
     }
   };
@@ -624,28 +698,14 @@ const Invoices = () => {
     fetchingapi();
   }, []);
   const handleSelectionModelChange = (newSelectionModel) => {
-    // Lấy thông tin của các hàng được chọn
-    const selectedRows = newSelectionModel.map((selectedId) =>
-      statePhieuStore.find((row) => row.id === selectedId)
-    );
-
-    setSelectedRow(selectedRows);
-
-    // if (
-    //   newSelectionModel.some(
-    //     (selectedId) =>
-    //       statePhieuStore.find((row) => row.id === selectedId)?.status ===
-    //       "ACCEPT"
-    //   )
-    // ) {
-    //   return;
-    // }
-
     const hasAcceptedOrCancelled = newSelectionModel.some((selectedId) => {
       const selectedRow = statePhieuStore.find((row) => row.id === selectedId);
       return (
         selectedRow &&
         (selectedRow.status === "ACCEPT" || selectedRow.status === "CANCEL")
+        //Loại phiếu trigger nhập từ kho
+        // ||
+        //   selectedRow.loaiphieu === "NK"
       );
     });
 
@@ -653,6 +713,12 @@ const Invoices = () => {
       // Một trong những phần tử có status là "ACCEPT" hoặc "CANCEL"
       return;
     }
+    // Lấy thông tin của các hàng được chọn
+    const selectedRows = newSelectionModel.map((selectedId) =>
+      statePhieuStore.find((row) => row.id === selectedId)
+    );
+
+    setSelectedRow(selectedRows);
 
     setSelectionModel(newSelectionModel);
     // const updateMoney = statePhieuStore.filter(

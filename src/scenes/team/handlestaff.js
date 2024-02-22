@@ -12,6 +12,7 @@ export const HandleCreateStaff = async (req) => {
       ngayvao: req.ngayvao,
       AccountBank: req.AccountBank,
       picture: req.picture,
+      pictureTwo: req.pictureTwo,
     },
     {
       headers: {
@@ -37,6 +38,7 @@ export const HandleEditStaff = async (req) => {
       AccountBank: req.AccountBank,
       idnew: req.idnew,
       picture: req.picture,
+      pictureTwo: req.pictureTwo,
     },
     {
       headers: {

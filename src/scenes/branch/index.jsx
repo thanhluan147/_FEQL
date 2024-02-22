@@ -167,8 +167,10 @@ const BRACNH = () => {
     await fetchingBranch();
   };
   useEffect(() => {
-    checkAccess();
-    fetchingapi();
+    try {
+      checkAccess();
+      fetchingapi();
+    } catch (error) {}
   }, []);
   const rowsWithId = stateBranch.map((row, index) => ({
     id: index + 1,
@@ -307,7 +309,7 @@ const BRACNH = () => {
           components={{
             Toolbar: GridToolbar,
           }}
-          pageSize={10}
+          pageSize={15}
           rows={rowsWithId}
           columns={columns}
         />

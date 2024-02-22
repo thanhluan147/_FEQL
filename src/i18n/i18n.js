@@ -96,6 +96,7 @@ i18n.use(initReactI18next).init({
 
         TITLE_ALERT_NP: "Cập nhật tình trạng",
         DES_ALERT_NP: "Chuyển trạng thái sang chấp thuận?",
+        DES_ALERT_NP_H: "Chuyển trạng thái sang hủy yêu cầu?",
         CAPNHAT_NP: "Cập nhật thành công",
         CLICKNO_NP: "Bạn chọn không!",
 
@@ -130,13 +131,15 @@ i18n.use(initReactI18next).init({
         GIABAN_HD: "Giá bán",
         GIAMUA_HD: "Giá mua",
         NGAYLAP_HD: "Ngày lập hóa đơn",
-
+        //
+        HINHANHTRC: "Hình ảnh mặt trước",
+        HINHANHSAU: "Hình ảnh mặt sau",
         //DOANH THU
         CONNO: "Con nợ",
         SOTIENTRATUCONNO: "Số tiền trả từ con nợ",
         SOTIENDOANHTHU: "Số tiền doanh thu",
         DSNOXACNHANNHAPHANG: "Danh sách con nợ xác nhận nhập hàng",
-        TITLEDOANHTHU: "Doanh thu",
+        TITLEDOANHTHU: "DOANH THU",
         DESDOANHTHU: "Chi tiết doanh thu từng cửa hàng",
         MADT_DT: "Mã doanh thu",
         MAKHO_DT: "Mã kho",
@@ -213,6 +216,9 @@ i18n.use(initReactI18next).init({
     },
     ko: {
       translation: {
+        HINHANHTRC: "앞면 사진",
+        HINHANHSAU: "뒷면 사진",
+        DES_ALERT_NP_H: "요청 취소로 상태 변경",
         Notice: "알림",
         CostBuy: "사용된 금액",
         clickdouble: "이미지를 두 번 클릭하면 이미지가 여기로 확대됩니다",

@@ -32,7 +32,9 @@ const Team = () => {
   const colors = tokens(theme.palette.mode);
   const [isError, setisError] = useState(false);
   const [stateimage, setStateimg] = useState("");
+  const [stateimageTwo, setStateimgTwo] = useState("");
   const [stateViewimg, setstateViewimg] = useState("");
+  const [isloading, setIsloading] = useState(false);
   const draggedItem = useRef(null);
   const columns = [
     { field: "id", headerName: `CCCD`, editable: true },
@@ -45,7 +47,16 @@ const Team = () => {
     },
     {
       field: "picture",
-      headerName: `${i18n.t("HINHANH_P")}` + " CCCD",
+      headerName: `${i18n.t("HINHANHTRC")}` + " CCCD",
+      flex: 1,
+      width: 130,
+      renderCell: ImageCell,
+      headerAlign: "left",
+      align: "left",
+    },
+    {
+      field: "pictureTwo",
+      headerName: `${i18n.t("HINHANHSAU")}` + " CCCD",
       flex: 1,
       width: 130,
       renderCell: ImageCell,
@@ -137,10 +148,16 @@ const Team = () => {
   };
   const handleSaveClick = async () => {
     try {
+      setIsloading(true);
       const selectedRows = stateStaff.filter((row) =>
         selectionModel.includes(row.id)
       );
       const handledelted = await HandleDeletedStaff(selectedRows);
+      console.log("handledelted " + JSON.stringify(handledelted));
+      if (handledelted.success) {
+        setIsloading(false);
+        alert("Deleted Successfully !!!");
+      }
       fetchingGettAllStaft_by_branchID(statechinhanh);
     } catch (error) {
       console.log(error);
@@ -269,7 +286,9 @@ const Team = () => {
     setStatechinhanh(chinhanhdau);
   };
   useEffect(() => {
-    fetchingapi();
+    try {
+      fetchingapi();
+    } catch (error) {}
   }, []);
   const convertoBase64 = (e) => {
     const render = new FileReader();
@@ -289,6 +308,25 @@ const Team = () => {
       console.log("error" + error);
     };
   };
+
+  const convertoBase64PicTwo = (e) => {
+    const render = new FileReader();
+    render.readAsDataURL(e.target.files[0]);
+    render.onload = () => {
+      setAddStaffForm({
+        ...addStaffForm,
+        pictureTwo: render.result,
+      });
+      setEditStaffForm({
+        ...EditStaffForm,
+        pictureTwo: render.result,
+      });
+      setStateimgTwo(render.result);
+    };
+    render.onerror = (error) => {
+      console.log("error" + error);
+    };
+  };
   const [EditStaffForm, setEditStaffForm] = useState({
     name: "",
     phone: "",
@@ -298,6 +336,7 @@ const Team = () => {
     id: "",
     idnew: "",
     picture: "",
+    pictureTwo: "",
   });
   const editstaff = async () => {
     const check = await HandleEditStaff(EditStaffForm);
@@ -305,6 +344,7 @@ const Team = () => {
 
     alert("Update Success");
     setStateimg("");
+    setStateimgTwo("");
   };
 
   const handleEdit = () => {
@@ -324,8 +364,10 @@ const Team = () => {
       idnew: selectedRows[0].id,
       AccountBank: selectedRows[0].AccountBank,
       picture: selectedRows[0].picture,
+      pictureTwo: selectedRows[0].pictureTwo,
     });
     setStateimg(selectedRows[0].picture);
+    setStateimgTwo(selectedRows[0].pictureTwo);
     // Thực hiện xử lý theo nhu cầu của bạn
   };
   const addStaff = async () => {
@@ -362,8 +404,10 @@ const Team = () => {
         AccountBank: "",
         ngayvao: "",
         picture: "",
+        pictureTwo: "",
       });
       setStateimg("");
+      setStateimgTwo("");
     }
   };
 
@@ -376,6 +420,7 @@ const Team = () => {
     ngayvao: "",
     AccountBank: "",
     picture: "",
+    pictureTwo: "",
   });
   const onChangeStaffForm = (event) => {
     setisError(false);
@@ -406,14 +451,24 @@ const Team = () => {
         >
           {i18n.t("THEMNV")}
         </button>
-        <button
-          type="button"
-          class="btn btn-primary"
-          style={{ marginLeft: "1%" }}
-          onClick={handleSaveClick}
-        >
-          {i18n.t("XOANV")}
-        </button>
+        {!isloading ? (
+          <button
+            type="button"
+            class="btn btn-primary"
+            style={{ marginLeft: "1%" }}
+            onClick={handleSaveClick}
+          >
+            {i18n.t("XOANV")}
+          </button>
+        ) : (
+          <button
+            style={{ marginLeft: "1%", backgroundColor: "grey" }}
+            class="buttonload btn btn-primary"
+          >
+            <i class="fa fa-spinner fa-spin"></i> Deleting..
+          </button>
+        )}
+
         <button
           type="button"
           style={{ marginLeft: "1%" }}
@@ -464,7 +519,9 @@ const Team = () => {
                   value={EditStaffForm.idnew}
                   onChange={onChangeEditStaffForm}
                 ></input>
-                <label htmlFor="picture">{i18n.t("HINHANH_P")}</label>
+                <label htmlFor="picture">
+                  {i18n.t("HINHANH_P")} CCCD Mặt trước
+                </label>
                 <input
                   accept="image/*"
                   onChange={convertoBase64}
@@ -475,6 +532,22 @@ const Team = () => {
                 ></input>
                 {stateimage ? (
                   <img width={200} height={100} src={stateimage}></img>
+                ) : (
+                  ""
+                )}
+                <label htmlFor="pictureTwo">
+                  {i18n.t("HINHANH_P")} CCCD Mặt sau
+                </label>
+                <input
+                  accept="image/*"
+                  onChange={convertoBase64PicTwo}
+                  type="file"
+                  id="pictureTwo"
+                  name="pictureTwo"
+                  onFocus={convertoBase64PicTwo}
+                ></input>
+                {stateimageTwo ? (
+                  <img width={200} height={100} src={stateimageTwo}></img>
                 ) : (
                   ""
                 )}
@@ -568,7 +641,6 @@ const Team = () => {
                 ) : (
                   ""
                 )}
-
                 <label htmlFor="id"> {i18n.t("MNV_TEAM")} OR CCCD</label>
                 <input
                   type="text"
@@ -576,7 +648,9 @@ const Team = () => {
                   value={addStaffForm.id}
                   onChange={onChangeStaffForm}
                 ></input>
-                <label htmlFor="picture">{i18n.t("HINHANH_P")} CCCD</label>
+                <label htmlFor="picture">
+                  {i18n.t("HINHANH_P")} Mặt trước CCCD
+                </label>
                 <input
                   accept="image/*"
                   onChange={convertoBase64}
@@ -587,6 +661,23 @@ const Team = () => {
                 ></input>
                 {stateimage ? (
                   <img width={200} height={100} src={stateimage}></img>
+                ) : (
+                  ""
+                )}
+
+                <label htmlFor="pictureTwo">
+                  {i18n.t("HINHANH_P")} Mặt sau CCCD
+                </label>
+                <input
+                  accept="image/*"
+                  onChange={convertoBase64PicTwo}
+                  type="file"
+                  id="pictureTwo"
+                  name="pictureTwo"
+                  onFocus={convertoBase64PicTwo}
+                ></input>
+                {stateimageTwo ? (
+                  <img width={200} height={100} src={stateimageTwo}></img>
                 ) : (
                   ""
                 )}
@@ -715,6 +806,7 @@ const Team = () => {
         }}
       >
         <button onClick={handleExportExcel}>Export to Excel</button>
+
         <DataGrid
           zIndex={10}
           checkboxSelection

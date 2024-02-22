@@ -274,7 +274,24 @@ const DETAILS = () => {
       cellClassName: "name-column--cell",
       editable: true,
     },
-
+    {
+      field: "picture",
+      headerName: `${i18n.t("HINHANHTRC")}` + " CCCD",
+      flex: 1,
+      width: 130,
+      renderCell: ImageCell,
+      headerAlign: "left",
+      align: "left",
+    },
+    {
+      field: "pictureTwo",
+      headerName: `${i18n.t("HINHANHSAU")}` + " CCCD",
+      flex: 1,
+      width: 130,
+      renderCell: ImageCell,
+      headerAlign: "left",
+      align: "left",
+    },
     {
       field: "phone",
       headerName: `${i18n.t("SDT_TEAM")}`,
@@ -436,6 +453,13 @@ const DETAILS = () => {
       renderCell: StatusObjectCell,
     },
     {
+      field: "loaiphieu",
+      headerName: `${i18n.t("LOAIPHIEU_NHAP")}`,
+      flex: 1,
+      renderCell: StatusObjectCellLoai,
+    },
+
+    {
       field: "sotien",
       headerName: `${i18n.t("SOTIEN_NP")}`,
       renderCell: StatusMoney,
@@ -509,7 +533,53 @@ const DETAILS = () => {
     const formattedDateString = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
     return <span>{formattedDateString}</span>;
   }
-
+  function StatusObjectCellLoai(params) {
+    const arrayObject = params.value;
+    if (arrayObject === "NK") {
+      return (
+        <span
+          style={{
+            backgroundColor: "#4CAF50",
+            width: "100%",
+            textAlign: "center",
+            borderRadius: "5%",
+            fontSize: "1.1rem",
+          }}
+        >
+          {arrayObject}
+        </span>
+      );
+    }
+    if (arrayObject === "NN") {
+      return (
+        <span
+          style={{
+            backgroundColor: "#a52a2ad9",
+            width: "100%",
+            textAlign: "center",
+            borderRadius: "5%",
+            fontSize: "1.1rem",
+          }}
+        >
+          {arrayObject}
+        </span>
+      );
+    } else {
+      return (
+        <span
+          style={{
+            backgroundColor: "orange",
+            width: "100%",
+            textAlign: "center",
+            borderRadius: "5%",
+            fontSize: "1.1rem",
+          }}
+        >
+          {arrayObject}
+        </span>
+      );
+    }
+  }
   function StatusMoney(params) {
     const arrayObject = params.value;
 

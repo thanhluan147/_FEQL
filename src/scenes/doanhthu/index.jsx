@@ -48,7 +48,10 @@ const DOANHTHU = () => {
   );
   const [stateCheckAccess, setstateCheckAccess] = useState(false);
   const [stateHoadon, setStateHoadon] = useState([]);
-
+  const [stateTongtien, setStateTongtien] = useState({
+    tongdoanhthu: 0,
+    tongtienno: 0,
+  });
   const getMonthNameInVietnamese = (month) => {
     const monthNames = [
       "01",
@@ -477,13 +480,34 @@ const DOANHTHU = () => {
       thoidiem: y,
     };
     const check = await GET_ALL_DOANHTHU_By_storeID_date(fetch);
+    let sotienthucte = 0;
+    let sotienNo = 0;
     if (check instanceof Promise) {
       // Nếu là promise, chờ promise hoàn thành rồi mới cập nhật state
       const resolvedResult = await check;
 
       setStateHoadon(JSON.parse(resolvedResult));
+
+      resolvedResult.forEach((element) => {
+        sotienthucte += parseFloat(element.sotienThucte);
+        sotienNo += parseFloat(element.sotien);
+      });
+      setStateTongtien({
+        ...stateTongtien,
+        tongdoanhthu: sotienthucte,
+        tongtienno: sotienNo,
+      });
     } else {
       setStateHoadon(JSON.parse(check));
+      JSON.parse(check).forEach((element) => {
+        sotienthucte += parseFloat(element.sotienThucte);
+        sotienNo += parseFloat(element.sotien);
+      });
+      setStateTongtien({
+        ...stateTongtien,
+        tongdoanhthu: sotienthucte,
+        tongtienno: sotienNo,
+      });
     }
   };
 
@@ -497,8 +521,10 @@ const DOANHTHU = () => {
     setStatechinhanh(chinhanhdau);
   };
   useEffect(() => {
-    fetchingapi();
-    getlenghtID_Bill();
+    try {
+      fetchingapi();
+      getlenghtID_Bill();
+    } catch (error) {}
   }, []);
 
   const handleSelectionModelChange = (newSelectionModel) => {
@@ -551,7 +577,7 @@ const DOANHTHU = () => {
         subtitle={i18n.t("DESDOANHTHU")}
       />
 
-      <div style={{ marginLeft: "0px" }} className="container">
+      <div style={{ marginLeft: "-1%" }} className="container">
         <h3>{i18n.t("CN")}</h3>
         <select onChange={handle_getAllDOANHTHU} id="chinhanh">
           {stateStore &&
@@ -634,6 +660,23 @@ const DOANHTHU = () => {
           },
         }}
       >
+        <span>
+          *Tổng doanh thu :{" "}
+          <span style={{ color: "green", fontSize: "1.1rem" }}>
+            {" "}
+            {stateTongtien.tongdoanhthu}
+          </span>
+        </span>
+        <br></br>
+        <span>
+          *Tổng số tiền trả từ con nợ :
+          <span style={{ color: "green", fontSize: "1.1rem" }}>
+            {" "}
+            {stateTongtien.tongtienno}
+          </span>
+        </span>
+        <br></br>
+        <br></br>
         <button onClick={handleExportExcel}>Export Excel</button>
         <DataGrid
           editMode="row"

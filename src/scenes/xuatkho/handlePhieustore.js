@@ -26,11 +26,12 @@ export const createPhieu = async (req) => {
 };
 
 export const DeletePhieuOrder = async (req) => {
+  console.log("check req " + JSON.stringify(req));
   const respod = await Axios.post(
     `${Url_BackEnd}/order/deleteOrder`,
     {
-      id: req.id,
-      arrayUpdateProductIntoStore: req.arrayProduct,
+      id: req[0].id,
+      arrayUpdateProductIntoStore: req[0].arrayProduct,
     },
     {
       headers: {
@@ -103,7 +104,6 @@ export const Get_all_Phieu_Store_By_StoreID = async (req) => {
 };
 
 export const Get_all_Order_By_StoreID_Year_Month = async (req) => {
-  
   const respod = await Axios.post(
     `${Url_BackEnd}/order/getALlOrderByYearMonth`,
     {

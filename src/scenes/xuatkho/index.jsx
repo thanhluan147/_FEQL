@@ -21,6 +21,7 @@ import {
   Get_all_Bill_By_userID,
   Update_PhieuOrder_By_id,
 } from "./handlebills";
+import { createProduct } from "../contacts/handleproduct";
 import { Update_ListOfCreditors_Listdebtors_By_id } from "../doanhthu/handledoanhthu";
 import { createDebtor, Get_all_DEBTOR } from "./handleCreateDebtor";
 import { Update_DOANHTHU_BY_storeID_thoidiem } from "./handleCreateDebtor";
@@ -31,10 +32,12 @@ import { DeletePhieuOrder } from "./handlePhieustore";
 import { useNavigate } from "react-router-dom";
 import { getAllOrder_BY_storeID } from "../Order/handleform";
 import { CreateIdMaxValueOfarray } from "../method";
+import { Update_PhieuStore_By_id_PENDING } from "../invoices/handlePhieustore";
 import {
   UPdateProductStatusOrder,
   Get_all_Order_By_StoreID_Year_Month,
 } from "./handlePhieustore";
+import { Get_all_Product_By_StoreID } from "../contacts/handleproduct";
 import * as XLSX from "xlsx";
 const Invoices = () => {
   useTranslation();
@@ -206,11 +209,13 @@ const Invoices = () => {
         parseFloat(stateFormBills.giamua) * 0.15,
     });
   };
-  const CustomPopup = ({ show, handleClose, content }) => {
+  const CustomPopup = ({ show, handleClose, content, money }) => {
     return (
       <Modal show={show} onHide={handleClose} centered size="lg">
         <Modal.Header closeButton>
-          <Modal.Title>Popup Title</Modal.Title>
+          <Modal.Title style={{ color: "black" }}>
+            Tổng số tiền : {money}
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body
           style={{ maxWidth: "100%", overflow: "scroll", maxHeight: "500px" }}
@@ -223,7 +228,7 @@ const Invoices = () => {
                   <th>Tên sản phẩm</th>
                   <th>Loại sản phẩm</th>
                   <th>Số lượng</th>
-
+                  <th>Số tiền</th>
                   <th>Hình ảnh</th>
                   <th>Hành vi</th>
                 </tr>
@@ -235,7 +240,7 @@ const Invoices = () => {
                     <td>{item.name}</td>
                     <td>{item.loai}</td>
                     <td>{item.soluong}</td>
-
+                    <td>{item.sotien}</td>
                     <td>
                       {item.picture ? (
                         <img width={200} height={100} src={item.picture}></img>
@@ -349,6 +354,11 @@ const Invoices = () => {
 
       if (JSON.parse(checkde).success) {
         alert("Đã xóa thành công");
+        let arrayupdate = [];
+        selectedRow.forEach((element) => {
+          arrayupdate.push(element.phieustoreID);
+        });
+        await Update_PhieuStore_By_id_PENDING(arrayupdate);
         setisloading(false);
       }
 
@@ -374,23 +384,33 @@ const Invoices = () => {
   function ArrayObjectCell(params) {
     const arrayObject = params.value;
     const numberOfItems = Array.isArray(arrayObject) ? arrayObject.length : 0;
-
+    let money = 0;
+    arrayObject.forEach((element) => {
+      money += parseFloat(element.sotien);
+    });
     return (
       <>
-        <div>
+        <div
+          style={{
+            justifyContent: "space-between",
+            width: "100%",
+            display: "flex",
+          }}
+        >
           <button
-            class="btn41-43 btn-43"
+            class="btn41-43 btn-43 "
             onClick={() => handleOpenPopup(arrayObject)}
           >
             {" "}
             {numberOfItems} Items
           </button>
-
+          <div>{money} VND</div>
           {showPopup ? (
             <CustomPopup
               show={showPopup}
               handleClose={handleClosePopup}
               content={stateContentModal}
+              money={money}
             />
           ) : (
             ""
@@ -437,6 +457,7 @@ const Invoices = () => {
     getlenghtID_Bill();
   }, []);
   const createBill = async () => {
+    // console.log("select row " + JSON.stringify(selectedRow));
     const currentDate2 = new Date();
 
     // Lấy thông tin về ngày, giờ, phút, giây và milliseconds
@@ -488,6 +509,100 @@ const Invoices = () => {
 
       await fetchingOrderBy_storeID_By_year_month(statechinhanh, convertedDate);
       setstatelenghtID_bill(statelenghtID_bill + 1);
+
+      const checktemp = await Get_all_Product_By_StoreID(selectedOptionnoimua);
+      let lenghtState = 0;
+      if (checktemp instanceof Promise) {
+        // Nếu là promise, chờ promise hoàn thành rồi mới cập nhật state
+        const resolvedResult = await checktemp;
+
+        const arrayOfNumbers = resolvedResult.map((obj) =>
+          parseInt(obj.id.replace(/[^\d]/g, ""), 10)
+        );
+
+        // Tìm giá trị lớn nhất trong mảng 'arrayOfNumbers'
+        let maxNumber = Math.max(...arrayOfNumbers);
+        const result = 1 / 0;
+
+        const negativeInfinity = -1 / 0;
+
+        if (maxNumber === negativeInfinity || maxNumber === result) {
+          maxNumber = 0;
+        }
+        lenghtState = maxNumber + 1;
+
+        selectedRow.forEach(async (obj) => {
+          const updateMoney = statePhieuStore.filter(
+            (item) => item.phieustoreID === obj.phieustoreID
+          );
+
+          updateMoney.forEach(async (obj) => {
+            const a = obj.arrayProduct;
+            const createProductPromises = a.map(async (obj, index) => {
+              const createproduct = {
+                id: "POR" + (lenghtState + index),
+                name: obj.name,
+                xuatxu: obj.xuatxu,
+                picture: obj.picture,
+                loai: obj.loai,
+                soluong: obj.soluong,
+                status: obj.status,
+                sotien: obj.sotien,
+                // StoreID: obj.StoreID,
+                StoreID: selectedOptionnoimua,
+                behavior: obj.behavior,
+              };
+
+              // Trả về promise của createProduct
+              return createProduct(createproduct);
+            });
+            await Promise.all(createProductPromises);
+          });
+        });
+      } else {
+        const arrayOfNumbers = JSON.parse(checktemp).map((obj) =>
+          parseInt(obj.id.replace(/[^\d]/g, ""), 10)
+        );
+
+        // Tìm giá trị lớn nhất trong mảng 'arrayOfNumbers'
+        let maxNumber = Math.max(...arrayOfNumbers);
+        const result = 1 / 0;
+
+        const negativeInfinity = -1 / 0;
+
+        if (maxNumber === negativeInfinity || maxNumber === result) {
+          maxNumber = 0;
+        }
+        lenghtState = maxNumber + 1;
+        selectedRow.forEach(async (obj) => {
+          const updateMoney = statePhieuStore.filter(
+            (item) => item.phieustoreID === obj.phieustoreID
+          );
+
+          updateMoney.forEach(async (obj) => {
+            const a = obj.arrayProduct;
+            const createProductPromises = a.map(async (obj, index) => {
+              const createproduct = {
+                id: "POR" + (lenghtState + index),
+                name: obj.name,
+                xuatxu: obj.xuatxu,
+                picture: obj.picture,
+                loai: obj.loai,
+                soluong: obj.soluong,
+                status: obj.status,
+                sotien: obj.sotien,
+                StoreID: selectedOptionnoimua,
+                behavior: obj.behavior,
+              };
+
+              // Trả về promise của createProduct
+              return createProduct(createproduct);
+            });
+            await Promise.all(createProductPromises);
+          });
+        });
+      }
+      await fetchingOrderBy_storeID_By_year_month(statechinhanh, formattedDate);
       alert(`${i18n.t("ALERT_LAPHOADONSUCCESS")}`);
 
       setStateFormbills({

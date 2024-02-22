@@ -3,6 +3,9 @@ import { useTheme } from "@mui/material";
 import { tokens } from "../theme";
 import { mockLineData as data } from "../data/mockData";
 import { useEffect, useState } from "react";
+import i18n from "../i18n/i18n";
+import { useTranslation } from "react-i18next";
+
 const LineChart = ({
   isCustomLineColors = false,
   isDashboard = false,
@@ -10,6 +13,7 @@ const LineChart = ({
   minD,
   maxD,
 }) => {
+  useTranslation();
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const [stateDataMoc, setstateDataMoc] = useState([]);
@@ -47,7 +51,7 @@ const LineChart = ({
 
   const mockLineData = [
     {
-      id: "Doanh Thu",
+      id: i18n.t("TITLEDOANHTHU"),
       color: tokens("dark").greenAccent[500],
       data: stateDataMoc,
     },

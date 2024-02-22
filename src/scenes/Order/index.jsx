@@ -33,14 +33,20 @@ import { EditProduct } from "../contacts/handleproduct";
 import { useNavigate } from "react-router-dom";
 import { getAllOrder_BY_storeID } from "./handleform";
 import { CreateIdMaxValueOfarray } from "../method";
+import { converToName } from "../method";
+import { useRef } from "react";
+import { Update_PhieuStore_By_id } from "../invoices/handlePhieustore";
 const Form = () => {
   useTranslation();
   const nav = useNavigate();
+  const targetRef = useRef(null);
   const [stateErrorMp, setstateErrorMp] = useState(false);
   const [stateErrorLP, setstateErrorLP] = useState(false);
   const [stateErrorDL, setstateErrorDL] = useState(false);
+  const [stateErrorSL, setstateErrorSL] = useState(false);
   const [stateimage, setStateimg] = useState("");
   const [selectionModel, setSelectionModel] = React.useState([]);
+  const [selectionModelPhieu, setSelectionModelPhieu] = React.useState([]);
   const [stateProductfetch, setStateProductfetch] = useState([]);
   const [stateProduct, setStateProduct] = useState([]);
   const [stateStore, setStateStore] = useState([]);
@@ -135,18 +141,18 @@ const Form = () => {
   const columnphieustore = [
     { field: "id", flex: 1, headerName: `${i18n.t("MAPN_PX")}` },
     {
-      field: "userID",
-      headerName: `${i18n.t("MATK_HD")}`,
-      flex: 1,
-      cellClassName: "name-column--cell",
-    },
-
-    {
       field: "status",
       headerName: `${i18n.t("TINHTRANG_P")}`,
       flex: 1,
       renderCell: StatusObjectCell,
     },
+    {
+      field: "loaiphieu",
+      headerName: `${i18n.t("LOAIPHIEU_NHAP")}`,
+      flex: 1,
+      renderCell: StatusObjectCellLoai,
+    },
+
     {
       field: "sotien",
       headerName: `${i18n.t("SOTIEN_NP")}`,
@@ -423,6 +429,53 @@ const Form = () => {
       );
     }
   }
+  function StatusObjectCellLoai(params) {
+    const arrayObject = params.value;
+    if (arrayObject === "NK") {
+      return (
+        <span
+          style={{
+            backgroundColor: "#4CAF50",
+            width: "100%",
+            textAlign: "center",
+            borderRadius: "5%",
+            fontSize: "1.1rem",
+          }}
+        >
+          {arrayObject}
+        </span>
+      );
+    }
+    if (arrayObject === "NN") {
+      return (
+        <span
+          style={{
+            backgroundColor: "#a52a2ad9",
+            width: "100%",
+            textAlign: "center",
+            borderRadius: "5%",
+            fontSize: "1.1rem",
+          }}
+        >
+          {arrayObject}
+        </span>
+      );
+    } else {
+      return (
+        <span
+          style={{
+            backgroundColor: "orange",
+            width: "100%",
+            textAlign: "center",
+            borderRadius: "5%",
+            fontSize: "1.1rem",
+          }}
+        >
+          {arrayObject}
+        </span>
+      );
+    }
+  }
   function ArrayObjectCell(params) {
     const arrayObject = params.value;
     const numberOfItems = Array.isArray(arrayObject) ? arrayObject.length : 0;
@@ -470,6 +523,9 @@ const Form = () => {
         return;
       } else {
         setstateErrorDL(false);
+      }
+      if (stateErrorSL) {
+        return;
       }
       confirmAlert({
         title: `${i18n.t("ALERT_TITLE")}`,
@@ -523,6 +579,8 @@ const Form = () => {
                 await fetchingGettAllProduct_by_storeID(statechinhanh);
                 setisloading(false);
                 alert(`${i18n.t("ALERT_ADDPHIEUSUCCESS")}`);
+                await Update_PhieuStore_By_id(selectionModelPhieu);
+                await fetchingGettAllPhieu_by_StoreID(statechinhanh);
                 await fetchgetAllOrder_BY_storeID(statechinhanh, stateCode);
                 setStatePhieu({
                   sotien: 0,
@@ -540,6 +598,8 @@ const Form = () => {
                   sotien: 0,
                 });
                 setStateProduct([]);
+                setSelectionModel([]);
+                setSelectionModelPhieu([]);
               }
             },
           },
@@ -552,6 +612,29 @@ const Form = () => {
     } catch (error) {
       console.log(error);
     }
+  };
+  const acceptPhieu = () => {
+    // Biến để kiểm tra
+
+    // Sử dụng filter để lọc array1
+    const filteredArray = stateProductfetch.filter((obj1) =>
+      selectedRow[0].arrayProduct.some(
+        (obj2) => obj2.id == obj1.id && obj2.soluong > obj1.soluong
+      )
+    );
+
+    console.log("filteredArray " + JSON.stringify(filteredArray));
+    if (filteredArray.length !== 0) {
+      setstateErrorSL(true);
+    } else {
+      setstateErrorSL(false);
+    }
+    setStateProduct(selectedRow[0].arrayProduct);
+    setStatePhieu({
+      ...statePhieu,
+      maphieu: selectedRow[0].id,
+    });
+    targetRef.current.scrollIntoView({ behavior: "smooth" });
   };
   const updateEditproduct = async () => {
     for (const item of stateProduct) {
@@ -736,9 +819,41 @@ const Form = () => {
   const handle_changechinhanhnhan = async (e) => {
     await fetchingGettAllPhieu_by_StoreID(e.target.value);
   };
-
   const handleSelectionModelChange = (newSelectionModel) => {
+    const hasAcceptedOrCancelled = newSelectionModel.some((selectedId) => {
+      const selectedRow = stateProductfetch.find(
+        (row) => row.id === selectedId
+      );
+      return selectedRow && selectedRow.soluong === 0;
+    });
+    if (hasAcceptedOrCancelled) {
+      // Một trong những phần tử có status là "ACCEPT" hoặc "CANCEL"
+      alert("Không thể chọn sản phẩm với số lượng là 0!!!");
+      return;
+    }
     setSelectionModel(newSelectionModel);
+  };
+
+  const handleSelectionModelChangePhieu = (newSelectionModel) => {
+    const selectedRows = newSelectionModel.map((selectedId) =>
+      statePhieuStore.find((row) => row.id === selectedId)
+    );
+    setstateErrorSL(false);
+    setSelectedRow(selectedRows);
+    const hasAcceptedOrCancelled = newSelectionModel.some((selectedId) => {
+      const selectedRow = statePhieuStore.find((row) => row.id === selectedId);
+      return (
+        selectedRow &&
+        (selectedRow.status === "ACCEPT" ||
+          selectedRow.status === "CANCEL" ||
+          selectedRow.loaiphieu === "NN")
+      );
+    });
+    if (hasAcceptedOrCancelled) {
+      // Một trong những phần tử có status là "ACCEPT" hoặc "CANCEL"
+      return;
+    }
+    setSelectionModelPhieu(newSelectionModel);
   };
   const onchangeupdatesoluong = (event) => {
     setstateupdatesoluong({
@@ -779,7 +894,7 @@ const Form = () => {
     );
   }
   return (
-    <Box m="20px">
+    <Box ref={targetRef} m="20px">
       <Header title={i18n.t("TITLEPHIEUXUAT")} />
       <div
         style={{
@@ -882,6 +997,15 @@ const Form = () => {
             </Box>
             <div className="table-container">
               <label htmlFor="usoluong">*{i18n.t("SLDC")}</label>
+              <br></br>
+              {stateErrorSL ? (
+                <label style={{ color: "red" }} htmlFor="usoluong">
+                  * Số lượng đã vượt quá giới hạn trong kho !
+                </label>
+              ) : (
+                ""
+              )}
+
               <br></br>
               <input
                 placeholder="Số lượng"
@@ -1093,7 +1217,9 @@ const Form = () => {
         )}
       </Formik>
       <div>
-        <h3>{i18n.t("TITLEKHO")}</h3>
+        <h3>
+          {i18n.t("TITLEKHO")} - {converToName[statechinhanh]}
+        </h3>
         <Box
           m="40px 0 0 0"
           height="75vh"
@@ -1144,6 +1270,7 @@ const Form = () => {
         <div style={{ marginTop: "3%" }}>
           <div style={{ marginLeft: "0%" }} className="container">
             <h3>{i18n.t("ALERT_PHIEUNHAP")}</h3>
+
             <select onChange={handle_changechinhanhnhan} id="chinhanh">
               {stateStore &&
                 stateStore.map((object, index) => (
@@ -1192,8 +1319,20 @@ const Form = () => {
               },
             }}
           >
+            <div style={{ marginLeft: "0%" }} className="container">
+              <button
+                disabled={selectionModelPhieu.length !== 1}
+                className="btn btn-info"
+                onClick={acceptPhieu}
+              >
+                Xác nhận
+              </button>
+            </div>
             <DataGrid
               editMode="row"
+              checkboxSelection
+              selectionModel={selectionModelPhieu}
+              onSelectionModelChange={handleSelectionModelChangePhieu}
               components={{
                 Toolbar: GridToolbar,
               }}

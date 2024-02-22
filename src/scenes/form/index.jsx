@@ -26,6 +26,7 @@ import { CreateIdMaxValueOfarray } from "../method";
 import { Get_all_Product_By_StoreID } from "./handleproduct";
 import { useTheme } from "@mui/material";
 import { tokens } from "../../theme";
+import HandleAccessAccount from "../handleAccess/handleAccess";
 import { DataGrid, GridToolbar, GridToolbarExport } from "@mui/x-data-grid";
 const Form = () => {
   const theme = useTheme();
@@ -34,6 +35,7 @@ const Form = () => {
   const [stateID, setstateID] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [selectionModel, setSelectionModel] = React.useState([]);
+  const [stateCheckaccess, setstateCheckaccess] = useState(false);
   const [stateupdatesoluong, setstateupdatesoluong] = useState({
     usoluong: 0,
   });
@@ -211,6 +213,7 @@ const Form = () => {
     status: "GOOD",
     StoreID: "",
     sotien: 0,
+    xuatxu: "",
     behavior: "ADMIN ADD",
   });
   const [errorMessages, setErrorMessages] = useState({
@@ -229,10 +232,20 @@ const Form = () => {
     setisshowError(false);
     setisshowErrorTable(false);
     setisShowerrorDate(false);
-    setStatePhieu({
-      ...statePhieu,
-      [event.target.name]: event.target.value,
-    });
+    if (event.target.name === "loaiphieu") {
+      setsotienbandau(0);
+      setStatePhieu({
+        ...statePhieu,
+        sotien: 0,
+        [event.target.name]: event.target.value,
+      });
+      setStateProduct([]);
+    } else {
+      setStatePhieu({
+        ...statePhieu,
+        [event.target.name]: event.target.value,
+      });
+    }
   };
   const onchangeupdatesoluong = (event) => {
     setstateupdatesoluong({
@@ -289,7 +302,7 @@ const Form = () => {
       confirmAlert({
         title: `${i18n.t("ALERT_TITLE")}`,
         message: `${i18n.t("ALERT_DES")} ${
-          statePhieu.loaiphieu === "N"
+          statePhieu.loaiphieu === "NK" || statePhieu.loaiphieu === "NN"
             ? `${i18n.t("ALERT_PHIEUNHAP")}`
             : `${i18n.t("ALERT_PHIEUXUAT")}`
         } ${i18n.t("ALERT_CHU")}`,
@@ -426,17 +439,6 @@ const Form = () => {
       errors.soluong = `${i18n.t("ERROR_SOLUONG")}`;
     }
 
-    setStateFormProduct({
-      id: "",
-      name: "",
-      picture: "...",
-      loai: "",
-      soluong: "",
-      status: "GOOD",
-      StoreID: "",
-      sotien: 0,
-      behavior: "ADMIN ADD",
-    });
     // If there are errors, update the state to show error messages
     if (Object.keys(errors).length > 0) {
       setErrorMessages(errors);
@@ -453,8 +455,25 @@ const Form = () => {
     });
 
     const arry = [];
-    arry.push(stateFormProduct);
+    const updatedItem = {
+      ...stateFormProduct,
+      checkStore: true,
+    };
+    arry.push(updatedItem);
+
     setStateProduct(stateProduct.concat(arry));
+    setStateFormProduct({
+      id: "",
+      name: "",
+      picture: "...",
+      loai: "",
+      soluong: "",
+      status: "GOOD",
+      StoreID: "",
+      sotien: 0,
+      xuatxu: "",
+      behavior: "ADMIN ADD",
+    });
   };
   const handleFormSubmit = (values) => {
     console.log(values);
@@ -468,11 +487,26 @@ const Form = () => {
       // Kiểm tra xem có selectedItem không trả về undefined
       if (selectedItem) {
         // Tạo một bản sao của đối tượng để không ảnh hưởng đến stateProductfetch
-        const updatedItem = { ...selectedItem, behavior: "ADMIN ADD" };
+        const updatedItem = {
+          ...selectedItem,
+          behavior: "ADMIN ADD",
+          checkStore: stateCheckaccess,
+        };
         return updatedItem;
       }
       return selectedItem; // Trả về nguyên bản nếu không tìm thấy đối tượng
     });
+    let sotiennew = statePhieu.sotien;
+
+    updatedSelectedData.forEach((element) => {
+      sotiennew = sotiennew + element.sotien;
+    });
+    setStatePhieu({
+      ...statePhieu,
+      sotien: parseFloat(statesotienbandau) + parseFloat(sotiennew),
+    });
+    setsotienbandau(parseFloat(statesotienbandau) + parseFloat(sotiennew));
+
     setStateProduct(updatedSelectedData);
     setSelectionModel([]);
     // selectedData là mảng chứa dữ liệu của các hàng được chọn
@@ -505,7 +539,26 @@ const Form = () => {
       console.error("Error reading the file: ", error);
     };
   };
+  const checkAccess = async () => {
+    try {
+      const check = await HandleAccessAccount();
+      if (check instanceof Promise) {
+        // Nếu là promise, chờ promise hoàn thành rồi mới cập nhật state
+        const resolvedResult = await check;
+
+        setstateCheckaccess(resolvedResult);
+        console.log("check " + resolvedResult);
+      } else {
+        setstateCheckaccess(check);
+
+        console.log("check c " + check);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
   const fetchingapi = async () => {
+    await checkAccess();
     await fetchingStore();
 
     await fetchingGettAllPhieu_by_StoreID(chinhanhdau);
@@ -555,13 +608,14 @@ const Form = () => {
                 <TextField
                   variant="filled"
                   disabled
-                  type="number"
+                  type="text"
                   label={i18n.t("TONGSOTIEN_NHAP")}
                   name="sotien"
-                  value={statePhieu.sotien}
+                  value={stateCheckaccess ? statePhieu.sotien : "#####"}
                   onChange={onhandlechangePhieu}
                   sx={{ gridColumn: "span 2" }}
                 />
+
                 <FormControl>
                   <TextField
                     variant="filled"
@@ -597,7 +651,8 @@ const Form = () => {
                     value={statePhieu.loaiphieu}
                     onChange={onhandlechangePhieu}
                   >
-                    <MenuItem value={"N"}>{i18n.t("LABLE_NHAP")}</MenuItem>
+                    <MenuItem value={"NK"}>Nhập từ kho</MenuItem>
+                    <MenuItem value={"NN"}>Nhập ngoài kho</MenuItem>
                     Create a New User Profile{" "}
                   </Select>
                   {isshowError ? (
@@ -632,6 +687,7 @@ const Form = () => {
                       <th>{i18n.t("LOAI_P")}</th>
                       <th>{i18n.t("SOLUONG_P")}</th>
                       <th>{i18n.t("SOTIEN_NP")}</th>
+                      <th>{i18n.t("XUATSU_X")}</th>
                       <th>{i18n.t("HINHANH_P")}</th>
 
                       <th></th>
@@ -643,7 +699,13 @@ const Form = () => {
                         <td>{item.name}</td>
                         <td>{item.loai}</td>
                         <td>{item.soluong}</td>
-                        <td>{item.sotien}</td>
+                        <td>
+                          {item.checkStore && item.checkStore
+                            ? item.sotien
+                            : "###"}
+                        </td>
+                        <td>{item.xuatxu}</td>
+
                         <td>
                           {item.picture ? (
                             <img
@@ -675,17 +737,21 @@ const Form = () => {
                     ))}
                   </tbody>
                 </table>
-                <div
-                  className="add-button"
-                  data-toggle="modal"
-                  data-target="#staticBackdrop"
-                  onClick={() => {
-                    setisshowError(false);
-                  }}
-                  type="button"
-                >
-                  +
-                </div>
+                {statePhieu.loaiphieu && statePhieu.loaiphieu === "NN" ? (
+                  <div
+                    className="add-button"
+                    data-toggle="modal"
+                    data-target="#staticBackdrop"
+                    onClick={() => {
+                      setisshowError(false);
+                    }}
+                    type="button"
+                  >
+                    +
+                  </div>
+                ) : (
+                  ""
+                )}
 
                 <div
                   class="modal fade"
@@ -750,6 +816,13 @@ const Form = () => {
                           value={stateFormProduct.sotien}
                           onChange={onChangeAddProductForm}
                         ></input>
+                        <label htmlFor="xuatxu">{i18n.t("XUATSU_X")}</label>
+                        <input
+                          type="text"
+                          name="xuatxu"
+                          value={stateFormProduct.xuatxu}
+                          onChange={onChangeAddProductForm}
+                        ></input>
 
                         <label htmlFor="picture">{i18n.t("HINHANH_P")}</label>
                         <input
@@ -804,63 +877,67 @@ const Form = () => {
           )}
         </Formik>
       </Box>
-      <div style={{ padding: "20px" }}>
-        <h3>{i18n.t("TKCT")}</h3>
-        <Box
-          m="40px 0 0 0"
-          height="75vh"
-          sx={{
-            "& .MuiDataGrid-root": {
-              border: "none",
-            },
-            "& .MuiDataGrid-cell": {
-              borderBottom: "none",
-            },
-            "& .name-column--cell": {
-              color: colors.greenAccent[300],
-            },
-            "& .MuiDataGrid-columnHeaders": {
-              backgroundColor: colors.blueAccent[700],
-              borderBottom: "none",
-            },
-            "& .MuiDataGrid-virtualScroller": {
-              backgroundColor: colors.primary[400],
-            },
-            "& .MuiDataGrid-footerContainer": {
-              borderTop: "none",
-              backgroundColor: colors.blueAccent[700],
-            },
-            "& .MuiCheckbox-root": {
-              color: `${colors.greenAccent[200]} !important`,
-            },
-            "& .MuiDataGrid-toolbarContainer .MuiButton-text": {
-              color: `${colors.grey[100]} !important`,
-            },
-          }}
-        >
-          <button onClick={handleGetSelectedData}>Get Selected Data</button>
-
-          <DataGrid
-            checkboxSelection
-            editMode="row"
-            components={{
-              Toolbar: GridToolbar,
+      {statePhieu.loaiphieu && statePhieu.loaiphieu === "NK" ? (
+        <div style={{ padding: "20px" }}>
+          <h3>{i18n.t("TKCT")}</h3>
+          <Box
+            m="40px 0 0 0"
+            height="75vh"
+            sx={{
+              "& .MuiDataGrid-root": {
+                border: "none",
+              },
+              "& .MuiDataGrid-cell": {
+                borderBottom: "none",
+              },
+              "& .name-column--cell": {
+                color: colors.greenAccent[300],
+              },
+              "& .MuiDataGrid-columnHeaders": {
+                backgroundColor: colors.blueAccent[700],
+                borderBottom: "none",
+              },
+              "& .MuiDataGrid-virtualScroller": {
+                backgroundColor: colors.primary[400],
+              },
+              "& .MuiDataGrid-footerContainer": {
+                borderTop: "none",
+                backgroundColor: colors.blueAccent[700],
+              },
+              "& .MuiCheckbox-root": {
+                color: `${colors.greenAccent[200]} !important`,
+              },
+              "& .MuiDataGrid-toolbarContainer .MuiButton-text": {
+                color: `${colors.grey[100]} !important`,
+              },
             }}
-            selectionModel={selectionModel}
-            onSelectionModelChange={handleSelectionModelChange}
-            rows={stateProductview}
-            columns={Columnsv}
-            pageSize={10}
-            // components={{
-            //   Toolbar: () => (
-            //     <GridToolbar>
-            //       <GridToolbarExport onClick={exportToExcel} />
-            //     </GridToolbar>
-            //   ),
-            // }}
-          />
-        </Box>
-      </div>
+          >
+            <button onClick={handleGetSelectedData}>Get Selected Data</button>
+
+            <DataGrid
+              checkboxSelection
+              editMode="row"
+              components={{
+                Toolbar: GridToolbar,
+              }}
+              selectionModel={selectionModel}
+              onSelectionModelChange={handleSelectionModelChange}
+              rows={stateProductview}
+              columns={Columnsv}
+              pageSize={10}
+              // components={{
+              //   Toolbar: () => (
+              //     <GridToolbar>
+              //       <GridToolbarExport onClick={exportToExcel} />
+              //     </GridToolbar>
+              //   ),
+              // }}
+            />
+          </Box>
+        </div>
+      ) : (
+        ""
+      )}
     </>
   );
 };
