@@ -27,6 +27,7 @@ import {
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import i18n from "../../i18n/i18n";
+import URL_IMG from "../../URL_GETIMG";
 const Team = () => {
   useTranslation();
   const theme = useTheme();
@@ -322,7 +323,7 @@ const Team = () => {
     render.onload = () => {
       setAddStaffForm({
         ...addStaffForm,
-        picture: render.result,
+        picture: URL_IMG + `STAFF/${statechinhanh}/` + check,
       });
       setStateimg(render.result);
     };
@@ -344,7 +345,8 @@ const Team = () => {
     render.onload = () => {
       setAddStaffForm({
         ...addStaffForm,
-        pictureTwo: render.result,
+
+        pictureTwo: URL_IMG + `STAFF/${statechinhanh}/` + check,
       });
 
       setStateimgTwo(render.result);
@@ -367,7 +369,8 @@ const Team = () => {
     render.onload = () => {
       setEditStaffForm({
         ...EditStaffForm,
-        picture: render.result,
+
+        picture: URL_IMG + `STAFF/${statechinhanh}/` + check,
       });
       setStateimgEdit(render.result);
     };
@@ -388,7 +391,7 @@ const Team = () => {
     render.onload = () => {
       setEditStaffForm({
         ...EditStaffForm,
-        pictureTwo: render.result,
+        pictureTwo: URL_IMG + `STAFF/${statechinhanh}/` + check,
       });
 
       setStateimgTwoEdit(render.result);
