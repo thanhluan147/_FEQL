@@ -10,6 +10,7 @@ import Header from "../../components/Header";
 import styled from "styled-components";
 import { GridToolbar } from "@mui/x-data-grid";
 import React from "react";
+import { HandleUpload, CheckFileName } from "../sendfileFTP/sendfileFTP";
 import { useRef } from "react";
 import {
   Get_all_branch_By_userid,
@@ -33,6 +34,12 @@ const Team = () => {
   const [isError, setisError] = useState(false);
   const [stateimage, setStateimg] = useState("");
   const [stateimageTwo, setStateimgTwo] = useState("");
+  const [stateimageFileName, setStateimgFileName] = useState("");
+  const [stateimageTwoFileName, setStateimgTwoFileName] = useState("");
+  const [stateimageEdit, setStateimgEdit] = useState("");
+  const [stateimageTwoEdit, setStateimgTwoEdit] = useState("");
+  const [stateimageFileNameEdit, setStateimgFileNameEdit] = useState("");
+  const [stateimageTwoFileNameEdit, setStateimgTwoFileNameEdit] = useState("");
   const [stateViewimg, setstateViewimg] = useState("");
   const [isloading, setIsloading] = useState(false);
   const draggedItem = useRef(null);
@@ -108,6 +115,8 @@ const Team = () => {
   const handleSelectionModelChange = (newSelectionModel) => {
     setSelectionModel(newSelectionModel);
   };
+  // base64Worker.js
+
   function UpdatedateObjectCell(params) {
     const arrayObject = params.value;
     const originalDateString = arrayObject;
@@ -153,7 +162,7 @@ const Team = () => {
         selectionModel.includes(row.id)
       );
       const handledelted = await HandleDeletedStaff(selectedRows);
-      console.log("handledelted " + JSON.stringify(handledelted));
+
       if (handledelted.success) {
         setIsloading(false);
         alert("Deleted Successfully !!!");
@@ -279,10 +288,21 @@ const Team = () => {
   };
 
   const fetchingapi = async () => {
+    // await checkAccess();
+    // await fetchingBranch();
+    // await fetchingGettAllStaft_by_branchID(chinhanhdau);
     await checkAccess();
     await fetchingBranch();
-    await fetchingGettAllStaft_by_branchID(chinhanhdau);
+    const fetchData = async () => {
+      try {
+        await Promise.all([fetchingGettAllStaft_by_branchID(chinhanhdau)]);
+        // Tiếp tục xử lý sau khi tất cả các hàm đã hoàn thành
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
 
+    fetchData();
     setStatechinhanh(chinhanhdau);
   };
   useEffect(() => {
@@ -290,16 +310,18 @@ const Team = () => {
       fetchingapi();
     } catch (error) {}
   }, []);
-  const convertoBase64 = (e) => {
+  const convertoBase64 = async (e) => {
+    const check = await CheckFileName(
+      e.target.files[0].name,
+      "STAFF",
+      statechinhanh
+    );
+    setStateimgFileName(check);
     const render = new FileReader();
     render.readAsDataURL(e.target.files[0]);
     render.onload = () => {
       setAddStaffForm({
         ...addStaffForm,
-        picture: render.result,
-      });
-      setEditStaffForm({
-        ...EditStaffForm,
         picture: render.result,
       });
       setStateimg(render.result);
@@ -309,7 +331,14 @@ const Team = () => {
     };
   };
 
-  const convertoBase64PicTwo = (e) => {
+  const convertoBase64PicTwo = async (e) => {
+    const check = await CheckFileName(
+      e.target.files[0].name,
+      "STAFF",
+      statechinhanh
+    );
+    setStateimgTwoFileName(check);
+
     const render = new FileReader();
     render.readAsDataURL(e.target.files[0]);
     render.onload = () => {
@@ -317,11 +346,52 @@ const Team = () => {
         ...addStaffForm,
         pictureTwo: render.result,
       });
+
+      setStateimgTwo(render.result);
+    };
+    render.onerror = (error) => {
+      console.log("error" + error);
+    };
+  };
+
+  const convertoBase64Edit = async (e) => {
+    const check = await CheckFileName(
+      e.target.files[0].name,
+      "STAFF",
+      statechinhanh
+    );
+    setStateimgFileNameEdit(check);
+
+    const render = new FileReader();
+    render.readAsDataURL(e.target.files[0]);
+    render.onload = () => {
+      setEditStaffForm({
+        ...EditStaffForm,
+        picture: render.result,
+      });
+      setStateimgEdit(render.result);
+    };
+    render.onerror = (error) => {
+      console.log("error" + error);
+    };
+  };
+
+  const convertoBase64PicTwoEdit = async (e) => {
+    const check = await CheckFileName(
+      e.target.files[0].name,
+      "STAFF",
+      statechinhanh
+    );
+    setStateimgTwoFileNameEdit(check);
+    const render = new FileReader();
+    render.readAsDataURL(e.target.files[0]);
+    render.onload = () => {
       setEditStaffForm({
         ...EditStaffForm,
         pictureTwo: render.result,
       });
-      setStateimgTwo(render.result);
+
+      setStateimgTwoEdit(render.result);
     };
     render.onerror = (error) => {
       console.log("error" + error);
@@ -342,9 +412,24 @@ const Team = () => {
     const check = await HandleEditStaff(EditStaffForm);
     await fetchingGettAllStaft_by_branchID(statechinhanh);
 
-    alert("Update Success");
-    setStateimg("");
-    setStateimgTwo("");
+    if (check.data.success) {
+      alert("Update Success");
+      await HandleUpload(
+        "STAFF",
+        stateimageEdit,
+        statechinhanh,
+        stateimageFileNameEdit
+      );
+      await HandleUpload(
+        "STAFF",
+        stateimageTwoEdit,
+        statechinhanh,
+        stateimageTwoFileNameEdit
+      );
+    }
+    setSelectionModel([]);
+    setStateimgEdit("");
+    setStateimgTwoEdit("");
   };
 
   const handleEdit = () => {
@@ -366,8 +451,11 @@ const Team = () => {
       picture: selectedRows[0].picture,
       pictureTwo: selectedRows[0].pictureTwo,
     });
-    setStateimg(selectedRows[0].picture);
-    setStateimgTwo(selectedRows[0].pictureTwo);
+    setStateimgEdit(selectedRows[0].picture);
+    setStateimgTwoEdit(selectedRows[0].pictureTwo);
+
+    // setStateimg(selectedRows[0].picture);
+    // setStateimgTwo(selectedRows[0].pictureTwo);
     // Thực hiện xử lý theo nhu cầu của bạn
   };
   const addStaff = async () => {
@@ -393,6 +481,18 @@ const Team = () => {
       const notice = await HandleCreateStaff(addStaffForm);
       if (notice) {
         alert(`${i18n.t("ALERT_THEMNHANVIEN_TEAM")}`);
+        await HandleUpload(
+          "STAFF",
+          stateimage,
+          statechinhanh,
+          stateimageFileName
+        );
+        await HandleUpload(
+          "STAFF",
+          stateimageTwo,
+          statechinhanh,
+          stateimageTwoFileName
+        );
       }
       fetchingGettAllStaft_by_branchID(statechinhanh);
       setAddStaffForm({
@@ -408,6 +508,8 @@ const Team = () => {
       });
       setStateimg("");
       setStateimgTwo("");
+      setStateimgFileName("");
+      setStateimgTwoFileName("");
     }
   };
 
@@ -424,7 +526,6 @@ const Team = () => {
   });
   const onChangeStaffForm = (event) => {
     setisError(false);
-    console.log("event.target.value " + event.target.value);
     setAddStaffForm({
       ...addStaffForm,
       [event.target.name]: event.target.value,
@@ -524,14 +625,14 @@ const Team = () => {
                 </label>
                 <input
                   accept="image/*"
-                  onChange={convertoBase64}
+                  onChange={convertoBase64Edit}
                   type="file"
                   id="picture"
                   name="picture"
-                  onFocus={convertoBase64}
+                  onFocus={convertoBase64Edit}
                 ></input>
-                {stateimage ? (
-                  <img width={200} height={100} src={stateimage}></img>
+                {stateimageEdit ? (
+                  <img width={200} height={100} src={stateimageEdit}></img>
                 ) : (
                   ""
                 )}
@@ -540,14 +641,14 @@ const Team = () => {
                 </label>
                 <input
                   accept="image/*"
-                  onChange={convertoBase64PicTwo}
+                  onChange={convertoBase64PicTwoEdit}
                   type="file"
                   id="pictureTwo"
                   name="pictureTwo"
-                  onFocus={convertoBase64PicTwo}
+                  onFocus={convertoBase64PicTwoEdit}
                 ></input>
-                {stateimageTwo ? (
-                  <img width={200} height={100} src={stateimageTwo}></img>
+                {stateimageTwoEdit ? (
+                  <img width={200} height={100} src={stateimageTwoEdit}></img>
                 ) : (
                   ""
                 )}
@@ -594,6 +695,7 @@ const Team = () => {
                   type="button"
                   onClick={editstaff}
                   class="btn btn-primary"
+                  data-dismiss="modal"
                 >
                   {i18n.t("BTN_XACNHAN")}
                 </button>

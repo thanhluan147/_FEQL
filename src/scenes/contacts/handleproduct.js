@@ -56,6 +56,7 @@ export const EditProduct = async (req) => {
       status: req.status,
       StoreID: req.StoreID,
       xuatxu: req.xuatxu,
+      sotien: req.sotien,
     },
     {
       headers: {
@@ -66,7 +67,7 @@ export const EditProduct = async (req) => {
     }
   );
 
-  return JSON.stringify(respod.data.All_Products);
+  return JSON.stringify(respod.data);
 };
 
 export const DeleteProduct = async (req) => {

@@ -5,7 +5,7 @@ import { mockDataContacts } from "../../data/mockData";
 import Header from "../../components/Header";
 import { useTheme } from "@mui/material";
 import { Get_all_store_By_userid, Get_all_Store } from "./handlestore";
-
+import axios from "axios";
 import { Get_all_Product_By_StoreID, createProduct } from "./handleproduct";
 import HandleAccessAccount from "../handleAccess/handleAccess";
 import { Columns } from "./data";
@@ -17,6 +17,9 @@ import i18n from "../../i18n/i18n";
 import { useTranslation } from "react-i18next";
 import { saveAs } from "file-saver";
 import * as XLSX from "xlsx";
+import { HandleUpload, CheckFileName } from "../sendfileFTP/sendfileFTP";
+import Url_BackEnd from "../../URL";
+import URL_IMG from "../../URL_GETIMG";
 import "./style.css";
 const Contacts = () => {
   useTranslation();
@@ -25,6 +28,9 @@ const Contacts = () => {
   const [statechinhanh, setStatechinhanh] = useState("");
   const [selectionModel, setSelectionModel] = React.useState([]);
   const [stateimage, setStateimg] = useState("");
+  const [stateimageFileName, setStateimgFileName] = useState("");
+  const [stateimageFileNameEdit, setStateimgFileNameEdit] = useState("");
+  const [stateimageEdit, setStateimgEdit] = useState("");
   const [stateaccess, setstateaccess] = useState(false);
   const [stateViewimg, setstateViewimg] = useState("");
   const [isloading, setIsloading] = useState(false);
@@ -47,6 +53,7 @@ const Contacts = () => {
     picture: "",
     loai: "",
     soluong: 0,
+    sotien: 0,
     status: "",
     xuatxu: "",
     StoreID: "",
@@ -184,20 +191,42 @@ const Contacts = () => {
     });
   };
 
-  const convertoBase64 = (e) => {
+  const convertoBase64 = async (e) => {
+    const check = await CheckFileName(
+      e.target.files[0].name,
+      "STORE",
+      statechinhanh
+    );
+    setStateimgFileName(check);
     const render = new FileReader();
     render.readAsDataURL(e.target.files[0]);
     render.onload = () => {
       setStateFormProduct({
         ...stateFormProduct,
-
-        picture: render.result,
+        picture: URL_IMG + `STORE/${statechinhanh}/` + check,
       });
+      setStateimg(render.result);
+    };
+    render.onerror = (error) => {
+      console.log("error" + error);
+    };
+  };
+
+  const convertoBase64Edit = async (e) => {
+    const check = await CheckFileName(
+      e.target.files[0].name,
+      "STORE",
+      statechinhanh
+    );
+    setStateimgFileNameEdit(check);
+    const render = new FileReader();
+    render.readAsDataURL(e.target.files[0]);
+    render.onload = () => {
       setEditProductForm({
         ...EditProductForm,
         picture: render.result,
       });
-      setStateimg(render.result);
+      setStateimgEdit(render.result);
     };
     render.onerror = (error) => {
       console.log("error" + error);
@@ -284,12 +313,40 @@ const Contacts = () => {
     await fetchingGettAllProduct_by_storeID(e.target.value);
     setStatechinhanh(e.target.value);
   };
+  const [file, setFile] = useState(null);
+
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+  };
+
+  const readFileAsync = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = (event) => {
+        resolve(event.target.result);
+      };
+
+      reader.onerror = (error) => {
+        reject(error);
+      };
+
+      reader.readAsDataURL(file);
+    });
+  };
+
   const addproduct = async () => {
     const check = await createProduct(stateFormProduct);
 
     await fetchingGettAllProduct_by_storeID(statechinhanh);
     if (JSON.parse(check).success || JSON.parse(check).success === "true") {
       alert(`${i18n.t("ALERT_THEMSANPHAM_P")}`);
+      await HandleUpload(
+        "STORE",
+        stateimage,
+        statechinhanh,
+        stateimageFileName
+      );
     }
     setStateFormProduct({
       id: "",
@@ -303,7 +360,7 @@ const Contacts = () => {
       xuatxu: "",
       behavior: "SELF ADD",
     });
-
+    setStateimgEdit("");
     setStateimg("");
   };
   const handleExportExcel = () => {
@@ -374,9 +431,10 @@ const Contacts = () => {
       status: selectedRows[0].status,
       StoreID: selectedRows[0].StoreID,
       xuatxu: selectedRows[0].xuatxu,
+      sotien: selectedRows[0].sotien,
     });
+    setStateimgEdit(selectedRows[0].picture);
 
-    setStateimg(selectedRows[0].picture);
     // Thực hiện xử lý theo nhu cầu của bạn
   };
   const onChangeEditProductForm = (event) => {
@@ -386,8 +444,19 @@ const Contacts = () => {
     });
   };
   const editproduct = async () => {
-    await EditProduct(EditProductForm);
+    const check = await EditProduct(EditProductForm);
     await fetchingGettAllProduct_by_storeID(statechinhanh);
+
+    if (JSON.parse(check).success || JSON.parse(check).success === "true") {
+      alert("Update success");
+      await HandleUpload(
+        "STORE",
+        stateimageEdit,
+        statechinhanh,
+        stateimageFileNameEdit
+      );
+      setSelectionModel([]);
+    }
   };
   useEffect(() => {
     try {
@@ -504,6 +573,20 @@ const Contacts = () => {
                   onChange={onChangeEditProductForm}
                   name="soluong"
                 ></input>
+                {stateaccess ? (
+                  <>
+                    <label htmlFor="Role">{i18n.t("SOTIEN_NP")}</label>
+                    <input
+                      type="number"
+                      value={EditProductForm.sotien}
+                      onChange={onChangeEditProductForm}
+                      name="sotien"
+                    ></input>
+                  </>
+                ) : (
+                  ""
+                )}
+
                 <label htmlFor="Role">{i18n.t("TINHTRANG_P")}</label>
                 <input
                   type="text"
@@ -523,14 +606,14 @@ const Contacts = () => {
                 <label htmlFor="picture">{i18n.t("HINHANH_P")}</label>
                 <input
                   accept="image/*"
-                  onChange={convertoBase64}
+                  onChange={convertoBase64Edit}
                   type="file"
                   id="picture"
                   name="picture"
-                  onFocus={convertoBase64}
+                  onFocus={convertoBase64Edit}
                 ></input>
-                {stateimage ? (
-                  <img width={200} height={100} src={stateimage}></img>
+                {stateimageEdit ? (
+                  <img width={200} height={100} src={stateimageEdit}></img>
                 ) : (
                   ""
                 )}
@@ -607,6 +690,21 @@ const Contacts = () => {
                   value={stateFormProduct.soluong}
                   onChange={onChangeAddProductForm}
                 ></input>
+                {stateaccess ? (
+                  <>
+                    {" "}
+                    <label htmlFor="sotien">{i18n.t("SOTIEN_NP")}</label>
+                    <input
+                      type="Number"
+                      name="sotien"
+                      value={stateFormProduct.sotien}
+                      onChange={onChangeAddProductForm}
+                    ></input>
+                  </>
+                ) : (
+                  ""
+                )}
+
                 <label htmlFor="xuatxu">{i18n.t("XUATSU_X")}</label>
                 <input
                   type="text"
@@ -717,6 +815,7 @@ const Contacts = () => {
       >
         {/* <button onClick={handleExportClick}>Export to Excel</button> */}
         <button onClick={handleExportExcel}>Export Excel</button>
+
         <DataGrid
           checkboxSelection
           editMode="row"
