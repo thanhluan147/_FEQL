@@ -69,6 +69,7 @@ const Login = () => {
         nav("/");
       }
     } catch (error) {
+      alert("LOGIN FAIL!!!");
       console.log(error.response);
     }
   };

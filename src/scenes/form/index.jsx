@@ -53,6 +53,20 @@ const Form = () => {
     });
   };
   const handleSelectionModelChange = (newSelectionModel) => {
+    const hasAcceptedOrCancelled = newSelectionModel.some((selectedId) => {
+      const selectedRow = stateProductview.find((row) => row.id === selectedId);
+      return (
+        selectedRow && selectedRow.soluong === 0
+        //Loại phiếu trigger nhập từ kho
+        // ||
+        //   selectedRow.loaiphieu === "NK"
+      );
+    });
+    if (hasAcceptedOrCancelled) {
+      // Một trong những phần tử có status là "ACCEPT" hoặc "CANCEL"
+      alert("Sản phẩm này đã hết !!");
+      return;
+    }
     setSelectionModel(newSelectionModel);
   };
   const Columnsv = [
@@ -113,12 +127,10 @@ const Form = () => {
       <img
         src={params.value}
         alt="Image"
-        style={{
-          width: "60%",
-          height: "auto",
-          maxWidth: "100%",
-          maxHeight: "100%",
-        }}
+        loading="lazy"
+        width={100}
+        height={50}
+        style={{ cursor: "pointer" }}
       />
     );
   }

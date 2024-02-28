@@ -103,6 +103,9 @@ i18n.use(initReactI18next).init({
         //Xuất KHO
         XOAPHIEUXUATKHO: "Xóa phiếu xuất kho",
         XACNHANYEUCAU: "Xác nhận yêu cầu",
+        THUE: "Thuế",
+        THANHTIEN: "Thành tiền",
+        GHICHU: "Ghi chí",
         HUYYEUCAU: "Hủy yêu cầu",
         TITLEXUATKHO: "Xuất kho",
         DESXUATKHO: "Quản lý xuất kho",

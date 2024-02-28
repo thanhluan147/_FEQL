@@ -35,6 +35,23 @@ export const Get_all_Phieu_Store = async (req) => {
   return JSON.stringify(respod.data.All_PhieuStore);
 };
 
+export const Get_all_Phieu_Store_By_Status = async (req) => {
+  const respod = await Axios.post(
+    `${Url_BackEnd}/phieustore/gettallphieustoreBystatus`,
+    {
+      status: req,
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        // Thêm các header khác nếu cần
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }
+  );
+  return respod.data.All_PhieuStore;
+};
+
 export const Get_all_Phieu_Store_By_StoreID = async (req) => {
   const respod = await Axios.post(
     `${Url_BackEnd}/phieustore/getphieustoreByUserID`,
@@ -111,7 +128,6 @@ export const Update_PhieuStore_By_id = async (req) => {
   return JSON.stringify(respod.data);
 };
 export const Update_PhieuStore_By_id_PENDING = async (req) => {
-  
   const respod = await Axios.put(
     `${Url_BackEnd}/phieustore/UpdatePhieuStore`,
     {

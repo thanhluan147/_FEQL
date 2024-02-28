@@ -24,10 +24,10 @@ export const HandleUpload = async (
 ) => {
   try {
     // Kiểm tra xem file có tồn tại không
-    if (!file) {
-      console.error("Please select a file");
-      return;
-    }
+    // if (!file) {
+    //   console.error("Please select a file");
+    //   return;
+    // }
 
     // // Đọc nội dung của file
     // const reader = new FileReader();
@@ -58,7 +58,6 @@ export const CheckFileName = async (filename, type, statechinhanh) => {
       type: type,
       machinhanh: statechinhanh,
     });
-    console.log("new name " + name.data);
     return name.data;
   } catch (error) {
     console.error("Error uploading file:", error);

@@ -884,12 +884,10 @@ const Form = () => {
       <img
         src={params.value}
         alt="Image"
-        style={{
-          width: "60%",
-          height: "auto",
-          maxWidth: "100%",
-          maxHeight: "100%",
-        }}
+        loading="lazy"
+        width={100}
+        height={50}
+        style={{ cursor: "pointer" }}
       />
     );
   }

@@ -142,13 +142,10 @@ const Team = () => {
           src={params.value}
           onDoubleClick={clickdoublegetimg}
           alt="Image"
-          style={{
-            width: "60%",
-            height: "auto",
-            maxWidth: "100%",
-            maxHeight: "100%",
-            cursor: "pointer",
-          }}
+          loading="lazy"
+          width={100}
+          height={50}
+          style={{ cursor: "pointer" }}
         />
       </>
     );
@@ -862,7 +859,7 @@ const Team = () => {
               ))}
           </select>
           <br></br>
-          <div style={{ position: "relative", top: "-176%" }}>
+          <div style={{ position: "relative", top: "-257%" }}>
             <div className="BoxIMG drop-target">
               {" "}
               {stateViewimg ? (

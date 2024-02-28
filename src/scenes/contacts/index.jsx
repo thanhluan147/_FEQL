@@ -10,6 +10,7 @@ import { Get_all_Product_By_StoreID, createProduct } from "./handleproduct";
 import HandleAccessAccount from "../handleAccess/handleAccess";
 import { Columns } from "./data";
 import { Form, Button } from "react-bootstrap";
+import { converIDloaiTONAME } from "../method";
 import { useState, useEffect } from "react";
 import { DeleteProduct, EditProduct } from "./handleproduct";
 import React from "react";
@@ -34,6 +35,7 @@ const Contacts = () => {
   const [stateaccess, setstateaccess] = useState(false);
   const [stateViewimg, setstateViewimg] = useState("");
   const [isloading, setIsloading] = useState(false);
+  const [ischeckloai, setIscheckloai] = useState(false);
   const [stateFormProduct, setStateFormProduct] = useState({
     id: "",
     name: "",
@@ -127,13 +129,10 @@ const Contacts = () => {
         src={params.value}
         onDoubleClick={clickdoublegetimg}
         alt="Image"
-        style={{
-          width: "60%",
-          height: "auto",
-          maxWidth: "100%",
-          maxHeight: "100%",
-          cursor: "pointer",
-        }}
+        loading="lazy"
+        width={100}
+        height={50}
+        style={{ cursor: "pointer" }}
       />
     );
   }
@@ -164,21 +163,6 @@ const Contacts = () => {
     setstateViewimg(e.target.src);
   };
   const onChangeAddProductForm = (event) => {
-    // Tách phần số từ chuỗi 'id' và chuyển đổi thành số nguyên
-    const arrayOfNumbers = stateProduct.map((obj) =>
-      parseInt(obj.id.replace(/[^\d]/g, ""), 10)
-    );
-
-    // Tìm giá trị lớn nhất trong mảng 'arrayOfNumbers'
-    let maxNumber = Math.max(...arrayOfNumbers);
-    const result = 1 / 0;
-
-    const negativeInfinity = -1 / 0;
-
-    if (maxNumber === negativeInfinity || maxNumber === result) {
-      maxNumber = 0;
-    }
-    let lenghtState = maxNumber + 1;
     let temp = stateimage;
 
     setStateFormProduct({
@@ -187,7 +171,6 @@ const Contacts = () => {
       picture: temp,
       StoreID: statechinhanh,
       behavior: "SELF ADD",
-      id: "POR" + lenghtState,
     });
   };
 
@@ -313,30 +296,166 @@ const Contacts = () => {
     await fetchingGettAllProduct_by_storeID(e.target.value);
     setStatechinhanh(e.target.value);
   };
-  const [file, setFile] = useState(null);
-
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-  };
-
-  const readFileAsync = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-
-      reader.onload = (event) => {
-        resolve(event.target.result);
-      };
-
-      reader.onerror = (error) => {
-        reject(error);
-      };
-
-      reader.readAsDataURL(file);
-    });
-  };
 
   const addproduct = async () => {
-    const check = await createProduct(stateFormProduct);
+    let countdozens = 1;
+    let countvalue = 0;
+
+    if (stateFormProduct.sotien / 1000 < 1) {
+      alert("This money Invalid!!");
+
+      return;
+    }
+
+    for (let index = 0; index < 10; index++) {
+      let value = stateFormProduct.sotien / 1000 / countdozens;
+
+      if (Number.isInteger(value)) {
+        countdozens = countdozens * 10;
+        countvalue++;
+      } else {
+        break;
+      }
+    }
+
+    let addproductFormTemp = {
+      id: "",
+      name: stateFormProduct.name,
+      picture: stateFormProduct.picture,
+      loai: "",
+      soluong: stateFormProduct.soluong,
+      status: stateFormProduct.status,
+      sotien: stateFormProduct.sotien,
+
+      StoreID: stateFormProduct.StoreID,
+      xuatxu: stateFormProduct.xuatxu,
+      behavior: stateFormProduct.behavior,
+    };
+    if (
+      stateFormProduct.loai === "CT" ||
+      stateFormProduct.loai === "CM" ||
+      stateFormProduct.loai === "LK"
+    ) {
+      // Lọc dữ liệu với id chứa "CT"
+      let valueNum =
+        Math.ceil(
+          parseInt(
+            stateFormProduct.sotien /
+              1000 /
+              `${countvalue % 3 === 0 ? countdozens : 1}`
+          ) / 10
+        ) * 10;
+      const filteredData = stateProduct.filter((item) =>
+        item.id.includes(stateFormProduct.loai + valueNum + "K" + "-")
+      );
+      // Tách phần số từ chuỗi 'id' và chuyển đổi thành số nguyên
+      let arrayOfNumbers = [];
+      if (filteredData.length > 0) {
+        arrayOfNumbers = filteredData.map((obj) =>
+          parseInt(obj.id.split("-")[1])
+        );
+      }
+
+      // Tìm giá trị lớn nhất trong mảng 'arrayOfNumbers'
+      let maxNumber = Math.max(...arrayOfNumbers);
+      const result = 1 / 0;
+
+      const negativeInfinity = -1 / 0;
+
+      if (maxNumber === negativeInfinity || maxNumber === result) {
+        maxNumber = 0;
+      }
+      let lenghtState = maxNumber + 1;
+      addproductFormTemp.id =
+        stateFormProduct.loai +
+        stateFormProduct.sotien / 1000 +
+        "K" +
+        "-" +
+        lenghtState;
+      addproductFormTemp.loai = converIDloaiTONAME[stateFormProduct.loai];
+    } else {
+      addproductFormTemp.loai = stateFormProduct.loai;
+      // Tách phần số từ chuỗi 'id' và chuyển đổi thành số nguyên
+      // Lọc dữ liệu với id chứa "CT"
+      const filteredData = stateProduct.filter((item) =>
+        item.id.includes("POR")
+      );
+      const arrayOfNumbers = filteredData.map((obj) =>
+        parseInt(obj.id.replace(/[^\d]/g, ""), 10)
+      );
+
+      // Tìm giá trị lớn nhất trong mảng 'arrayOfNumbers'
+      let maxNumber = Math.max(...arrayOfNumbers);
+      const result = 1 / 0;
+
+      const negativeInfinity = -1 / 0;
+
+      if (maxNumber === negativeInfinity || maxNumber === result) {
+        maxNumber = 0;
+      }
+      let lenghtState = maxNumber + 1;
+      addproductFormTemp.id = "POR" + lenghtState;
+    }
+
+    const check = await createProduct(addproductFormTemp);
+
+    await fetchingGettAllProduct_by_storeID(statechinhanh);
+    if (JSON.parse(check).success || JSON.parse(check).success === "true") {
+      alert(`${i18n.t("ALERT_THEMSANPHAM_P")}`);
+      await HandleUpload(
+        "STORE",
+        stateimage,
+        statechinhanh,
+        stateimageFileName
+      );
+    }
+
+    setStateFormProduct({
+      id: "",
+      name: "",
+      picture: "",
+      loai: "",
+      soluong: 0,
+      status: "",
+      sotien: "",
+      StoreID: "",
+      xuatxu: "",
+      behavior: "SELF ADD",
+    });
+    setStateimgEdit("");
+    setStateimg("");
+  };
+  const addproduct_admin = async () => {
+    let addproductFormTemp = {
+      id: "",
+      name: stateFormProduct.name,
+      picture: stateFormProduct.picture,
+      loai: stateFormProduct.loai,
+      soluong: stateFormProduct.soluong,
+      status: stateFormProduct.status,
+      sotien: stateFormProduct.sotien,
+      StoreID: stateFormProduct.StoreID,
+      xuatxu: stateFormProduct.xuatxu,
+      behavior: stateFormProduct.behavior,
+    };
+    // Lọc dữ liệu với id chứa "CT"
+    const filteredData = stateProduct.filter((item) => item.id.includes("POR"));
+    const arrayOfNumbers = filteredData.map((obj) =>
+      parseInt(obj.id.replace(/[^\d]/g, ""), 10)
+    );
+
+    // Tìm giá trị lớn nhất trong mảng 'arrayOfNumbers'
+    let maxNumber = Math.max(...arrayOfNumbers);
+    const result = 1 / 0;
+
+    const negativeInfinity = -1 / 0;
+
+    if (maxNumber === negativeInfinity || maxNumber === result) {
+      maxNumber = 0;
+    }
+    let lenghtState = maxNumber + 1;
+    addproductFormTemp.id = "POR" + lenghtState;
+    const check = await createProduct(addproductFormTemp);
 
     await fetchingGettAllProduct_by_storeID(statechinhanh);
     if (JSON.parse(check).success || JSON.parse(check).success === "true") {
@@ -566,6 +685,7 @@ const Contacts = () => {
                   value={EditProductForm.loai}
                   onChange={onChangeEditProductForm}
                 ></input>
+
                 <label htmlFor="Role">{i18n.t("SOLUONG_P")}</label>
                 <input
                   type="number"
@@ -638,115 +758,269 @@ const Contacts = () => {
             </div>
           </div>
         </div>
+        {stateaccess ? (
+          <>
+            {" "}
+            <div
+              class="modal fade"
+              id="staticBackdrop"
+              data-backdrop="static"
+              data-keyboard="false"
+              tabindex="-1"
+              aria-labelledby="staticBackdropLabel"
+              aria-hidden="true"
+            >
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5
+                      style={{ color: "black" }}
+                      class="modal-title"
+                      id="staticBackdropLabel"
+                    >
+                      {i18n.t("THEMSP_P")}
+                    </h5>
+                    <button
+                      type="button"
+                      class="close"
+                      data-dismiss="modal"
+                      aria-label="Close"
+                    >
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
 
-        <div
-          class="modal fade"
-          id="staticBackdrop"
-          data-backdrop="static"
-          data-keyboard="false"
-          tabindex="-1"
-          aria-labelledby="staticBackdropLabel"
-          aria-hidden="true"
-        >
-          <div class="modal-dialog">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5
-                  style={{ color: "black" }}
-                  class="modal-title"
-                  id="staticBackdropLabel"
-                >
-                  {i18n.t("THEMSP_P")}
-                </h5>
-                <button
-                  type="button"
-                  class="close"
-                  data-dismiss="modal"
-                  aria-label="Close"
-                >
-                  <span aria-hidden="true">&times;</span>
-                </button>
-              </div>
-
-              <div class="modal-body" style={{ color: "black" }}>
-                <label htmlFor="name"> {i18n.t("TEN_P")}</label>
-                <input
-                  type="text"
-                  name="name"
-                  value={stateFormProduct.name}
-                  onChange={onChangeAddProductForm}
-                ></input>
-                <label htmlFor="phone">{i18n.t("LOAI_P")}</label>
-                <input
-                  type="text"
-                  name="loai"
-                  value={stateFormProduct.loai}
-                  onChange={onChangeAddProductForm}
-                ></input>
-                <label htmlFor="Role">{i18n.t("SOLUONG_P")}</label>
-                <input
-                  type="Number"
-                  name="soluong"
-                  value={stateFormProduct.soluong}
-                  onChange={onChangeAddProductForm}
-                ></input>
-                {stateaccess ? (
-                  <>
-                    {" "}
-                    <label htmlFor="sotien">{i18n.t("SOTIEN_NP")}</label>
+                  <div class="modal-body" style={{ color: "black" }}>
+                    <label htmlFor="name"> {i18n.t("TEN_P")}</label>
                     <input
-                      type="Number"
-                      name="sotien"
-                      value={stateFormProduct.sotien}
+                      type="text"
+                      name="name"
+                      value={stateFormProduct.name}
                       onChange={onChangeAddProductForm}
                     ></input>
-                  </>
-                ) : (
-                  ""
-                )}
+                    <div>
+                      <label for="loaip">Chọn loại khác</label>
+                      <input
+                        type="checkbox"
+                        id="loai"
+                        name="loai"
+                        onClick={() => {
+                          setIscheckloai(!ischeckloai);
+                          setStateFormProduct({
+                            ...stateFormProduct,
+                            loai: "",
+                          });
+                        }}
+                        value={"Khác"}
+                      />
+                    </div>
+                    {/* //true */}
+                    {!ischeckloai ? (
+                      <>
+                        {" "}
+                        <label for="loai">Loại</label>
+                        <select
+                          onChange={onChangeAddProductForm}
+                          name="loai"
+                          value={stateFormProduct.loai}
+                        >
+                          <option value="">-------------------</option>
+                          <option value={"CT"}>Cài tóc</option>
+                          <option value={"CM"}>Mũ</option>
+                          <option value={"LK"}>Linh kiện</option>
+                        </select>
+                      </>
+                    ) : (
+                      <>
+                        {" "}
+                        <label htmlFor="loai">{i18n.t("LOAI_P")}</label>
+                        <input
+                          type="text"
+                          name="loai"
+                          value={stateFormProduct.loai}
+                          onChange={onChangeAddProductForm}
+                        ></input>
+                      </>
+                    )}
 
-                <label htmlFor="xuatxu">{i18n.t("XUATSU_X")}</label>
-                <input
-                  type="text"
-                  name="xuatxu"
-                  value={stateFormProduct.xuatxu}
-                  onChange={onChangeAddProductForm}
-                ></input>
-                <label htmlFor="picture">{i18n.t("HINHANH_P")}</label>
-                <input
-                  accept="image/*"
-                  onChange={convertoBase64}
-                  type="file"
-                  id="picture"
-                  name="picture"
-                  onFocus={convertoBase64}
-                ></input>
-                {stateimage ? (
-                  <img width={200} height={100} src={stateimage}></img>
-                ) : (
-                  ""
-                )}
-              </div>
-              <div class="modal-footer">
-                <button
-                  type="button"
-                  class="btn btn-secondary"
-                  data-dismiss="modal"
-                >
-                  {i18n.t("BTN_DONG")}
-                </button>
-                <button
-                  type="button"
-                  onClick={addproduct}
-                  class="btn btn-primary"
-                  data-dismiss="modal"
-                >
-                  {i18n.t("BTN_XACNHAN")}
-                </button>
+                    <label htmlFor="Role">{i18n.t("SOLUONG_P")}</label>
+                    <input
+                      type="Number"
+                      name="soluong"
+                      value={stateFormProduct.soluong}
+                      onChange={onChangeAddProductForm}
+                    ></input>
+                    {stateaccess ? (
+                      <>
+                        {" "}
+                        <label htmlFor="sotien">{i18n.t("SOTIEN_NP")}</label>
+                        <input
+                          type="Number"
+                          name="sotien"
+                          value={stateFormProduct.sotien}
+                          onChange={onChangeAddProductForm}
+                        ></input>
+                      </>
+                    ) : (
+                      ""
+                    )}
+
+                    <label htmlFor="xuatxu">{i18n.t("XUATSU_X")}</label>
+                    <input
+                      type="text"
+                      name="xuatxu"
+                      value={stateFormProduct.xuatxu}
+                      onChange={onChangeAddProductForm}
+                    ></input>
+                    <label htmlFor="picture">{i18n.t("HINHANH_P")}</label>
+                    <input
+                      accept="image/*"
+                      onChange={convertoBase64}
+                      type="file"
+                      id="picture"
+                      name="picture"
+                      onFocus={convertoBase64}
+                    ></input>
+                    {stateimage ? (
+                      <img width={200} height={100} src={stateimage}></img>
+                    ) : (
+                      ""
+                    )}
+                  </div>
+                  <div class="modal-footer">
+                    <button
+                      type="button"
+                      class="btn btn-secondary"
+                      data-dismiss="modal"
+                    >
+                      {i18n.t("BTN_DONG")}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={addproduct}
+                      class="btn btn-primary"
+                      data-dismiss="modal"
+                    >
+                      {i18n.t("BTN_XACNHAN")}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+          </>
+        ) : (
+          <>
+            {" "}
+            <div
+              class="modal fade"
+              id="staticBackdrop"
+              data-backdrop="static"
+              data-keyboard="false"
+              tabindex="-1"
+              aria-labelledby="staticBackdropLabel"
+              aria-hidden="true"
+            >
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5
+                      style={{ color: "black" }}
+                      class="modal-title"
+                      id="staticBackdropLabel"
+                    >
+                      {i18n.t("THEMSP_P")}
+                    </h5>
+                    <button
+                      type="button"
+                      class="close"
+                      data-dismiss="modal"
+                      aria-label="Close"
+                    >
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+
+                  <div class="modal-body" style={{ color: "black" }}>
+                    <label htmlFor="name"> {i18n.t("TEN_P")}</label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={stateFormProduct.name}
+                      onChange={onChangeAddProductForm}
+                    ></input>
+                    <label htmlFor="phone">{i18n.t("LOAI_P")}</label>
+                    <input
+                      type="text"
+                      name="loai"
+                      value={stateFormProduct.loai}
+                      onChange={onChangeAddProductForm}
+                    ></input>
+                    <label htmlFor="Role">{i18n.t("SOLUONG_P")}</label>
+                    <input
+                      type="Number"
+                      name="soluong"
+                      value={stateFormProduct.soluong}
+                      onChange={onChangeAddProductForm}
+                    ></input>
+                    {stateaccess ? (
+                      <>
+                        {" "}
+                        <label htmlFor="sotien">{i18n.t("SOTIEN_NP")}</label>
+                        <input
+                          type="Number"
+                          name="sotien"
+                          value={stateFormProduct.sotien}
+                          onChange={onChangeAddProductForm}
+                        ></input>
+                      </>
+                    ) : (
+                      ""
+                    )}
+
+                    <label htmlFor="xuatxu">{i18n.t("XUATSU_X")}</label>
+                    <input
+                      type="text"
+                      name="xuatxu"
+                      value={stateFormProduct.xuatxu}
+                      onChange={onChangeAddProductForm}
+                    ></input>
+                    <label htmlFor="picture">{i18n.t("HINHANH_P")}</label>
+                    <input
+                      accept="image/*"
+                      onChange={convertoBase64}
+                      type="file"
+                      id="picture"
+                      name="picture"
+                      onFocus={convertoBase64}
+                    ></input>
+                    {stateimage ? (
+                      <img width={200} height={100} src={stateimage}></img>
+                    ) : (
+                      ""
+                    )}
+                  </div>
+                  <div class="modal-footer">
+                    <button
+                      type="button"
+                      class="btn btn-secondary"
+                      data-dismiss="modal"
+                    >
+                      {i18n.t("BTN_DONG")}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={addproduct_admin}
+                      class="btn btn-primary"
+                      data-dismiss="modal"
+                    >
+                      {i18n.t("BTN_XACNHAN")}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
 
         <div className="container">
           <h3>{i18n.t("CN")}</h3>
@@ -767,7 +1041,7 @@ const Contacts = () => {
         </div>
         <br></br>
         <div style={{ position: "relative", top: "-176%", left: "-49%" }}>
-          <div className="BoxIMG drop-target">
+          <div style={{ top: "-160%" }} className="BoxIMG drop-target">
             {" "}
             {stateViewimg ? (
               <img

@@ -29,7 +29,7 @@ import i18n from "../../i18n/i18n";
 import { useTranslation } from "react-i18next";
 import { EditProduct } from "../contacts/handleproduct";
 import { DeletePhieuOrder } from "./handlePhieustore";
-import { useNavigate } from "react-router-dom";
+import { json, useNavigate } from "react-router-dom";
 import { getAllOrder_BY_storeID } from "../Order/handleform";
 import { CreateIdMaxValueOfarray } from "../method";
 import { Update_PhieuStore_By_id_PENDING } from "../invoices/handlePhieustore";
@@ -214,7 +214,7 @@ const Invoices = () => {
       <Modal show={show} onHide={handleClose} centered size="lg">
         <Modal.Header closeButton>
           <Modal.Title style={{ color: "black" }}>
-            Tổng số tiền : {money}
+            Thông tin sản phẩm
           </Modal.Title>
         </Modal.Header>
         <Modal.Body
@@ -621,25 +621,46 @@ const Invoices = () => {
   };
   const handleExportExcel = () => {
     // Chuẩn bị dữ liệu để xuất
-    const rows = statePhieuStore.map((staff) => {
-      // Chỉ lấy các trường dữ liệu bạn muốn xuất
-      return {
-        // Thêm các trường khác nếu cần
-        [i18n.t("MAPX_PX")]: staff.id,
-        [i18n.t("TINHTRANG_PX")]: staff.status,
+    let arrayrow = [];
+    statePhieuStore.forEach((element) => {
+      element.arrayProduct.forEach((child) => {
+        let object = {
+          [i18n.t("NGAYCAPNHAT_PX")]: element.updateDate.split(" ")[0],
+          [i18n.t("MAPX_PX")]: element.id,
+          [i18n.t("MAPN_PX")]: element.phieustoreID,
+          [i18n.t("TEN_P")]: child.name,
+          [i18n.t("LOAI_P")]: child.loai,
+          [i18n.t("SOLUONG_P")]: child.soluong,
+          [i18n.t("SOTIEN_NP")]: parseFloat(child.sotien),
+          [i18n.t("THUE")]: "",
+          [i18n.t("THANHTIEN")]: "",
+          [i18n.t("GHICHU")]: "",
+        };
+        // const rows = statePhieuStore.map((staff) => {
+        //   // Chỉ lấy các trường dữ liệu bạn muốn xuất
+        //   return {
+        //     // Thêm các trường khác nếu cần
+        //     [i18n.t("MAPX_PX")]: staff.id,
+        //     [i18n.t("TINHTRANG_PX")]: staff.status,
 
-        [i18n.t("MAPX_PX")]: staff.phieustoreID,
+        //     [i18n.t("MAPX_PX")]: staff.phieustoreID,
 
-        [i18n.t("NGAYLAP_PX")]: staff.CreateAt,
-        [i18n.t("NGAYCAPNHAT_PX")]: staff.updateDate,
-      };
+        //     [i18n.t("NGAYLAP_PX")]: staff.CreateAt,
+        //     [i18n.t("NGAYCAPNHAT_PX")]: staff.updateDate,
+        //   };
+        // });
+        // console.log("check row " + JSON.stringify(rows));
+        arrayrow.push(object);
+      });
     });
-
     // Tạo một workbook mới
     const wb = XLSX.utils.book_new();
     // Tạo một worksheet từ dữ liệu
-    const ws = XLSX.utils.json_to_sheet(rows);
+    const ws = XLSX.utils.json_to_sheet(arrayrow);
     ws["!cols"] = [
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
       { width: 20 },
       { width: 20 },
       { width: 20 },

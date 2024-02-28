@@ -69,6 +69,12 @@ export const converBranchIDTOStoreID = {
   BT00: "ST00",
   // Thêm các ánh xạ khác nếu cầ
 };
+export const converIDloaiTONAME = {
+  CT: "CÀI TÓC",
+  CM: "MŨ",
+  LK: "LINH KIỆN",
+  // Thêm các ánh xạ khác nếu cầ
+};
 
 export const CreateIdMaxValueOfarray = (loai, resolvedResult, code) => {
   let lenghtState = 0;
