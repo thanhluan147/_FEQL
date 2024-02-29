@@ -39,7 +39,7 @@ const Contacts = () => {
   const [stateFormProduct, setStateFormProduct] = useState({
     id: "",
     name: "",
-    picture: "",
+    picture: "...",
     loai: "",
     soluong: 0,
     sotien: 0,
@@ -325,7 +325,9 @@ const Contacts = () => {
       loai: "",
       soluong: stateFormProduct.soluong,
       status: stateFormProduct.status,
-      sotien: stateFormProduct.sotien,
+      //conver so tiền 51.000 -> 60.000, 71->80
+      sotien:
+        Math.ceil(stateFormProduct.sotien / 1000 / countdozens) * 10 * 1000,
 
       StoreID: stateFormProduct.StoreID,
       xuatxu: stateFormProduct.xuatxu,
@@ -338,13 +340,7 @@ const Contacts = () => {
     ) {
       // Lọc dữ liệu với id chứa "CT"
       let valueNum =
-        Math.ceil(
-          parseInt(
-            stateFormProduct.sotien /
-              1000 /
-              `${countvalue % 3 === 0 ? countdozens : 1}`
-          ) / 10
-        ) * 10;
+        Math.ceil(stateFormProduct.sotien / 1000 / countdozens) * 10;
       const filteredData = stateProduct.filter((item) =>
         item.id.includes(stateFormProduct.loai + valueNum + "K" + "-")
       );
@@ -367,11 +363,7 @@ const Contacts = () => {
       }
       let lenghtState = maxNumber + 1;
       addproductFormTemp.id =
-        stateFormProduct.loai +
-        stateFormProduct.sotien / 1000 +
-        "K" +
-        "-" +
-        lenghtState;
+        stateFormProduct.loai + valueNum + "K" + "-" + lenghtState;
       addproductFormTemp.loai = converIDloaiTONAME[stateFormProduct.loai];
     } else {
       addproductFormTemp.loai = stateFormProduct.loai;
@@ -470,7 +462,7 @@ const Contacts = () => {
     setStateFormProduct({
       id: "",
       name: "",
-      picture: "",
+      picture: "...",
       loai: "",
       soluong: 0,
       status: "",
