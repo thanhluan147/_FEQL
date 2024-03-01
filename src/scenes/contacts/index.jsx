@@ -6,7 +6,11 @@ import Header from "../../components/Header";
 import { useTheme } from "@mui/material";
 import { Get_all_store_By_userid, Get_all_Store } from "./handlestore";
 import axios from "axios";
-import { Get_all_Product_By_StoreID, createProduct } from "./handleproduct";
+import {
+  Get_all_Product_By_StoreID,
+  createProduct,
+  Get_all_LENGHT_Product_By_StoreID,
+} from "./handleproduct";
 import HandleAccessAccount from "../handleAccess/handleAccess";
 import { Columns } from "./data";
 import { Form, Button } from "react-bootstrap";
@@ -36,6 +40,8 @@ const Contacts = () => {
   const [stateViewimg, setstateViewimg] = useState("");
   const [isloading, setIsloading] = useState(false);
   const [ischeckloai, setIscheckloai] = useState(false);
+  const [stateSizeProduct, setStateSizeProduct] = useState(15);
+  const [stateLength, setStateLength] = useState(0);
   const [stateFormProduct, setStateFormProduct] = useState({
     id: "",
     name: "",
@@ -163,12 +169,10 @@ const Contacts = () => {
     setstateViewimg(e.target.src);
   };
   const onChangeAddProductForm = (event) => {
-    let temp = stateimage;
-
     setStateFormProduct({
       ...stateFormProduct,
       [event.target.name]: event.target.value,
-      picture: temp,
+
       StoreID: statechinhanh,
       behavior: "SELF ADD",
     });
@@ -207,7 +211,7 @@ const Contacts = () => {
     render.onload = () => {
       setEditProductForm({
         ...EditProductForm,
-        picture: render.result,
+        picture: URL_IMG + `STORE/${statechinhanh}/` + check,
       });
       setStateimgEdit(render.result);
     };
@@ -220,7 +224,7 @@ const Contacts = () => {
   const colors = tokens(theme.palette.mode);
   let checkaccess = false;
   let chinhanhdau = "";
-
+  let soluongLength = 0;
   const checkAccess = async () => {
     const check = HandleAccessAccount();
     if (check instanceof Promise) {
@@ -274,47 +278,128 @@ const Contacts = () => {
     }
   };
 
+  // Hàm để gọi API và lấy dữ liệu theo đợt
+  // const fetchDataProduct = async (x, length) => {
+  //   const totalBatches = Math.ceil(
+  //     parseInt(length) / parseInt(stateSizeProduct)
+  //   );
+
+  //   let stateSize = stateSizeProduct;
+  //   let slength = length;
+
+  //   const allProducts = [];
+
+  //   for (let i = 0; i < totalBatches; i++) {
+  //     const startIndexx = i * stateSize;
+  //     const endIndexx = Math.min((i + 1) * stateSize - 1, slength - 1);
+
+  //     // // const endIndexx = startIndexx + stateSizeProduct;
+  //     // console.log("startIndexx " + startIndexx);
+
+  //     // console.log("endIndexx " + endIndexx);
+  //     try {
+  //       let formFetching = {
+  //         StoreID: x,
+  //         startIndex: startIndexx,
+  //         endIndex: endIndexx,
+  //       };
+
+  //       const response = await Get_all_Product_By_StoreID(formFetching);
+
+  //       const productsInBatch = response;
+  //       setStateProduct(JSON.parse(productsInBatch));
+
+  //       console.log("log status " + JSON.stringify(productsInBatch));
+  //     } catch (error) {
+  //       console.error("Error fetching data:", error);
+  //     }
+  //   }
+  // };
+
   const fetchingGettAllProduct_by_storeID = async (x) => {
-    const check = await Get_all_Product_By_StoreID(x);
+    // const totalBatches = Math.ceil(stateLength / stateSizeProduct);
+    // let arrayproduct = [];
+    let formFetching = {
+      StoreID: x,
+      startIndex: 15,
+      endIndex: 20,
+    };
+    const check = await Get_all_Product_By_StoreID(formFetching);
 
     if (check instanceof Promise) {
       // Nếu là promise, chờ promise hoàn thành rồi mới cập nhật state
       const resolvedResult = await check;
+      let arrtemp = resolvedResult;
+      // // Lặp qua từng đợt và gọi API
+      // arrayproduct.push(arrtemp);
+      // for (let i = 0; i < totalBatches; i++) {
+      //   const startIndex = i * stateSizeProduct;
+      //   const endIndex = Math.min(
+      //     (i + 1) * stateSizeProduct - 1,
+      //     stateLength - 1
+      //   );
 
-      setStateProduct(JSON.parse(resolvedResult));
+      //   // Gọi API cho mỗi đợt
+      //   let formFetching = {
+      //     StoreID: x,
+      //     startIndex: startIndex,
+      //     endIndex: endIndex,
+      //   };
+      //   await Get_all_Product_By_StoreID(formFetching);
+      // }
+      // console.log("check state " + JSON.stringify(arrtemp));
+      setStateProduct(JSON.parse(arrtemp));
     } else {
-      setStateProduct(JSON.parse(check));
+      let arrtemp = check;
+      setStateProduct(JSON.parse(arrtemp));
+      // Lặp qua từng đợt và gọi API
+    }
+  };
+  const fetchingGettAll_Length_Product_by_storeID = async (x) => {
+    const check = await Get_all_LENGHT_Product_By_StoreID(x);
+
+    if (check instanceof Promise) {
+      // Nếu là promise, chờ promise hoàn thành rồi mới cập nhật state
+      const resolvedResult = await check;
+      soluongLength = parseInt(JSON.stringify(resolvedResult));
+      setStateLength(parseInt(JSON.stringify(resolvedResult)));
+    } else {
+      soluongLength = parseInt(JSON.stringify(check));
+      setStateLength(parseInt(JSON.stringify(check)));
     }
   };
   const fetchingapi = async () => {
     await checkAccess();
     await fetchingStore();
+    // await fetchingGettAll_Length_Product_by_storeID(chinhanhdau);
+
     await fetchingGettAllProduct_by_storeID(chinhanhdau);
+    // await fetchDataProduct("ST08", 183);
+
     setStatechinhanh(chinhanhdau);
   };
   const handle_getAllProduct = async (e) => {
+    // await fetchingGettAll_Length_Product_by_storeID(e.target.value);
+    // await fetchDataProduct(e.target.value, stateLength);
     await fetchingGettAllProduct_by_storeID(e.target.value);
+
     setStatechinhanh(e.target.value);
   };
 
   const addproduct = async () => {
     let countdozens = 1;
-    let countvalue = 0;
-
+    let checkNum = 0;
     if (stateFormProduct.sotien / 1000 < 1) {
       alert("This money Invalid!!");
 
       return;
     }
-
-    for (let index = 0; index < 10; index++) {
-      let value = stateFormProduct.sotien / 1000 / countdozens;
-
-      if (Number.isInteger(value)) {
-        countdozens = countdozens * 10;
-        countvalue++;
-      } else {
-        break;
+    if ((String(stateFormProduct.sotien).length - 1) % 3 == 0) {
+      let n = (String(stateFormProduct.sotien).length - 1) / 3;
+      if (n >= 2) {
+        for (let index = 2; index <= n; index++) {
+          countdozens = countdozens * 10;
+        }
       }
     }
 
@@ -327,7 +412,10 @@ const Contacts = () => {
       status: stateFormProduct.status,
       //conver so tiền 51.000 -> 60.000, 71->80
       sotien:
-        Math.ceil(stateFormProduct.sotien / 1000 / countdozens) * 10 * 1000,
+        Math.ceil(stateFormProduct.sotien / (1000 * countdozens) / 10) *
+        10 *
+        countdozens *
+        1000,
 
       StoreID: stateFormProduct.StoreID,
       xuatxu: stateFormProduct.xuatxu,
@@ -339,8 +427,11 @@ const Contacts = () => {
       stateFormProduct.loai === "LK"
     ) {
       // Lọc dữ liệu với id chứa "CT"
+
       let valueNum =
-        Math.ceil(stateFormProduct.sotien / 1000 / countdozens) * 10;
+        Math.ceil(stateFormProduct.sotien / (1000 * countdozens) / 10) *
+        countdozens *
+        10;
       const filteredData = stateProduct.filter((item) =>
         item.id.includes(stateFormProduct.loai + valueNum + "K" + "-")
       );
@@ -574,22 +665,7 @@ const Contacts = () => {
       fetchingapi();
     } catch (error) {}
   }, []);
-  const handleExportClick = () => {
-    exportToExcel();
-  };
-  const exportToExcel = () => {
-    const ws = XLSX.utils.json_to_sheet(stateProduct, {
-      header: Columns.map((col) => col.field),
-    });
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Sheet 1");
 
-    const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-    const blob = new Blob([excelBuffer], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8",
-    });
-    saveAs(blob, "exported_data.xlsx");
-  };
   return (
     <Box m="20px">
       <Header title={i18n.t("TITLEKHO")} subtitle={i18n.t("DESKHO")} />
@@ -717,7 +793,7 @@ const Contacts = () => {
 
                 <label htmlFor="picture">{i18n.t("HINHANH_P")}</label>
                 <input
-                  accept="image/*"
+                  accept="image/png, image/jpeg"
                   onChange={convertoBase64Edit}
                   type="file"
                   id="picture"
@@ -866,7 +942,7 @@ const Contacts = () => {
                     ></input>
                     <label htmlFor="picture">{i18n.t("HINHANH_P")}</label>
                     <input
-                      accept="image/*"
+                      accept="image/png, image/jpeg"
                       onChange={convertoBase64}
                       type="file"
                       id="picture"
@@ -978,7 +1054,7 @@ const Contacts = () => {
                     ></input>
                     <label htmlFor="picture">{i18n.t("HINHANH_P")}</label>
                     <input
-                      accept="image/*"
+                      accept="image/png, image/jpeg"
                       onChange={convertoBase64}
                       type="file"
                       id="picture"
@@ -1079,7 +1155,6 @@ const Contacts = () => {
           },
         }}
       >
-        {/* <button onClick={handleExportClick}>Export to Excel</button> */}
         <button onClick={handleExportExcel}>Export Excel</button>
 
         <DataGrid
@@ -1089,11 +1164,11 @@ const Contacts = () => {
           onSelectionModelChange={handleSelectionModelChange}
           rows={stateProduct}
           columns={Columns}
-          pageSize={10}
+          pageSize={stateSizeProduct}
           components={{
             Toolbar: () => (
               <GridToolbar>
-                <GridToolbarExport onClick={exportToExcel} />
+                <GridToolbarExport />
               </GridToolbar>
             ),
           }}

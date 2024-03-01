@@ -143,7 +143,21 @@ const Invoices = () => {
   let checkaccess = false;
   let chinhanhdau = "";
   const showAlert = async () => {
-    console.log("selectionModel " + selectionModel);
+    const hasWAIT = selectionModel.some((selectedId) => {
+      const selectedRow = statePhieuStore.find((row) => row.id === selectedId);
+      return (
+        selectedRow &&
+        selectedRow.status === "WAITING" &&
+        selectedRow.loaiphieu === "NK"
+      );
+    });
+
+    if (hasWAIT) {
+      // Một trong những phần tử có status là "ACCEPT" hoặc "CANCEL"
+      alert("Đơn này đang chờ được lập hóa đơn !!");
+      return;
+    }
+
     const hasAcceptedOrCancelled = selectionModel.some((selectedId) => {
       const selectedRow = statePhieuStore.find((row) => row.id === selectedId);
       return (
@@ -311,6 +325,21 @@ const Invoices = () => {
     });
   };
   const showAlertHuy = async () => {
+    const hasWAIT = selectionModel.some((selectedId) => {
+      const selectedRow = statePhieuStore.find((row) => row.id === selectedId);
+      return (
+        selectedRow &&
+        selectedRow.status === "WAITING" &&
+        selectedRow.loaiphieu === "NK"
+      );
+    });
+
+    if (hasWAIT) {
+      // Một trong những phần tử có status là "ACCEPT" hoặc "CANCEL"
+      alert("Đơn này đang chờ được lập hóa đơn, không thể hủy !!");
+      return;
+    }
+
     confirmAlert({
       title: `${i18n.t("TITLE_ALERT_NP")}`,
       message: `${i18n.t("DES_ALERT_NP_H")}`,

@@ -1131,7 +1131,12 @@ const DETAILS = () => {
     }
   };
   const fetchingGettAllProduct_by_storeID = async (x) => {
-    const check = await Get_all_Product_By_StoreID(x);
+    let formgetProduct = {
+      StoreID: x,
+      startIndex: 0,
+      endIndex: 0,
+    };
+    const check = await Get_all_Product_By_StoreID(formgetProduct);
 
     if (check instanceof Promise) {
       // Nếu là promise, chờ promise hoàn thành rồi mới cập nhật state

@@ -35,7 +35,10 @@ import { getAllOrder_BY_storeID } from "./handleform";
 import { CreateIdMaxValueOfarray } from "../method";
 import { converToName } from "../method";
 import { useRef } from "react";
-import { Update_PhieuStore_By_id } from "../invoices/handlePhieustore";
+import {
+  Update_PhieuStore_By_id,
+  Update_PhieuStore_By_id_WATING,
+} from "../invoices/handlePhieustore";
 const Form = () => {
   useTranslation();
   const nav = useNavigate();
@@ -399,6 +402,21 @@ const Form = () => {
   }
   function StatusObjectCell(params) {
     const arrayObject = params.value;
+    if (arrayObject === "CANCEL") {
+      return (
+        <span
+          style={{
+            backgroundColor: "red",
+            width: "100%",
+            textAlign: "center",
+            borderRadius: "5%",
+            fontSize: "1.1rem",
+          }}
+        >
+          {arrayObject}
+        </span>
+      );
+    }
     if (arrayObject === "ACCEPT") {
       return (
         <span
@@ -579,7 +597,7 @@ const Form = () => {
                 await fetchingGettAllProduct_by_storeID(statechinhanh);
                 setisloading(false);
                 alert(`${i18n.t("ALERT_ADDPHIEUSUCCESS")}`);
-                await Update_PhieuStore_By_id(selectionModelPhieu);
+                await Update_PhieuStore_By_id_WATING(selectionModelPhieu);
                 await fetchingGettAllPhieu_by_StoreID(statechinhanh);
                 await fetchgetAllOrder_BY_storeID(statechinhanh, stateCode);
                 setStatePhieu({
@@ -840,12 +858,14 @@ const Form = () => {
     );
     setstateErrorSL(false);
     setSelectedRow(selectedRows);
+
     const hasAcceptedOrCancelled = newSelectionModel.some((selectedId) => {
       const selectedRow = statePhieuStore.find((row) => row.id === selectedId);
       return (
         selectedRow &&
         (selectedRow.status === "ACCEPT" ||
           selectedRow.status === "CANCEL" ||
+          selectedRow.status === "WAITING" ||
           selectedRow.loaiphieu === "NN")
       );
     });

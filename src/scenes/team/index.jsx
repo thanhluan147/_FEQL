@@ -44,6 +44,7 @@ const Team = () => {
   const [stateViewimg, setstateViewimg] = useState("");
   const [isloading, setIsloading] = useState(false);
   const draggedItem = useRef(null);
+
   const columns = [
     { field: "id", headerName: `CCCD`, editable: true },
     {
@@ -172,13 +173,32 @@ const Team = () => {
 
     // Thực hiện xử lý theo nhu cầu của bạn
   };
-
-  const handleExportExcel = () => {
+  // Hàm để chuyển đổi URL hình ảnh sang base64
+  const loadImageAsBase64 = async (url) => {
+    const response = await fetch(url, { mode: "no-cors" });
+    const blob = await response.blob();
+    const base64 = await blobToBase64(blob);
+    // console.log("base64 " + base64);
+    return base64;
+  };
+  // Hàm chuyển đổi Blob sang base64
+  const blobToBase64 = (blob) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      console.log("blob " + blob);
+      reader.onloadend = () => resolve(reader.result); // Lấy phần base64 sau dấu phẩy
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
+  const handleExportExcel = async () => {
     // Chuẩn bị dữ liệu để xuất
     const rows = stateStaff.map((staff) => {
       // Chỉ lấy các trường dữ liệu bạn muốn xuất
       return {
-        [i18n.t("MNV_TEAM")]: staff.id,
+        CCCD: staff.id,
+        MATTRC: staff.picture,
+        MATSAU: staff.pictureTwo,
         [i18n.t("TNV_TEAM")]: staff.name,
         [i18n.t("SDT_TEAM")]: staff.phone,
         [i18n.t("CV_TEAM")]: staff.Role,
@@ -201,12 +221,9 @@ const Team = () => {
       { width: 20 },
       { width: 20 },
       { width: 20 },
+      { width: 20 },
+      { width: 20 },
     ];
-
-    // // Định dạng màu cho hàng tiêu đề (ví dụ: hàng 1 có màu vàng)
-    // ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 1 } }];
-    // ws["A1"].s = { fill: { fgColor: { rgb: "FFFF00" } } }; // Màu vàng
-    // ws["B1"].s = { fill: { fgColor: { rgb: "FFFF00" } } }; // Màu vàng
 
     // Thêm worksheet vào workbook
     XLSX.utils.book_append_sheet(wb, ws, "Staff_Data");

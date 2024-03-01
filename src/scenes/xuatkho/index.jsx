@@ -925,7 +925,9 @@ const Invoices = () => {
             {i18n.t("XOAPHIEUXUATKHO")}
           </button>
         )}
-        <button
+        {/* //Xác nhận yêu cầu đơn nào thì sẽ chuyển trạng thái sang DONE, và tính và trừ
+        vào so tiền thực tế của chi nhánh đó và đồng thời đưa sản phẩm vào trong kho */}
+        {/* <button
           type="button"
           style={{ marginLeft: "1%", color: "whitesmoke" }}
           class="btn btn-info"
@@ -933,7 +935,7 @@ const Invoices = () => {
           onClick={AcceptRequest}
         >
           {i18n.t("XACNHANYEUCAU")}
-        </button>
+        </button> */}
         <div className="container">
           <h3>{i18n.t("CN")}</h3>
           <select onChange={handle_getAllProduct} id="chinhanh">

@@ -127,6 +127,25 @@ export const Update_PhieuStore_By_id = async (req) => {
 
   return JSON.stringify(respod.data);
 };
+
+export const Update_PhieuStore_By_id_WATING = async (req) => {
+  const respod = await Axios.put(
+    `${Url_BackEnd}/phieustore/UpdatePhieuStore`,
+    {
+      arrayUpdate: req,
+      status: "WAITING",
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        // Thêm các header khác nếu cần
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }
+  );
+
+  return JSON.stringify(respod.data);
+};
 export const Update_PhieuStore_By_id_PENDING = async (req) => {
   const respod = await Axios.put(
     `${Url_BackEnd}/phieustore/UpdatePhieuStore`,

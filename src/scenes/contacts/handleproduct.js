@@ -1,10 +1,18 @@
 import Axios from "axios";
 import Url_BackEnd from "../../URL";
 export const Get_all_Product_By_StoreID = async (req) => {
+  let tempstoreid = "";
+  if (!req.StoreID) {
+    tempstoreid = req;
+  } else {
+    tempstoreid = req.StoreID;
+  }
   const respod = await Axios.post(
     `${Url_BackEnd}/product/getallproduct`,
     {
-      StoreID: req,
+      StoreID: tempstoreid,
+      startIndex: req.startIndex,
+      endIndex: req.endIndex,
     },
     {
       headers: {
@@ -16,6 +24,22 @@ export const Get_all_Product_By_StoreID = async (req) => {
   );
 
   return JSON.stringify(respod.data.All_Products);
+};
+export const Get_all_LENGHT_Product_By_StoreID = async (req) => {
+  const respod = await Axios.post(
+    `${Url_BackEnd}/product/getallProductLength`,
+    {
+      StoreID: req,
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        // Thêm các header khác nếu cần
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }
+  );
+  return respod.data.soluong;
 };
 export const createProduct = async (req) => {
   const respod = await Axios.post(
