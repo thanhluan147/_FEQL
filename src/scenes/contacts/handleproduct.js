@@ -25,6 +25,25 @@ export const Get_all_Product_By_StoreID = async (req) => {
 
   return JSON.stringify(respod.data.All_Products);
 };
+
+export const Get_all_ProductB_By_StoreID = async (req) => {
+  const respod = await Axios.post(
+    `${Url_BackEnd}/productp/getallproductB`,
+    {
+      StoreID: req,
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        // Thêm các header khác nếu cần
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }
+  );
+
+  return JSON.stringify(respod.data.All_Products);
+};
+
 export const Get_all_LENGHT_Product_By_StoreID = async (req) => {
   const respod = await Axios.post(
     `${Url_BackEnd}/product/getallProductLength`,
@@ -53,6 +72,33 @@ export const createProduct = async (req) => {
       status: "GOOD",
       StoreID: req.StoreID,
       behavior: req.behavior,
+      xuatxu: req.xuatxu,
+      sotien: req.sotien,
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        // Thêm các header khác nếu cần
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }
+  );
+
+  return JSON.stringify(respod.data);
+};
+
+export const createProductp = async (req) => {
+  const respod = await Axios.post(
+    `${Url_BackEnd}/productp/create`,
+    {
+      id: req.id,
+      name: req.name,
+      picture: req.picture,
+      loai: req.loai,
+      soluong: req.soluong,
+      status: req.status,
+      StoreID: req.StoreID,
+      date: req.date,
       xuatxu: req.xuatxu,
       sotien: req.sotien,
     },

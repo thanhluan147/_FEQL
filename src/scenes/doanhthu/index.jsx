@@ -117,7 +117,7 @@ const DOANHTHU = () => {
     ws["!cols"] = [
       { width: 15 },
 
-      { width: 300 },
+      { width: 40 },
       { width: 20 },
       { width: 30 },
       { width: 30 },

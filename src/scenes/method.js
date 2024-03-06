@@ -73,6 +73,7 @@ export const converIDloaiTONAME = {
   CT: "CÀI TÓC",
   CM: "MŨ",
   LK: "LINH KIỆN",
+  MK: "MẮT KÍNH",
   // Thêm các ánh xạ khác nếu cầ
 };
 

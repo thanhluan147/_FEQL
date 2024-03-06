@@ -32,7 +32,7 @@ i18n.use(initReactI18next).init({
         TTNH: "Thông tin ngân hàng",
         THEMNV: "Thêm nhân viên",
         XOANV: "Xóa nhân viên",
-        SUANV: "Sửa thông tin nhân viên",
+        SUANV: "Điều chỉnh",
         CN: "Chi nhánh",
         MNV_TEAM: "Mã nhân viên",
         TNV_TEAM: "Tên nhân viên",
@@ -65,6 +65,7 @@ i18n.use(initReactI18next).init({
         THOIDIEMTAOPHIEU: "Thời điểm tạo phiếu",
 
         //KHO
+        SANPHAMHONG: "Sản phẩm hỏng",
         TITLEKHO: "Tồn kho",
         DESKHO: "Quản lý tồn kho",
         MASP_P: "Mã sản phẩm",
@@ -76,7 +77,7 @@ i18n.use(initReactI18next).init({
         HANHVI_P: "Hành vi",
         THEMSP_P: "Thêm sản phẩm",
         XOASP_P: "Xóa sản phẩm",
-        DIEUCHINHSP_P: "Điều chỉnh sản phẩm",
+        DIEUCHINHSP_P: "Điều chỉnh",
         ALERT_THEMSANPHAM_P: "Thêm sản phẩm thành công",
 
         //NHẬP KHO
@@ -284,6 +285,7 @@ i18n.use(initReactI18next).init({
         CT_DOANHTHU: "매출 세부 정보",
         CT_CONNO: "미수금 세부 정보",
         //KHO
+        SANPHAMHONG: "고장 난 제품",
         TITLEKHO: "재고",
         DESKHO: "재고 관리",
         MASP_P: "상품 코드",

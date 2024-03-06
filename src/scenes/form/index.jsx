@@ -26,6 +26,8 @@ import { CreateIdMaxValueOfarray } from "../method";
 import { Get_all_Product_By_StoreID } from "./handleproduct";
 import { useTheme } from "@mui/material";
 import { tokens } from "../../theme";
+import URL_IMG from "../../URL_GETIMG";
+import { CheckFileName, HandleUpload } from "../sendfileFTP/sendfileFTP";
 import HandleAccessAccount from "../handleAccess/handleAccess";
 import { DataGrid, GridToolbar, GridToolbarExport } from "@mui/x-data-grid";
 const Form = () => {
@@ -34,6 +36,7 @@ const Form = () => {
   useTranslation();
   const [stateID, setstateID] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [stateimageFileName, setStateimgFileName] = useState("");
   const [selectionModel, setSelectionModel] = React.useState([]);
   const [stateCheckaccess, setstateCheckaccess] = useState(false);
   const [stateupdatesoluong, setstateupdatesoluong] = useState({
@@ -45,8 +48,8 @@ const Form = () => {
     //   console.log("input inputDate: " + inputDate);
     //   setErrorMessage("Invalid date format. Please use YYYY-MM-DD.");
     // }
+    setisShowerrorDate(false);
 
-    setErrorMessage(false);
     setStatePhieu({
       ...statePhieu,
       [event.target.name]: event.target.value,
@@ -173,27 +176,30 @@ const Form = () => {
     const year = currentDate.getFullYear();
     const month = (currentDate.getMonth() + 1).toString().padStart(2, "0"); // Tháng bắt đầu từ 0
     const day = currentDate.getDate().toString().padStart(2, "0");
-
+    if (statePhieu.thoidiem.split("/").length > 1) {
+      setisShowerrorDate(true);
+      return;
+    }
     if (
       parseFloat(statePhieu.thoidiem.split("-")[0]) < parseFloat(year) ||
       parseFloat(statePhieu.thoidiem.split("-")[0]) > parseFloat(year)
     ) {
-      // console.log("năm đã nhỏ hơn");
       setisShowerrorDate(true);
       return;
     }
     // console.log("chheck month " + statePhieu.thoidiem.split("-")[1]);
     // console.log("month ht " + parseFloat(month));
     if (parseFloat(statePhieu.thoidiem.split("-")[1]) > parseFloat(month)) {
-      // console.log("tháng đã lớn hơn hơn");
       setisShowerrorDate(true);
       return;
-    } else {
-      if (parseFloat(statePhieu.thoidiem.split("-")[2]) > parseFloat(day)) {
-        // console.log("ngày đã lớn hơn");
-        setisShowerrorDate(true);
-        return;
-      }
+    }
+    if (
+      parseFloat(statePhieu.thoidiem.split("-")[1]) === 2 &&
+      parseFloat(statePhieu.thoidiem.split("-")[2]) < 5
+    ) {
+      alert("Hệ thống không có dử liệu ngày này !!");
+      setisShowerrorDate(true);
+      return;
     }
 
     // Kiểm tra lỗi khi mất focus (kết thúc nhập)
@@ -219,7 +225,7 @@ const Form = () => {
   const [stateFormProduct, setStateFormProduct] = useState({
     id: "",
     name: "",
-    picture: "...",
+    pictureview: "...",
     loai: "",
     soluong: 0,
     status: "GOOD",
@@ -243,7 +249,7 @@ const Form = () => {
   const onhandlechangePhieu = (event) => {
     setisshowError(false);
     setisshowErrorTable(false);
-    setisShowerrorDate(false);
+
     if (event.target.name === "loaiphieu") {
       setsotienbandau(0);
       setStatePhieu({
@@ -322,6 +328,14 @@ const Form = () => {
           {
             label: "Yes",
             onClick: async () => {
+              stateProduct.forEach(async (item) => {
+                await HandleUpload(
+                  "STORE",
+                  item.pictureview,
+                  statechinhanhdau,
+                  item.pictureName
+                );
+              });
               setisloading(true);
               const createphieu = {
                 id: stateID,
@@ -419,7 +433,7 @@ const Form = () => {
     setStateFormProduct({
       ...stateFormProduct,
       [event.target.name]: event.target.value,
-      picture: temp,
+      pictureview: temp,
 
       StoreID: statechinhanhdau,
       id: "POR" + lenghtState,
@@ -433,14 +447,14 @@ const Form = () => {
     });
   };
   const addproduct = async () => {
-    const { name, loai, soluong, picture } = stateFormProduct;
+    const { name, loai, soluong, pictureview } = stateFormProduct;
     const errors = {};
 
     if (!name) {
       errors.name = `${i18n.t("ERROR_NAME")}`;
     }
-    if (!picture) {
-      errors.picture = `*Vui lòng chọn ảnh`;
+    if (!pictureview) {
+      errors.pictureview = `*Vui lòng chọn ảnh`;
     }
 
     if (!loai) {
@@ -470,6 +484,8 @@ const Form = () => {
     const updatedItem = {
       ...stateFormProduct,
       checkStore: true,
+      picture: URL_IMG + `STORE/${statechinhanhdau}` + "/" + stateimageFileName,
+      pictureName: stateimageFileName,
     };
     arry.push(updatedItem);
 
@@ -477,7 +493,7 @@ const Form = () => {
     setStateFormProduct({
       id: "",
       name: "",
-      picture: "...",
+      pictureview: "...",
       loai: "",
       soluong: "",
       status: "GOOD",
@@ -486,6 +502,7 @@ const Form = () => {
       xuatxu: "",
       behavior: "ADMIN ADD",
     });
+    setStateimgFileName("");
   };
   const handleFormSubmit = (values) => {
     console.log(values);
@@ -501,6 +518,7 @@ const Form = () => {
         // Tạo một bản sao của đối tượng để không ảnh hưởng đến stateProductfetch
         const updatedItem = {
           ...selectedItem,
+          pictureview: selectedItem.picture,
           behavior: "ADMIN ADD",
           checkStore: stateCheckaccess,
         };
@@ -523,27 +541,32 @@ const Form = () => {
     setSelectionModel([]);
     // selectedData là mảng chứa dữ liệu của các hàng được chọn
   };
-  const convertoBase64 = (e) => {
+  const convertoBase64 = async (e) => {
     const file = e.target.files[0];
 
     // Check if a file is selected
     if (!file) {
       setErrorMessages((prev) => ({
         ...prev,
-        picture: `${i18n.t("ERROR_HINH")}`,
+        pictureview: `${i18n.t("ERROR_HINH")}`,
       }));
       return;
     }
     setErrorMessages({
       ...errorMessages,
-      picture: "",
+      pictureview: "",
     });
-
+    const check = await CheckFileName(
+      e.target.files[0].name,
+      "STORE",
+      statechinhanhdau
+    );
+    setStateimgFileName(check);
     const reader = new FileReader();
     reader.readAsDataURL(file);
 
     reader.onload = () => {
-      setStateFormProduct((prev) => ({ ...prev, picture: reader.result }));
+      setStateFormProduct((prev) => ({ ...prev, pictureview: reader.result }));
       setStateimg(reader.result);
     };
 
@@ -719,11 +742,11 @@ const Form = () => {
                         <td>{item.xuatxu}</td>
 
                         <td>
-                          {item.picture ? (
+                          {item.pictureview ? (
                             <img
                               width={200}
                               height={100}
-                              src={item.picture}
+                              src={item.pictureview}
                             ></img>
                           ) : (
                             ""
@@ -836,13 +859,15 @@ const Form = () => {
                           onChange={onChangeAddProductForm}
                         ></input>
 
-                        <label htmlFor="picture">{i18n.t("HINHANH_P")}</label>
+                        <label htmlFor="pictureview">
+                          {i18n.t("HINHANH_P")}
+                        </label>
                         <input
                           accept="image/*"
                           onChange={convertoBase64}
                           type="file"
-                          id="picture"
-                          name="picture"
+                          id="pictureview"
+                          name="pictureview"
                           onFocus={convertoBase64}
                         ></input>
                         {stateimage ? (

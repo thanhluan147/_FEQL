@@ -14,7 +14,7 @@ import {
 import HandleAccessAccount from "../handleAccess/handleAccess";
 import { Columns } from "./data";
 import { Form, Button } from "react-bootstrap";
-import { converIDloaiTONAME } from "../method";
+import { converIDloaiTONAME, converToName } from "../method";
 import { useState, useEffect } from "react";
 import { DeleteProduct, EditProduct } from "./handleproduct";
 import React from "react";
@@ -26,6 +26,7 @@ import { HandleUpload, CheckFileName } from "../sendfileFTP/sendfileFTP";
 import Url_BackEnd from "../../URL";
 import URL_IMG from "../../URL_GETIMG";
 import "./style.css";
+import { createProductp, Get_all_ProductB_By_StoreID } from "./handleproduct";
 const Contacts = () => {
   useTranslation();
   const [stateStore, setStateStore] = useState([]);
@@ -42,6 +43,12 @@ const Contacts = () => {
   const [ischeckloai, setIscheckloai] = useState(false);
   const [stateSizeProduct, setStateSizeProduct] = useState(15);
   const [stateLength, setStateLength] = useState(0);
+  const [stateBaocao, setStateBaocao] = useState(false);
+  const [stateProductB, setStateProductB] = useState([]);
+  const [stateFormBaocao, setStateFormBaocao] = useState({
+    tinhtrang: "",
+    soluong: 0,
+  });
   const [stateFormProduct, setStateFormProduct] = useState({
     id: "",
     name: "",
@@ -126,6 +133,66 @@ const Contacts = () => {
       field: "behavior",
       headerAlign: "left",
       headerName: `${i18n.t("HANHVI_P")}`,
+      flex: 1,
+    },
+  ];
+  const ColumnsB = [
+    { field: "id", headerName: `${i18n.t("MASP_P")}`, flex: 0.5 },
+
+    {
+      field: "name",
+      headerName: `${i18n.t("TEN_P")}`,
+      flex: 1,
+      headerAlign: "left",
+      align: "left",
+    },
+    {
+      field: "loai",
+      headerName: `${i18n.t("LOAI_P")}`,
+      flex: 1,
+      headerAlign: "left",
+      align: "left",
+    },
+    {
+      field: "picture",
+      headerName: `${i18n.t("HINHANH_P")}`,
+      flex: 1,
+      width: 130,
+      renderCell: ImageCell,
+      headerAlign: "left",
+      align: "left",
+    },
+    {
+      field: "soluong",
+      headerAlign: "left",
+      headerName: `${i18n.t("SOLUONG_P")}`,
+      flex: 1,
+    },
+    {
+      field: "xuatxu",
+      headerName: `${i18n.t("XUATSU_X")}`,
+      flex: 1,
+      headerAlign: "left",
+      align: "left",
+    },
+    {
+      field: "status",
+      headerAlign: "left",
+      headerName: `${i18n.t("TINHTRANG_P")}`,
+      flex: 1,
+    },
+    {
+      field: "sotien",
+      headerName: `${i18n.t("SOTIEN_NP")}`,
+      flex: 1,
+      headerAlign: "left",
+      align: "left",
+      renderCell: StatusMoney,
+    },
+    {
+      field: "date",
+      headerAlign: "left",
+      headerName: `Thời điểm cập nhật`,
       flex: 1,
     },
   ];
@@ -317,8 +384,6 @@ const Contacts = () => {
   // };
 
   const fetchingGettAllProduct_by_storeID = async (x) => {
-    // const totalBatches = Math.ceil(stateLength / stateSizeProduct);
-    // let arrayproduct = [];
     let formFetching = {
       StoreID: x,
       startIndex: 15,
@@ -328,8 +393,31 @@ const Contacts = () => {
 
     if (check instanceof Promise) {
       // Nếu là promise, chờ promise hoàn thành rồi mới cập nhật state
+      let arraySort = [];
       const resolvedResult = await check;
       let arrtemp = resolvedResult;
+
+      const filteredDataMK = JSON.parse(arrtemp).filter((item) =>
+        item.id.startsWith("MK")
+      );
+      const filteredDataLK = JSON.parse(arrtemp).filter((item) =>
+        item.id.startsWith("LK")
+      );
+      const filteredDataCM = JSON.parse(arrtemp).filter((item) =>
+        item.id.startsWith("CM")
+      );
+      const filteredDataCT = JSON.parse(arrtemp).filter((item) =>
+        item.id.startsWith("CT")
+      );
+      const filteredDataPOR = JSON.parse(arrtemp).filter((item) =>
+        item.id.startsWith("POR")
+      );
+      arraySort = arraySort
+        .concat(filteredDataMK)
+        .concat(filteredDataLK)
+        .concat(filteredDataCM)
+        .concat(filteredDataCT)
+        .concat(filteredDataPOR);
       // // Lặp qua từng đợt và gọi API
       // arrayproduct.push(arrtemp);
       // for (let i = 0; i < totalBatches; i++) {
@@ -348,11 +436,102 @@ const Contacts = () => {
       //   await Get_all_Product_By_StoreID(formFetching);
       // }
       // console.log("check state " + JSON.stringify(arrtemp));
-      setStateProduct(JSON.parse(arrtemp));
+      setStateProduct(arraySort);
+    } else {
+      let arraySort = [];
+      let arrtemp = check;
+      const filteredDataMK = JSON.parse(arrtemp).filter((item) =>
+        item.id.startsWith("MK")
+      );
+      const filteredDataLK = JSON.parse(arrtemp).filter((item) =>
+        item.id.startsWith("LK")
+      );
+      const filteredDataCM = JSON.parse(arrtemp).filter((item) =>
+        item.id.startsWith("CM")
+      );
+      const filteredDataCT = JSON.parse(arrtemp).filter((item) =>
+        item.id.startsWith("CT")
+      );
+      const filteredDataPOR = JSON.parse(arrtemp).filter((item) =>
+        item.id.startsWith("POR")
+      );
+      arraySort = arraySort
+        .concat(filteredDataMK)
+        .concat(filteredDataLK)
+        .concat(filteredDataCM)
+        .concat(filteredDataCT)
+        .concat(filteredDataPOR);
+      setStateProduct(arraySort);
+      // Lặp qua từng đợt và gọi API
+    }
+  };
+
+  const fetchingGettAllProductB_by_storeID = async (x) => {
+    const check = await Get_all_ProductB_By_StoreID(x);
+
+    if (check instanceof Promise) {
+      const resolvedResult = await check;
+      let arrtemp = resolvedResult;
+
+      const newArrayObjects = JSON.parse(arrtemp).map((item, index) => ({
+        ...item,
+        id: item.id + "(" + index + ")",
+      }));
+
+      let arraySort = [];
+      const filteredDataMK = newArrayObjects.filter((item) =>
+        item.id.includes("MK")
+      );
+      const filteredDataLK = newArrayObjects.filter((item) =>
+        item.id.includes("LK")
+      );
+      const filteredDataCM = newArrayObjects.filter((item) =>
+        item.id.includes("CM")
+      );
+      const filteredDataCT = newArrayObjects.filter((item) =>
+        item.id.includes("CT")
+      );
+      const filteredDataPOR = newArrayObjects.filter((item) =>
+        item.id.includes("POR")
+      );
+      arraySort = arraySort
+        .concat(filteredDataMK)
+        .concat(filteredDataLK)
+        .concat(filteredDataCM)
+        .concat(filteredDataCT)
+        .concat(filteredDataPOR);
+
+      setStateProductB(arraySort);
     } else {
       let arrtemp = check;
-      setStateProduct(JSON.parse(arrtemp));
-      // Lặp qua từng đợt và gọi API
+      const newArrayObjects = JSON.parse(arrtemp).map((item, index) => ({
+        ...item,
+        id: item.id + "(" + index + ")",
+      }));
+
+      let arraySort = [];
+      const filteredDataMK = newArrayObjects.filter((item) =>
+        item.id.includes("MK")
+      );
+      const filteredDataLK = newArrayObjects.filter((item) =>
+        item.id.includes("LK")
+      );
+      const filteredDataCM = newArrayObjects.filter((item) =>
+        item.id.includes("CM")
+      );
+      const filteredDataCT = newArrayObjects.filter((item) =>
+        item.id.includes("CT")
+      );
+      const filteredDataPOR = newArrayObjects.filter((item) =>
+        item.id.includes("POR")
+      );
+      arraySort = arraySort
+        .concat(filteredDataMK)
+        .concat(filteredDataLK)
+        .concat(filteredDataCM)
+        .concat(filteredDataCT)
+        .concat(filteredDataPOR);
+      setStateProductB(arraySort);
     }
   };
   const fetchingGettAll_Length_Product_by_storeID = async (x) => {
@@ -375,14 +554,14 @@ const Contacts = () => {
 
     await fetchingGettAllProduct_by_storeID(chinhanhdau);
     // await fetchDataProduct("ST08", 183);
-
+    await fetchingGettAllProductB_by_storeID(chinhanhdau);
     setStatechinhanh(chinhanhdau);
   };
   const handle_getAllProduct = async (e) => {
     // await fetchingGettAll_Length_Product_by_storeID(e.target.value);
     // await fetchDataProduct(e.target.value, stateLength);
     await fetchingGettAllProduct_by_storeID(e.target.value);
-
+    await fetchingGettAllProductB_by_storeID(e.target.value);
     setStatechinhanh(e.target.value);
   };
 
@@ -424,16 +603,17 @@ const Contacts = () => {
     if (
       stateFormProduct.loai === "CT" ||
       stateFormProduct.loai === "CM" ||
-      stateFormProduct.loai === "LK"
+      stateFormProduct.loai === "LK" ||
+      stateFormProduct.loai === "MK"
     ) {
       // Lọc dữ liệu với id chứa "CT"
-
+      console.log("  stateFormProduct.loai " + stateFormProduct.loai);
       let valueNum =
         Math.ceil(stateFormProduct.sotien / (1000 * countdozens) / 10) *
         countdozens *
         10;
       const filteredData = stateProduct.filter((item) =>
-        item.id.includes(stateFormProduct.loai + valueNum + "K" + "-")
+        item.id.includes(stateFormProduct.loai + valueNum + "-")
       );
       // Tách phần số từ chuỗi 'id' và chuyển đổi thành số nguyên
       let arrayOfNumbers = [];
@@ -454,7 +634,7 @@ const Contacts = () => {
       }
       let lenghtState = maxNumber + 1;
       addproductFormTemp.id =
-        stateFormProduct.loai + valueNum + "K" + "-" + lenghtState;
+        stateFormProduct.loai + valueNum + "-" + lenghtState;
       addproductFormTemp.loai = converIDloaiTONAME[stateFormProduct.loai];
     } else {
       addproductFormTemp.loai = stateFormProduct.loai;
@@ -483,6 +663,7 @@ const Contacts = () => {
     const check = await createProduct(addproductFormTemp);
 
     await fetchingGettAllProduct_by_storeID(statechinhanh);
+    await fetchingGettAllProductB_by_storeID(statechinhanh);
     if (JSON.parse(check).success || JSON.parse(check).success === "true") {
       alert(`${i18n.t("ALERT_THEMSANPHAM_P")}`);
       await HandleUpload(
@@ -541,6 +722,7 @@ const Contacts = () => {
     const check = await createProduct(addproductFormTemp);
 
     await fetchingGettAllProduct_by_storeID(statechinhanh);
+    await fetchingGettAllProductB_by_storeID(statechinhanh);
     if (JSON.parse(check).success || JSON.parse(check).success === "true") {
       alert(`${i18n.t("ALERT_THEMSANPHAM_P")}`);
       await HandleUpload(
@@ -567,17 +749,30 @@ const Contacts = () => {
   };
   const handleExportExcel = () => {
     const rows = stateProduct.map((staff) => {
-      return {
-        [i18n.t("MASP_P")]: staff.id,
-        [i18n.t("TEN_P")]: staff.name,
-        [i18n.t("LOAI_P")]: staff.loai,
-        [i18n.t("TINHTRANG_P")]: staff.status,
-        [i18n.t("SOLUONG_P")]: staff.soluong,
-        [i18n.t("SOTIEN_NP")]: staff.sotien,
+      if (stateaccess) {
+        return {
+          [i18n.t("MASP_P")]: staff.id,
+          [i18n.t("TEN_P")]: staff.name,
+          [i18n.t("LOAI_P")]: staff.loai,
+          [i18n.t("TINHTRANG_P")]: staff.status,
+          [i18n.t("SOLUONG_P")]: staff.soluong,
+          [i18n.t("SOTIEN_NP")]: staff.sotien,
 
-        [i18n.t("XUATSU_X")]: staff.xuatxu,
-        // Thêm các trường khác nếu cần
-      };
+          [i18n.t("XUATSU_X")]: staff.xuatxu,
+          // Thêm các trường khác nếu cần
+        };
+      } else {
+        return {
+          [i18n.t("MASP_P")]: staff.id,
+          [i18n.t("TEN_P")]: staff.name,
+          [i18n.t("LOAI_P")]: staff.loai,
+          [i18n.t("TINHTRANG_P")]: staff.status,
+          [i18n.t("SOLUONG_P")]: staff.soluong,
+
+          [i18n.t("XUATSU_X")]: staff.xuatxu,
+          // Thêm các trường khác nếu cần
+        };
+      }
     });
 
     const wb = XLSX.utils.book_new();
@@ -593,9 +788,56 @@ const Contacts = () => {
       { width: 20 },
       { width: 20 },
     ];
-
+    const convert = converToName[statechinhanh];
     XLSX.utils.book_append_sheet(wb, ws, "Product Data");
-    XLSX.writeFile(wb, "Product_Data.xlsx");
+    XLSX.writeFile(wb, `Product_Data_${convert}.xlsx`);
+  };
+
+  const handleExportExcel_B = () => {
+    const rows = stateProductB.map((staff) => {
+      if (stateaccess) {
+        return {
+          [i18n.t("MASP_P")]: staff.id,
+          [i18n.t("TEN_P")]: staff.name,
+          [i18n.t("LOAI_P")]: staff.loai,
+          [i18n.t("TINHTRANG_P")]: staff.status,
+          [i18n.t("SOLUONG_P")]: staff.soluong,
+          [i18n.t("SOTIEN_NP")]: staff.sotien,
+
+          [i18n.t("XUATSU_X")]: staff.xuatxu,
+          // Thêm các trường khác nếu cần
+        };
+      }
+      if (stateaccess) {
+        return {
+          [i18n.t("MASP_P")]: staff.id,
+          [i18n.t("TEN_P")]: staff.name,
+          [i18n.t("LOAI_P")]: staff.loai,
+          [i18n.t("TINHTRANG_P")]: staff.status,
+          [i18n.t("SOLUONG_P")]: staff.soluong,
+
+          [i18n.t("XUATSU_X")]: staff.xuatxu,
+          // Thêm các trường khác nếu cần
+        };
+      }
+    });
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(rows);
+
+    // Điều chỉnh chiều rộng của cột (ví dụ: cột 'A' sẽ rộng hơn)
+    ws["!cols"] = [
+      { width: 15 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+    ];
+    const convert = converToName[statechinhanh];
+    XLSX.utils.book_append_sheet(wb, ws, "Product Data");
+    XLSX.writeFile(wb, `Product_BROKEN_Data_${convert}.xlsx`);
   };
   const handleSaveClick = async () => {
     try {
@@ -609,6 +851,7 @@ const Contacts = () => {
         alert("Deleted success");
         setIsloading(false);
         fetchingGettAllProduct_by_storeID(statechinhanh);
+        fetchingGettAllProductB_by_storeID(statechinhanh);
       }
     } catch (error) {
       console.log(error);
@@ -622,7 +865,7 @@ const Contacts = () => {
     );
 
     fetchingGettAllProduct_by_storeID(statechinhanh);
-
+    fetchingGettAllProductB_by_storeID(statechinhanh);
     setEditProductForm({
       ...EditProductForm,
       id: selectedRows[0].id,
@@ -645,10 +888,70 @@ const Contacts = () => {
       [event.target.name]: event.target.value,
     });
   };
-  const editproduct = async () => {
-    const check = await EditProduct(EditProductForm);
-    await fetchingGettAllProduct_by_storeID(statechinhanh);
 
+  const onChangeBaocaoProductForm = (event) => {
+    if (
+      event.target.name === "soluong" &&
+      event.target.value > EditProductForm.soluong
+    ) {
+      alert("Số lượng báo không được vược quá trong kho!!!!");
+      setStateFormBaocao({
+        ...stateFormBaocao,
+        soluong: EditProductForm.soluong,
+      });
+      return;
+    }
+    setStateFormBaocao({
+      ...stateFormBaocao,
+      [event.target.name]: event.target.value,
+    });
+  };
+  const editproduct = async () => {
+    let formEdit = {
+      id: EditProductForm.id,
+      name: EditProductForm.name,
+      picture: EditProductForm.picture,
+      loai: EditProductForm.loai,
+      soluong: parseInt(EditProductForm.soluong),
+      status: EditProductForm.status,
+      StoreID: EditProductForm.StoreID,
+      xuatxu: EditProductForm.xuatxu,
+      sotien: EditProductForm.sotien,
+    };
+    if (stateBaocao) {
+      // Tạo một đối tượng Date hiện tại
+      const currentDate = new Date();
+
+      // Lấy thông tin về ngày, giờ, phút, giây và milliseconds
+      const year = currentDate.getFullYear();
+      const month = (currentDate.getMonth() + 1).toString().padStart(2, "0"); // Tháng bắt đầu từ 0
+      const day = currentDate.getDate().toString().padStart(2, "0");
+
+      // Tạo chuỗi datetime
+      const datetimeString = `${year}-${month}-${day}`;
+
+      let formCreateP = {
+        id: EditProductForm.id,
+        name: EditProductForm.name,
+        picture: EditProductForm.picture,
+        loai: EditProductForm.loai,
+        soluong: stateFormBaocao.soluong,
+        status: stateFormBaocao.tinhtrang,
+        StoreID: EditProductForm.StoreID,
+        date: datetimeString,
+        xuatxu: EditProductForm.xuatxu,
+        sotien: EditProductForm.sotien,
+      };
+      const check = await createProductp(formCreateP);
+      if (JSON.parse(check).success || JSON.parse(check) === "true") {
+        formEdit.soluong =
+          parseFloat(formEdit.soluong) - parseFloat(formCreateP.soluong);
+      }
+    }
+
+    const check = await EditProduct(formEdit);
+    await fetchingGettAllProduct_by_storeID(statechinhanh);
+    await fetchingGettAllProductB_by_storeID(statechinhanh);
     if (JSON.parse(check).success || JSON.parse(check).success === "true") {
       alert("Update success");
       await HandleUpload(
@@ -658,6 +961,8 @@ const Contacts = () => {
         stateimageFileNameEdit
       );
       setSelectionModel([]);
+      setStateBaocao(false);
+      setStateFormBaocao({});
     }
   };
   useEffect(() => {
@@ -672,7 +977,7 @@ const Contacts = () => {
       <div style={{ width: "100%", display: "flex" }}>
         <button
           type="button"
-          class="btn btn-primary"
+          class="button-86"
           data-toggle="modal"
           data-target="#staticBackdrop"
         >
@@ -681,7 +986,7 @@ const Contacts = () => {
         {!isloading ? (
           <button
             type="button"
-            class="btn btn-primary"
+            class="button-86xoa"
             style={{ marginLeft: "1%" }}
             onClick={handleSaveClick}
           >
@@ -699,7 +1004,7 @@ const Contacts = () => {
         <button
           type="button"
           style={{ marginLeft: "1%" }}
-          class="btn btn-primary"
+          class="button-86dc"
           data-toggle="modal"
           onClick={handleEdit}
           data-target="#staticBackdropEdit"
@@ -726,6 +1031,16 @@ const Contacts = () => {
                   id="staticBackdropLabel"
                 >
                   Điều chỉnh thông tin nhân viên
+                  <br></br>
+                  <label htmlFor="baocao">*Báo cáo sự cố sản phẩm </label>
+                  <input
+                    checked={stateBaocao}
+                    onClick={() => {
+                      setStateBaocao(!stateBaocao);
+                    }}
+                    name="baocao"
+                    type="checkbox"
+                  ></input>
                 </h5>
                 <button
                   type="button"
@@ -735,8 +1050,35 @@ const Contacts = () => {
                 >
                   <span aria-hidden="true">&times;</span>
                 </button>
-              </div>
+              </div>{" "}
               <div class="modal-body" style={{ color: "black" }}>
+                {stateBaocao ? (
+                  <>
+                    {" "}
+                    <label htmlFor="tinhtrang" name="tinhtrang">
+                      Tình trạng
+                    </label>
+                    <input
+                      type="text"
+                      name="tinhtrang"
+                      value={stateFormBaocao.tinhtrang}
+                      onChange={onChangeBaocaoProductForm}
+                    ></input>{" "}
+                    <label htmlFor="soluong" name="soluong">
+                      Số lượng
+                    </label>
+                    <input
+                      type="text"
+                      name="soluong"
+                      value={stateFormBaocao.soluong}
+                      onChange={onChangeBaocaoProductForm}
+                    ></input>
+                    <hr></hr>
+                  </>
+                ) : (
+                  ""
+                )}
+
                 <label htmlFor="name" name="name">
                   {i18n.t("TEN_P")}
                 </label>
@@ -754,13 +1096,21 @@ const Contacts = () => {
                   onChange={onChangeEditProductForm}
                 ></input>
 
-                <label htmlFor="Role">{i18n.t("SOLUONG_P")}</label>
-                <input
-                  type="number"
-                  value={EditProductForm.soluong}
-                  onChange={onChangeEditProductForm}
-                  name="soluong"
-                ></input>
+                {stateBaocao ? (
+                  ""
+                ) : (
+                  <>
+                    {" "}
+                    <label htmlFor="Role">{i18n.t("SOLUONG_P")}</label>
+                    <input
+                      type="number"
+                      value={EditProductForm.soluong}
+                      onChange={onChangeEditProductForm}
+                      name="soluong"
+                    ></input>
+                  </>
+                )}
+
                 {stateaccess ? (
                   <>
                     <label htmlFor="Role">{i18n.t("SOTIEN_NP")}</label>
@@ -774,14 +1124,20 @@ const Contacts = () => {
                 ) : (
                   ""
                 )}
-
-                <label htmlFor="Role">{i18n.t("TINHTRANG_P")}</label>
-                <input
-                  type="text"
-                  value={EditProductForm.status}
-                  onChange={onChangeEditProductForm}
-                  name="status"
-                ></input>
+                {stateBaocao ? (
+                  ""
+                ) : (
+                  <>
+                    {" "}
+                    <label htmlFor="Role">{i18n.t("TINHTRANG_P")}</label>
+                    <input
+                      type="text"
+                      value={EditProductForm.status}
+                      onChange={onChangeEditProductForm}
+                      name="status"
+                    ></input>
+                  </>
+                )}
 
                 <label htmlFor="xuatxu">{i18n.t("XUATSU_X")}</label>
                 <input
@@ -895,6 +1251,7 @@ const Contacts = () => {
                           <option value="">-------------------</option>
                           <option value={"CT"}>Cài tóc</option>
                           <option value={"CM"}>Mũ</option>
+                          <option value={"MK"}>Mắt kính</option>
                           <option value={"LK"}>Linh kiện</option>
                         </select>
                       </>
@@ -1164,6 +1521,56 @@ const Contacts = () => {
           onSelectionModelChange={handleSelectionModelChange}
           rows={stateProduct}
           columns={Columns}
+          pageSize={stateSizeProduct}
+          components={{
+            Toolbar: () => (
+              <GridToolbar>
+                <GridToolbarExport />
+              </GridToolbar>
+            ),
+          }}
+        />
+      </Box>
+
+      {/* Row kho broken */}
+      <Box
+        m="40px 0 0 0"
+        height="75vh"
+        sx={{
+          "& .MuiDataGrid-root": {
+            border: "none",
+          },
+          "& .MuiDataGrid-cell": {
+            borderBottom: "none",
+          },
+          "& .name-column--cell": {
+            color: colors.greenAccent[300],
+          },
+          "& .MuiDataGrid-columnHeaders": {
+            backgroundColor: colors.blueAccent[700],
+            borderBottom: "none",
+          },
+          "& .MuiDataGrid-virtualScroller": {
+            backgroundColor: colors.primary[400],
+          },
+          "& .MuiDataGrid-footerContainer": {
+            borderTop: "none",
+            backgroundColor: colors.blueAccent[700],
+          },
+          "& .MuiCheckbox-root": {
+            color: `${colors.greenAccent[200]} !important`,
+          },
+          "& .MuiDataGrid-toolbarContainer .MuiButton-text": {
+            color: `${colors.grey[100]} !important`,
+          },
+        }}
+      >
+        <h3>{i18n.t("SANPHAMHONG")}</h3>
+        <button onClick={handleExportExcel_B}>Export Excel</button>
+
+        <DataGrid
+          rows={stateProductB}
+          columns={ColumnsB}
           pageSize={stateSizeProduct}
           components={{
             Toolbar: () => (

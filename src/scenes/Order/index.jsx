@@ -340,12 +340,14 @@ const Form = () => {
         checkaccess = resolvedResult;
       } else {
         checkaccess = resolvedResult;
+        nav("/");
       }
     } else {
       if (check === "true" || check) {
         checkaccess = true;
       } else {
         checkaccess = false;
+        nav("/");
       }
     }
     setstateCheckAccess(checkaccess);
@@ -641,7 +643,6 @@ const Form = () => {
       )
     );
 
-    console.log("filteredArray " + JSON.stringify(filteredArray));
     if (filteredArray.length !== 0) {
       setstateErrorSL(true);
     } else {

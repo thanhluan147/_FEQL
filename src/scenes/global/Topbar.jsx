@@ -141,8 +141,8 @@ const Topbar = () => {
                 )}
                 <div class="dropdown-menu cssleft">
                   <a class="dropdown-item">
-                    {i18n.t("NGAYLAP_PX")} - {i18n.t("TINHTRANG_PX")} -{" "}
-                    {i18n.t("MAPN_PX")}
+                    {i18n.t("MAPN_PX")}- {i18n.t("TINHTRANG_PX")} -{" "}
+                    {i18n.t("NGAYLAP_PX")}
                   </a>
                   <hr></hr>
                   {statePhieustore

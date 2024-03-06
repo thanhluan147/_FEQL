@@ -197,8 +197,8 @@ const Team = () => {
       // Chỉ lấy các trường dữ liệu bạn muốn xuất
       return {
         CCCD: staff.id,
-        MATTRC: staff.picture,
-        MATSAU: staff.pictureTwo,
+        [i18n.t("HINHANHTRC") + "CCCD"]: staff.picture,
+        [i18n.t("HINHANHSAU") + "CCCD"]: staff.pictureTwo,
         [i18n.t("TNV_TEAM")]: staff.name,
         [i18n.t("SDT_TEAM")]: staff.phone,
         [i18n.t("CV_TEAM")]: staff.Role,
@@ -563,7 +563,7 @@ const Team = () => {
       <div style={{ width: "100%", display: "flex" }}>
         <button
           type="button"
-          class="btn btn-primary"
+          class="button-86"
           data-toggle="modal"
           data-target="#staticBackdrop"
         >
@@ -572,7 +572,7 @@ const Team = () => {
         {!isloading ? (
           <button
             type="button"
-            class="btn btn-primary"
+            class="button-86xoa"
             style={{ marginLeft: "1%" }}
             onClick={handleSaveClick}
           >
@@ -590,7 +590,7 @@ const Team = () => {
         <button
           type="button"
           style={{ marginLeft: "1%" }}
-          class="btn btn-primary"
+          class="button-86dc"
           data-toggle="modal"
           onClick={handleEdit}
           data-target="#staticBackdropEdit"
@@ -859,7 +859,7 @@ const Team = () => {
           </div>
         </div>
 
-        <div className="container">
+        <div style={{ marginLeft: "2%" }} className="container">
           <h3>{i18n.t("CN")}</h3>
           <select onChange={handle_getAllStaff} id="chinhanh">
             {stateBranch &&

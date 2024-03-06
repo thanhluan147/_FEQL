@@ -32,7 +32,10 @@ import { DeletePhieuOrder } from "./handlePhieustore";
 import { json, useNavigate } from "react-router-dom";
 import { getAllOrder_BY_storeID } from "../Order/handleform";
 import { CreateIdMaxValueOfarray } from "../method";
-import { Update_PhieuStore_By_id_PENDING } from "../invoices/handlePhieustore";
+import {
+  Update_PhieuStore_By_id_PENDING,
+  Update_PhieuStore_By_id,
+} from "../invoices/handlePhieustore";
 import {
   UPdateProductStatusOrder,
   Get_all_Order_By_StoreID_Year_Month,
@@ -448,6 +451,7 @@ const Invoices = () => {
     //  await fetchingOrderBy_storeID(statc);
     await fetchingStore();
     await fetchingGetAllHoaDon();
+    console.log("fetch " + formattedDate);
     await fetchingOrderBy_storeID_By_year_month(chinhanhdau, formattedDate);
     setStatechinhanh(chinhanhdau);
   };
@@ -495,18 +499,28 @@ const Invoices = () => {
 
     const check = await createBills(addformbill);
     const originalDate = JSON.parse(check).newBills.CreateAt;
-    const formattedDate = new Date(originalDate);
+    const formattedDatex = new Date(originalDate);
 
-    const year = formattedDate.getFullYear();
-    const month = String(formattedDate.getMonth() + 1).padStart(2, "0");
-    const day = String(formattedDate.getDate()).padStart(2, "0");
+    const year = formattedDatex.getFullYear();
+    const month = String(formattedDatex.getMonth() + 1).padStart(2, "0");
+    const day = String(formattedDatex.getDate()).padStart(2, "0");
 
     const convertedDate = `${year}-${month}-${day}`;
 
     await createDEBTOR(convertedDate, addformbill);
     if (JSON.parse(check).success) {
       await Update_PhieuOrder_By_id(selectionModel);
-
+      let updateStatusPhieuStore = [];
+      selectionModel.forEach(async (obj) => {
+        updateStatusPhieuStore = statePhieuStore.filter(
+          (item) => item.id === obj
+        );
+      });
+      let arraytemp = [];
+      if (updateStatusPhieuStore.length > 0) {
+        arraytemp.push(updateStatusPhieuStore[0].phieustoreID);
+      }
+      await Update_PhieuStore_By_id(arraytemp);
       await fetchingOrderBy_storeID_By_year_month(statechinhanh, convertedDate);
       setstatelenghtID_bill(statelenghtID_bill + 1);
 
@@ -515,7 +529,7 @@ const Invoices = () => {
       if (checktemp instanceof Promise) {
         // Nếu là promise, chờ promise hoàn thành rồi mới cập nhật state
         const resolvedResult = await checktemp;
-
+        console.log("resolvedResult " + resolvedResult);
         const arrayOfNumbers = resolvedResult.map((obj) =>
           parseInt(obj.id.replace(/[^\d]/g, ""), 10)
         );
@@ -539,8 +553,9 @@ const Invoices = () => {
           updateMoney.forEach(async (obj) => {
             const a = obj.arrayProduct;
             const createProductPromises = a.map(async (obj, index) => {
+              let splitId = obj.id.split("-")[0];
               const createproduct = {
-                id: "POR" + (lenghtState + index),
+                id: splitId + "-" + (lenghtState + index),
                 name: obj.name,
                 xuatxu: obj.xuatxu,
                 picture: obj.picture,
@@ -581,19 +596,51 @@ const Invoices = () => {
 
           updateMoney.forEach(async (obj) => {
             const a = obj.arrayProduct;
+            let maxItem = null;
             const createProductPromises = a.map(async (obj, index) => {
-              const createproduct = {
-                id: "POR" + (lenghtState + index),
-                name: obj.name,
-                xuatxu: obj.xuatxu,
-                picture: obj.picture,
-                loai: obj.loai,
-                soluong: obj.soluong,
-                status: obj.status,
-                sotien: obj.sotien,
-                StoreID: selectedOptionnoimua,
-                behavior: obj.behavior,
-              };
+              let createproduct = {};
+
+              const filteredArray = JSON.parse(checktemp).filter((item) =>
+                item.id.startsWith(obj.id.split("-")[0])
+              );
+              if (filteredArray.length > 0) {
+                // Nếu có phần tử thì tìm số lớn nhất
+                let maxNumber = 0;
+
+                filteredArray.forEach((item) => {
+                  const number = parseInt(item.id.split("-")[1]);
+                  if (!isNaN(number) && number > maxNumber) {
+                    maxNumber = number;
+                    maxItem = item;
+                  }
+                });
+
+                createproduct = {
+                  id: obj.id.split("-")[0] + "-" + (parseFloat(maxNumber) + 1),
+                  name: obj.name,
+                  xuatxu: obj.xuatxu,
+                  picture: obj.picture,
+                  loai: obj.loai,
+                  soluong: obj.soluong,
+                  status: obj.status,
+                  sotien: obj.sotien,
+                  StoreID: selectedOptionnoimua,
+                  behavior: obj.behavior,
+                };
+              } else {
+                createproduct = {
+                  id: obj.id,
+                  name: obj.name,
+                  xuatxu: obj.xuatxu,
+                  picture: obj.picture,
+                  loai: obj.loai,
+                  soluong: obj.soluong,
+                  status: obj.status,
+                  sotien: obj.sotien,
+                  StoreID: selectedOptionnoimua,
+                  behavior: obj.behavior,
+                };
+              }
 
               // Trả về promise của createProduct
               return createProduct(createproduct);
@@ -602,6 +649,7 @@ const Invoices = () => {
           });
         });
       }
+
       await fetchingOrderBy_storeID_By_year_month(statechinhanh, formattedDate);
       alert(`${i18n.t("ALERT_LAPHOADONSUCCESS")}`);
 
@@ -820,6 +868,7 @@ const Invoices = () => {
     }
   };
   const handle_getAllProduct = async (e) => {
+    console.log("handle formattedDate " + formattedDate);
     await fetchingOrderBy_storeID_By_year_month(e.target.value, formattedDate);
     const selectedId = e.target.options[e.target.selectedIndex].id;
     setstateCode(selectedId);
