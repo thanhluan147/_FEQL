@@ -54,6 +54,22 @@ export const converToName = {
   ST11: "PHOTO TIME THE LOOP",
   // Thêm các ánh xạ khác nếu cầ
 };
+
+export const converIdToCODE = {
+  ST00: "PTT",
+  ST01: "D2",
+  ST02: "CRM",
+  ST03: "VHM",
+  ST04: "CN",
+  ST05: "EMT",
+  ST06: "GGM",
+  ST07: "BHD",
+  ST08: "LT",
+  ST09: "HVP",
+  ST10: "RY",
+  ST11: "IPH",
+  // Thêm các ánh xạ khác nếu cầ
+};
 export const converBranchIDTOStoreID = {
   BT001: "ST01",
   BT002: "ST02",

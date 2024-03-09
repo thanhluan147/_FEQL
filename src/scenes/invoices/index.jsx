@@ -11,6 +11,8 @@ import {
   Get_all_Store,
   Get_all_store_By_userid,
 } from "../contacts/handlestore";
+import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
 import {
   Get_all_Phieu_Store_By_StoreID,
   Get_all_Phieu_Store,
@@ -102,6 +104,49 @@ const Invoices = () => {
 
     // Tạo tệp Excel từ workbook
     XLSX.writeFile(wb, "Phieu_Store.xlsx");
+  };
+
+  const PrintTableButton = () => {
+    const handlePrintTable = () => {
+      // Lấy đối tượng table có id="tabletemp"
+      const tableToPrint = document.getElementById("tabletemp");
+
+      // Tạo cửa sổ mới để in
+      const printWindow = window.open("", "_blank");
+
+      // HTML của bảng bạn muốn in
+      const tableHTML = tableToPrint.outerHTML;
+
+      // HTML của trang in, bao gồm chỉ bảng cần in
+      const printHTML = `
+        <html>
+          <head>
+            <title>Print Table</title>
+            <style>
+              body {
+                display: none;
+              }
+              table {
+                width: 100%;
+              }
+            </style>
+          </head>
+          <body>
+            ${tableHTML}
+          </body>
+        </html>
+      `;
+
+      // Đưa HTML vào cửa sổ in
+      printWindow.document.write(printHTML);
+
+      // Hiển thị nội dung cần in và gọi hàm in của trình duyệt
+      printWindow.document.body.style.display = "block";
+      printWindow.document.close();
+      printWindow.print();
+    };
+
+    return <button onClick={handlePrintTable}>Print Table</button>;
   };
   const handleDecrease = async () => {
     const newDate = new Date(currentDate);
@@ -374,13 +419,15 @@ const Invoices = () => {
     return (
       <Modal show={show} onHide={handleClose} centered size="lg">
         <Modal.Header closeButton>
-          <Modal.Title style={{ color: "black" }}></Modal.Title>
+          <Modal.Title style={{ color: "black" }}>
+            <PrintTableButton />
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body
           style={{ maxWidth: "100%", overflow: "scroll", maxHeight: "500px" }}
         >
           <div className="table-container">
-            <table className="custom-table">
+            <table id="tabletemp" className="custom-table">
               <thead>
                 <tr>
                   <th>{i18n.t("TEN_P")}</th>
@@ -388,7 +435,15 @@ const Invoices = () => {
                   <th>{i18n.t("SOLUONG_P")}</th>
 
                   <th>{i18n.t("HINHANH_P")}</th>
-                  <th>{i18n.t("SOTIEN_NP")}</th>
+                  {stateCheckAccess ? (
+                    <>
+                      {" "}
+                      <th>{i18n.t("SOTIEN_NP")}</th>
+                    </>
+                  ) : (
+                    ""
+                  )}
+
                   <th>{i18n.t("XUATSU_X")}</th>
                 </tr>
               </thead>
@@ -406,7 +461,15 @@ const Invoices = () => {
                         ""
                       )}
                     </td>
-                    <th>{item.sotien}</th>
+                    {stateCheckAccess ? (
+                      <>
+                        {" "}
+                        <th>{parseInt(item.sotien).toLocaleString("en-US")}</th>
+                      </>
+                    ) : (
+                      ""
+                    )}
+
                     <th>{item.xuatxu}</th>
                   </tr>
                 ))}
@@ -496,7 +559,9 @@ const Invoices = () => {
 
   function StatusMoney(params) {
     const arrayObject = params.value;
-
+    const getloaiphieu = params.row.loaiphieu;
+    // Định dạng số thành chuỗi với dấu phân cách
+    const formattedNumber = parseInt(arrayObject).toLocaleString("en-US");
     return (
       <span
         style={{
@@ -507,7 +572,17 @@ const Invoices = () => {
           fontSize: "1.1rem",
         }}
       >
-        {arrayObject} VND
+        {stateCheckAccess ? (
+          <> {formattedNumber} VND</>
+        ) : (
+          <>
+            {getloaiphieu && getloaiphieu === "NN" ? (
+              <>{formattedNumber} VND</>
+            ) : (
+              "###"
+            )}
+          </>
+        )}
       </span>
     );
   }
@@ -558,6 +633,7 @@ const Invoices = () => {
       );
     }
   }
+
   function StatusObjectCellLoai(params) {
     const arrayObject = params.value;
     if (arrayObject === "NK") {

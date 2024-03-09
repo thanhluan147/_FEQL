@@ -11,7 +11,7 @@ import {
   Get_all_Store,
   Get_all_store_By_userid,
 } from "../contacts/handlestore";
-
+import { converIdToCODE } from "../method";
 import { confirmAlert } from "react-confirm-alert";
 import { Modal, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css"; // Import CSS của Bootstrap
@@ -243,7 +243,10 @@ const Invoices = () => {
                     <td>{item.name}</td>
                     <td>{item.loai}</td>
                     <td>{item.soluong}</td>
-                    <td>{item.sotien}</td>
+                    <td>
+                      {" "}
+                      {parseInt(item.sotien).toLocaleString("en-US")} VND
+                    </td>
                     <td>
                       {item.picture ? (
                         <img width={200} height={100} src={item.picture}></img>
@@ -389,7 +392,7 @@ const Invoices = () => {
     const numberOfItems = Array.isArray(arrayObject) ? arrayObject.length : 0;
     let money = 0;
     arrayObject.forEach((element) => {
-      money += parseFloat(element.sotien);
+      money += parseFloat(element.sotien) * parseFloat(element.soluong);
     });
     return (
       <>
@@ -407,7 +410,16 @@ const Invoices = () => {
             {" "}
             {numberOfItems} Items
           </button>
-          <div>{money} VND</div>
+          <div
+            style={{
+              fontSize: "1.2rem",
+              backgroundColor: "green",
+              padding: "5px",
+              borderRadius: "5px",
+            }}
+          >
+            {parseInt(money).toLocaleString("en-US")} VND
+          </div>
           {showPopup ? (
             <CustomPopup
               show={showPopup}
@@ -529,21 +541,6 @@ const Invoices = () => {
       if (checktemp instanceof Promise) {
         // Nếu là promise, chờ promise hoàn thành rồi mới cập nhật state
         const resolvedResult = await checktemp;
-        console.log("resolvedResult " + resolvedResult);
-        const arrayOfNumbers = resolvedResult.map((obj) =>
-          parseInt(obj.id.replace(/[^\d]/g, ""), 10)
-        );
-
-        // Tìm giá trị lớn nhất trong mảng 'arrayOfNumbers'
-        let maxNumber = Math.max(...arrayOfNumbers);
-        const result = 1 / 0;
-
-        const negativeInfinity = -1 / 0;
-
-        if (maxNumber === negativeInfinity || maxNumber === result) {
-          maxNumber = 0;
-        }
-        lenghtState = maxNumber + 1;
 
         selectedRow.forEach(async (obj) => {
           const updateMoney = statePhieuStore.filter(
@@ -552,21 +549,51 @@ const Invoices = () => {
 
           updateMoney.forEach(async (obj) => {
             const a = obj.arrayProduct;
+            let maxItem = null;
             const createProductPromises = a.map(async (obj, index) => {
-              let splitId = obj.id.split("-")[0];
-              const createproduct = {
-                id: splitId + "-" + (lenghtState + index),
-                name: obj.name,
-                xuatxu: obj.xuatxu,
-                picture: obj.picture,
-                loai: obj.loai,
-                soluong: obj.soluong,
-                status: obj.status,
-                sotien: obj.sotien,
-                // StoreID: obj.StoreID,
-                StoreID: selectedOptionnoimua,
-                behavior: obj.behavior,
-              };
+              let createproduct = {};
+
+              const filteredArray = JSON.parse(resolvedResult).filter((item) =>
+                item.id.startsWith(obj.id.split("-")[0])
+              );
+              if (filteredArray.length > 0) {
+                // Nếu có phần tử thì tìm số lớn nhất
+                let maxNumber = 0;
+
+                filteredArray.forEach((item) => {
+                  const number = parseInt(item.id.split("-")[1]);
+                  if (!isNaN(number) && number > maxNumber) {
+                    maxNumber = number;
+                    maxItem = item;
+                  }
+                });
+
+                createproduct = {
+                  id: obj.id.split("-")[0] + "-" + (parseFloat(maxNumber) + 1),
+                  name: obj.name,
+                  xuatxu: obj.xuatxu,
+                  picture: obj.picture,
+                  loai: obj.loai,
+                  soluong: obj.soluong,
+                  status: obj.status,
+                  sotien: obj.sotien,
+                  StoreID: selectedOptionnoimua,
+                  behavior: obj.behavior,
+                };
+              } else {
+                createproduct = {
+                  id: obj.id,
+                  name: obj.name,
+                  xuatxu: obj.xuatxu,
+                  picture: obj.picture,
+                  loai: obj.loai,
+                  soluong: obj.soluong,
+                  status: obj.status,
+                  sotien: obj.sotien,
+                  StoreID: selectedOptionnoimua,
+                  behavior: obj.behavior,
+                };
+              }
 
               // Trả về promise của createProduct
               return createProduct(createproduct);
@@ -575,20 +602,6 @@ const Invoices = () => {
           });
         });
       } else {
-        const arrayOfNumbers = JSON.parse(checktemp).map((obj) =>
-          parseInt(obj.id.replace(/[^\d]/g, ""), 10)
-        );
-
-        // Tìm giá trị lớn nhất trong mảng 'arrayOfNumbers'
-        let maxNumber = Math.max(...arrayOfNumbers);
-        const result = 1 / 0;
-
-        const negativeInfinity = -1 / 0;
-
-        if (maxNumber === negativeInfinity || maxNumber === result) {
-          maxNumber = 0;
-        }
-        lenghtState = maxNumber + 1;
         selectedRow.forEach(async (obj) => {
           const updateMoney = statePhieuStore.filter(
             (item) => item.phieustoreID === obj.phieustoreID
@@ -767,7 +780,12 @@ const Invoices = () => {
       }
 
       const FormcreateDebTor = {
-        id: "DEB" + "-" + stateCode + "-" + lenghtState,
+        id:
+          "DEB" +
+          "-" +
+          converIdToCODE[selectedOptionnoimua] +
+          "-" +
+          lenghtState,
         Debtor_BranchID: stateFormBills.noimua,
         Owner_BranchID: stateFormBills.noiban,
         sotienNo: stateFormBills.giaban,
@@ -816,12 +834,20 @@ const Invoices = () => {
       }
 
       const FormcreateDebTor = {
-        id: "DEB" + "-" + stateCode + "-" + lenghtState,
+        id:
+          "DEB" +
+          "-" +
+          converIdToCODE[selectedOptionnoimua] +
+          "-" +
+          lenghtState,
         Debtor_BranchID: stateFormBills.noimua,
         Owner_BranchID: stateFormBills.noiban,
         sotienNo: stateFormBills.giaban,
         ThoiDiemNo: datetimeString,
         LastPaymentDate: "...",
+        Note: "....",
+        arrayProduct: selectedRow[0].arrayProduct,
+        OrderId: selectedRow[0].id,
       };
 
       if (!isCheckedNoiban) {
@@ -868,7 +894,6 @@ const Invoices = () => {
     }
   };
   const handle_getAllProduct = async (e) => {
-    console.log("handle formattedDate " + formattedDate);
     await fetchingOrderBy_storeID_By_year_month(e.target.value, formattedDate);
     const selectedId = e.target.options[e.target.selectedIndex].id;
     setstateCode(selectedId);
@@ -876,9 +901,11 @@ const Invoices = () => {
   };
   const handleSelectionModelChange = (newSelectionModel) => {
     // Lấy thông tin của các hàng được chọn
+
     const selectedRows = newSelectionModel.map((selectedId) =>
       statePhieuStore.find((row) => row.id === selectedId)
     );
+    console.log("select row " + JSON.stringify(selectedRows));
     if (selectedRows) {
       setSelectedRow(selectedRows);
     }

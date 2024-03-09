@@ -66,7 +66,7 @@ export const Get_all_Phieu_Store_By_StoreID = async (req) => {
 };
 
 export const Update_SOTIEN_DOANHTHU_By_TWOid = async (req) => {
-
+  console.log("check req " + JSON.stringify(req));
   const respod = await Axios.put(
     `${Url_BackEnd}/debtors/updateSotienByDebtor_BranchIDAndOwner_BranchID`,
     {
@@ -76,6 +76,7 @@ export const Update_SOTIEN_DOANHTHU_By_TWOid = async (req) => {
       sotienNo: req.sotienNo,
       ThoiDiemNo: req.ThoiDiemNo,
       sotiencapnhat: req.sotiencapnhat,
+      Note: req.Note,
     },
     {
       headers: {

@@ -11,6 +11,9 @@ export const createDebtor = async (req) => {
       ThoiDiemNo: req.ThoiDiemNo,
       LastPaymentDate: req.LastPaymentDate,
       status: req.status,
+      Note: req.Note,
+      arrayProduct: req.arrayProduct,
+      OrderId: req.OrderId,
     },
     {
       headers: {

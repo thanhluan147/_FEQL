@@ -211,7 +211,8 @@ const Contacts = () => {
   }
   function StatusMoney(params) {
     const arrayObject = params.value;
-
+    // Định dạng số thành chuỗi với dấu phân cách
+    const formattedNumber = parseInt(arrayObject).toLocaleString("en-US");
     return (
       <>
         {stateaccess ? (
@@ -224,7 +225,7 @@ const Contacts = () => {
               fontSize: "1.1rem",
             }}
           >
-            {arrayObject} VND
+            {formattedNumber} VND
           </span>
         ) : (
           <span>#####</span>

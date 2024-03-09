@@ -125,7 +125,7 @@ i18n.use(initReactI18next).init({
         MODAL_GIABAN: "Giá bán",
         MODAL_NHAPNOIBAN: "Nhập nơi bán",
         MODAL_NHAPNOIMUA: "Nhập nơi mua",
-
+        NNK:"Nhập ngoài kho",
         //Hóa đơn
         TITLEHOADON: "Hóa đơn",
         DESHOADON: "Chi tiết hóa đơn (đã từng mua) theo từng chi nhánh",
@@ -242,7 +242,7 @@ i18n.use(initReactI18next).init({
         HV: "행동",
         NK: "입고",
         XK: "출고",
-
+        NNK:"창고 외부에서 들여오기",
         //BUTTON
         BTN_XACNHAN: "확인",
         BTN_DONG: "닫기",

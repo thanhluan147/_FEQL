@@ -225,7 +225,25 @@ const DOANHTHU = () => {
 
     setstatelenghtID_bill(lenghtState);
   };
+  function StatusMoney(params) {
+    const arrayObject = params.value;
 
+    // Định dạng số thành chuỗi với dấu phân cách
+    const formattedNumber = parseInt(arrayObject).toLocaleString("en-US");
+    return (
+      <span
+        style={{
+          backgroundColor: "green",
+          width: "100%",
+          textAlign: "center",
+          borderRadius: "5%",
+          fontSize: "1.1rem",
+        }}
+      >
+        {formattedNumber} VND
+      </span>
+    );
+  }
   const formatDatetime = (params) => {
     const arrayObject = params.value.toString();
 
@@ -272,20 +290,22 @@ const DOANHTHU = () => {
     {
       field: "sotien",
       headerName: `${i18n.t("SOTIENTRATUCONNO")}`,
+      renderCell: StatusMoney,
       flex: 1,
     },
     {
       field: "sotienThucte",
       headerName: `${i18n.t("SOTIENDOANHTHU")}`,
+      renderCell: StatusMoney,
       flex: 1,
     },
 
-    {
-      field: "thoidiem",
-      headerName: `${i18n.t("NGAYLAP_DT")}`,
-      renderCell: formatDatetime,
-      flex: 1,
-    },
+    // {
+    //   field: "thoidiem",
+    //   headerName: `${i18n.t("NGAYLAP_DT")}`,
+    //   renderCell: formatDatetime,
+    //   flex: 1,
+    // },
     {
       field: "Listdebtors",
       headerName: `${i18n.t("DSCONNO_DT")}`,
@@ -664,7 +684,7 @@ const DOANHTHU = () => {
           *Tổng doanh thu :{" "}
           <span style={{ color: "green", fontSize: "1.1rem" }}>
             {" "}
-            {stateTongtien.tongdoanhthu}
+            {parseInt(stateTongtien.tongdoanhthu).toLocaleString("en-US")} VND
           </span>
         </span>
         <br></br>
@@ -672,7 +692,7 @@ const DOANHTHU = () => {
           *Tổng số tiền trả từ con nợ :
           <span style={{ color: "green", fontSize: "1.1rem" }}>
             {" "}
-            {stateTongtien.tongtienno}
+            {parseInt(stateTongtien.tongtienno).toLocaleString("en-US")} VND
           </span>
         </span>
         <br></br>

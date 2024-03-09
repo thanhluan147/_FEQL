@@ -177,6 +177,25 @@ const DOANHTHU = () => {
 
     setstatelenghtID_bill(lenghtState);
   };
+  function StatusMoney(params) {
+    const arrayObject = params.value;
+
+    // Định dạng số thành chuỗi với dấu phân cách
+    const formattedNumber = parseInt(arrayObject).toLocaleString("en-US");
+    return (
+      <span
+        style={{
+          backgroundColor: "green",
+          width: "100%",
+          textAlign: "center",
+          borderRadius: "5%",
+          fontSize: "1.1rem",
+        }}
+      >
+        {formattedNumber} VND
+      </span>
+    );
+  }
   const convertStoreID = (params) => {
     const arrayObject = params.value;
 
@@ -241,13 +260,13 @@ const DOANHTHU = () => {
     {
       field: "giaban",
       headerName: `${i18n.t("GIABAN_HD")}`,
-
+      renderCell: StatusMoney,
       flex: 1,
     },
     {
       field: "giamua",
       headerName: `${i18n.t("GIAMUA_HD")}`,
-
+      renderCell: StatusMoney,
       flex: 1,
     },
 

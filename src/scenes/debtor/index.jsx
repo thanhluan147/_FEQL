@@ -49,6 +49,7 @@ const DEBTORS = () => {
   const [selectedRow, setSelectedRow] = React.useState(null);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [stateformDebtor, setstateformDebtor] = useState({
+    Note: "",
     sotienNo: "",
   });
   const [statesotiencapnhat, setstatesotiencapnhat] = useState({
@@ -167,6 +168,62 @@ const DEBTORS = () => {
       "Debtor_" + converToName[statechinhanh] + "_Data" + ".xlsx"
     );
   };
+  function ArrayObjectCell(params) {
+    const arrayObject = params.value;
+    const numberOfItems = Array.isArray(arrayObject) ? arrayObject.length : 0;
+    let money = 0;
+    arrayObject.forEach((element) => {
+      money += parseFloat(element.sotien) * parseFloat(element.soluong);
+    });
+    return (
+      <>
+        <div
+          style={{
+            justifyContent: "space-between",
+            width: "100%",
+            display: "flex",
+          }}
+        >
+          <button
+            class="btn41-43 btn-43 "
+            onClick={() => handleOpenPopup(arrayObject)}
+          >
+            {" "}
+            {numberOfItems} Items
+          </button>
+
+          {showPopup ? (
+            <CustomPopup
+              show={showPopup}
+              handleClose={handleClosePopup}
+              content={stateContentModal}
+            />
+          ) : (
+            ""
+          )}
+        </div>
+      </>
+    );
+  }
+  function StatusMoney(params) {
+    const arrayObject = params.value;
+
+    // Định dạng số thành chuỗi với dấu phân cách
+    const formattedNumber = parseInt(arrayObject).toLocaleString("en-US");
+    return (
+      <span
+        style={{
+          backgroundColor: "green",
+          width: "100%",
+          textAlign: "center",
+          borderRadius: "5%",
+          fontSize: "1.1rem",
+        }}
+      >
+        {formattedNumber} VND
+      </span>
+    );
+  }
   const convertStoreID = (params) => {
     const arrayObject = params.value;
 
@@ -199,9 +256,71 @@ const DEBTORS = () => {
 
     setstatelenghtID_bill(lenghtState);
   };
-
+  const CustomPopup = ({ show, handleClose, content, money }) => {
+    return (
+      <Modal show={show} onHide={handleClose} centered size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title style={{ color: "black" }}>
+            Thông tin sản phẩm
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body
+          style={{ maxWidth: "100%", overflow: "scroll", maxHeight: "500px" }}
+        >
+          <div className="table-container">
+            <table className="custom-table">
+              <thead>
+                <tr>
+                  <th>Mã sản phẩm</th>
+                  <th>Tên sản phẩm</th>
+                  <th>Loại sản phẩm</th>
+                  <th>Số lượng</th>
+                  <th>Số tiền</th>
+                  <th>Hình ảnh</th>
+                  <th>Hành vi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {content.map((item) => (
+                  <tr key={item.id}>
+                    <td>{item.id}</td>
+                    <td>{item.name}</td>
+                    <td>{item.loai}</td>
+                    <td>{item.soluong}</td>
+                    <td>
+                      {" "}
+                      {parseInt(item.sotien).toLocaleString("en-US")} VND
+                    </td>
+                    <td>
+                      {item.picture ? (
+                        <img width={200} height={100} src={item.picture}></img>
+                      ) : (
+                        ""
+                      )}
+                    </td>
+                    <td>{item.behavior}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose}>
+            Đóng
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    );
+  };
   const columns = [
     { field: "id", flex: 1, headerName: `${i18n.t("MA_CN")}` },
+    {
+      field: "OrderId",
+      headerName: `${i18n.t("MAPN_PX")}`,
+      flex: 1,
+      cellClassName: "name-column--cell",
+    },
     {
       field: "Owner_BranchID",
       headerName: `${i18n.t("CHUNO_CN")}`,
@@ -219,14 +338,31 @@ const DEBTORS = () => {
       field: "sotienNo",
       headerName: `${i18n.t("SOTIENNO_CN")}`,
       flex: 1,
+      renderCell: StatusMoney,
+    },
+    {
+      field: "Note",
+      headerName: `Ghi chú`,
+      flex: 1,
     },
     {
       field: "LastPaymentDate",
       headerName: `${i18n.t("LANCUOICAPNHAT")}`,
       flex: 1,
     },
+    {
+      field: "arrayProduct",
+      headerName: `${i18n.t("SOLUONGSP_PX")}`,
+      flex: 1,
+      renderCell: ArrayObjectCell,
+    },
   ];
-
+  const onChangeNote = (event) => {
+    setstateformDebtor({
+      ...stateformDebtor,
+      [event.target.name]: event.target.value,
+    });
+  };
   const onChangeSotiencapnhat = (event) => {
     let value = event.target.value;
 
@@ -245,7 +381,14 @@ const DEBTORS = () => {
       [event.target.name]: value,
     });
   };
-
+  const handleOpenPopup = (content) => {
+    setShowPopup(true);
+    setStatecontentModal(content);
+  };
+  const handleClosePopup = () => {
+    setShowPopup(false);
+    setStatecontentModal([]);
+  };
   const updateSotien = async () => {
     const formEdit = {
       id: stateformDebtor.id,
@@ -255,8 +398,16 @@ const DEBTORS = () => {
       sotiencapnhat: Math.abs(
         statesotiencapnhat.sotiencapnhat - stateformDebtor.sotienNo
       ),
+      Note: stateformDebtor.Note,
       ThoiDiemNo: stateformDebtor.ThoiDiemNo,
     };
+    if (!formEdit.sotienNo) {
+      formEdit.sotienNo = 0;
+    }
+    if (!formEdit.sotiencapnhat) {
+      formEdit.sotiencapnhat = 0;
+    }
+
     const check = await Update_SOTIEN_DOANHTHU_By_TWOid(formEdit);
     await fetchingGetAllDEBTOR_by_STOREID_year_month(
       statechinhanh,
@@ -450,6 +601,18 @@ const DEBTORS = () => {
                   onChange={onChangeSotiencapnhat}
                   name="sotiencapnhat"
                 ></input>
+
+                <label htmlFor="Note" name="Note">
+                  Ghi chú
+                </label>
+                <textarea
+                  rows={5}
+                  name="Note"
+                  cols={40}
+                  type="text"
+                  value={stateformDebtor.Note}
+                  onChange={onChangeNote}
+                ></textarea>
               </div>
               <div class="modal-footer">
                 <button

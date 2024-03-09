@@ -63,6 +63,7 @@ const Form = () => {
   let chinhanhdau = "";
   let code = "";
   const [stateCode, setstateCode] = useState("");
+  const [stateCodePN, setstateCodePN] = useState("");
   const [stateID, setstateID] = useState("");
   const [statesotienbandau, setsotienbandau] = useState(0);
   const [statechinhanhnhan, setchinhanhnhan] = useState("");
@@ -126,7 +127,7 @@ const Form = () => {
                         ""
                       )}
                     </td>
-                    <th>{item.sotien} VND</th>
+                    <th>{parseInt(item.sotien).toLocaleString("en-US")} VND</th>
                   </tr>
                 ))}
               </tbody>
@@ -159,7 +160,7 @@ const Form = () => {
     {
       field: "sotien",
       headerName: `${i18n.t("SOTIEN_NP")}`,
-      renderCell: SotienObjectCell,
+      renderCell: StatusMoney,
       flex: 1,
     },
     {
@@ -197,6 +198,14 @@ const Form = () => {
       flex: 1,
       headerAlign: "left",
       align: "left",
+    },
+    {
+      field: "sotien",
+      headerName: `${i18n.t("SOTIEN_NP")}`,
+      flex: 1,
+      headerAlign: "left",
+      align: "left",
+      renderCell: StatusMoney,
     },
     {
       field: "picture",
@@ -283,6 +292,7 @@ const Form = () => {
 
         setStatechinhanh(chinhanhdau);
         setstateCode(code);
+        setstateCodePN(code);
       } else {
         // Nếu không phải là promise, cập nhật state ngay lập tức
 
@@ -292,6 +302,7 @@ const Form = () => {
 
         setStatechinhanh(chinhanhdau);
         setstateCode(code);
+        setstateCodePN(code);
       }
     } else {
       const objBranch = Get_all_store_By_userid();
@@ -306,6 +317,7 @@ const Form = () => {
 
         setStatechinhanh(chinhanhdau);
         setstateCode(code);
+        setstateCodePN(code);
       } else {
         // Nếu không phải là promise, cập nhật state ngay lập tức
         setStateStore(JSON.parse(objBranch));
@@ -314,6 +326,7 @@ const Form = () => {
 
         setStatechinhanh(chinhanhdau);
         setstateCode(code);
+        setstateCodePN(code);
       }
     }
   };
@@ -340,14 +353,12 @@ const Form = () => {
         checkaccess = resolvedResult;
       } else {
         checkaccess = resolvedResult;
-        nav("/");
       }
     } else {
       if (check === "true" || check) {
         checkaccess = true;
       } else {
         checkaccess = false;
-        nav("/");
       }
     }
     setstateCheckAccess(checkaccess);
@@ -601,7 +612,7 @@ const Form = () => {
                 alert(`${i18n.t("ALERT_ADDPHIEUSUCCESS")}`);
                 await Update_PhieuStore_By_id_WATING(selectionModelPhieu);
                 await fetchingGettAllPhieu_by_StoreID(statechinhanh);
-                await fetchgetAllOrder_BY_storeID(statechinhanh, stateCode);
+                await fetchgetAllOrder_BY_storeID(statechinhanh, stateCodePN);
                 setStatePhieu({
                   sotien: 0,
                   loaiphieu: "",
@@ -823,9 +834,9 @@ const Form = () => {
         ? { ...row, soluong: stateupdatesoluong.usoluong }
         : row
     );
-    setstateupdatesoluong({
-      usoluong: 0,
-    });
+    // setstateupdatesoluong({
+    //   usoluong: 0,
+    // });
     setStateProduct(updatedRows);
   };
   const handle_getAllProduct = async (e) => {
@@ -837,6 +848,7 @@ const Form = () => {
   };
   const handle_changechinhanhnhan = async (e) => {
     await fetchingGettAllPhieu_by_StoreID(e.target.value);
+    const selectedId = e.target.options[e.target.selectedIndex].id;
   };
   const handleSelectionModelChange = (newSelectionModel) => {
     const hasAcceptedOrCancelled = newSelectionModel.some((selectedId) => {
@@ -897,9 +909,29 @@ const Form = () => {
       return selectedItem; // Trả về nguyên bản nếu không tìm thấy đối tượng
     });
     setStateProduct(updatedSelectedData);
-    setSelectionModel([]);
+    // setSelectionModel([]);
     // selectedData là mảng chứa dữ liệu của các hàng được chọn
   };
+  function StatusMoney(params) {
+    const arrayObject = params.value;
+    // Định dạng số thành chuỗi với dấu phân cách
+    const formattedNumber = parseInt(arrayObject).toLocaleString("en-US");
+    return (
+      <>
+        <span
+          style={{
+            backgroundColor: "green",
+            width: "100%",
+            textAlign: "center",
+            borderRadius: "5%",
+            fontSize: "1.1rem",
+          }}
+        >
+          {formattedNumber} VND
+        </span>
+      </>
+    );
+  }
   function ImageCell(params) {
     return (
       <img
@@ -1295,11 +1327,13 @@ const Form = () => {
                 stateStore.map((object, index) => (
                   <React.Fragment key={index}>
                     {index === 0 ? (
-                      <option selected id="target" value={object.id}>
+                      <option id={object.code} selected value={object.id}>
                         {object.name}
                       </option>
                     ) : (
-                      <option value={object.id}>{object.name}</option>
+                      <option id={object.code} value={object.id}>
+                        {object.name}
+                      </option>
                     )}
                   </React.Fragment>
                 ))}

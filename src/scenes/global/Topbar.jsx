@@ -13,10 +13,12 @@ import { useTranslation } from "react-i18next";
 import Temp from "../../components/Temp";
 import { useEffect, useState } from "react";
 import "./style.css";
+import { useNavigate } from "react-router-dom";
 import i18n from "../../i18n/i18n";
 import HandleAccessAccount from "../handleAccess/handleAccess";
 import { Get_all_Phieu_Store_By_Status } from "../invoices/handlePhieustore";
 const Topbar = () => {
+  let nav = useNavigate();
   useTranslation();
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -43,18 +45,19 @@ const Topbar = () => {
         checkaccess = false;
       }
     }
-    console.log("check access " + checkaccess);
+
     setstateaccess(checkaccess);
   };
   const handleDropdownClick = () => {
     // Đóng dropdown bằng cách cập nhật trạng thái
-    console.log("đang là " + isDropdownOpen);
+
     setDropdownOpen(false);
   };
   const CoppyText = (x) => {
     // Lựa chọn và sao chép nội dung của thẻ div
     // Copy the text inside the text field
-    navigator.clipboard.writeText(x);
+    // navigator.clipboard.writeText(x);
+    nav("/invoices");
   };
   const changedate = (params) => {
     const arrayObject = params;
@@ -111,9 +114,9 @@ const Topbar = () => {
         <Box display="flex">
           <IconButton onClick={colorMode.toggleColorMode}>
             {theme.palette.mode === "dark" ? (
-              <DarkModeOutlinedIcon />
+              <DarkModeOutlinedIcon fontSize="large" />
             ) : (
-              <LightModeOutlinedIcon />
+              <LightModeOutlinedIcon fontSize="large" />
             )}
           </IconButton>
           {stateaccess ? (
@@ -127,6 +130,7 @@ const Topbar = () => {
                   <>
                     {" "}
                     <NotificationImportantIcon
+                      fontSize="large"
                       data-toggle="dropdown"
                       style={{ color: "red", cursor: "pointer" }}
                       onClick={() => setDropdownOpen(!isDropdownOpen)}
@@ -134,15 +138,16 @@ const Topbar = () => {
                   </>
                 ) : (
                   <NotificationsOutlinedIcon
+                    fontSize="large"
                     data-toggle="dropdown"
                     style={{ cursor: "pointer" }}
                     onClick={() => setDropdownOpen(!isDropdownOpen)}
                   ></NotificationsOutlinedIcon>
                 )}
                 <div class="dropdown-menu cssleft">
-                  <a class="dropdown-item">
-                    {i18n.t("MAPN_PX")}- {i18n.t("TINHTRANG_PX")} -{" "}
-                    {i18n.t("NGAYLAP_PX")}
+                  <a class="dropdown-item" style={{ fontSize: "1.5rem" }}>
+                    {i18n.t("MAPN_PX")} - {i18n.t("TINHTRANG_PX")} -{" "}
+                    {i18n.t("LOAIPHIEU_NHAP")}
                   </a>
                   <hr></hr>
                   {statePhieustore
@@ -161,31 +166,62 @@ const Topbar = () => {
                             style={{
                               backgroundColor: "orange",
                               borderRadius: "3px",
-                              fontSize: ".9rem",
+                              fontSize: "1.2rem",
                             }}
                           >
                             {object.status}
                           </span>
-                          {"  | "} {changedate(object.createDate)}
+                          {"  | "}
+                          {object.loaiphieu === "NK" ? (
+                            <>
+                              {" "}
+                              <span
+                                style={{
+                                  backgroundColor: "#4caf50",
+                                  borderRadius: "3px",
+                                  fontSize: "1.2rem",
+                                  color: "white",
+                                }}
+                              >
+                                {i18n.t("NK")}
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              {" "}
+                              <span
+                                style={{
+                                  backgroundColor: "#912a2e",
+                                  borderRadius: "3px",
+                                  fontSize: "1.2rem",
+                                  color: "white",
+                                }}
+                              >
+                                {i18n.t("NNK")}
+                              </span>
+                            </>
+                          )}
                         </a>
                       ))
                     : ""}
                   <hr></hr>
-                  <Button onClick={Refreshphieu}>Refresh</Button>
+                  <Button style={{ fontSize: "1rem" }} onClick={Refreshphieu}>
+                    Refresh
+                  </Button>
                 </div>
               </div>
             </>
           ) : (
             <IconButton>
-              <NotificationsOutlinedIcon></NotificationsOutlinedIcon>
+              <NotificationsOutlinedIcon fontSize="large"></NotificationsOutlinedIcon>
             </IconButton>
           )}
 
           <IconButton>
-            <SettingsOutlinedIcon />
+            <SettingsOutlinedIcon fontSize="large" />
           </IconButton>
           <IconButton>
-            <PersonOutlinedIcon />
+            <PersonOutlinedIcon fontSize="large" />
           </IconButton>
         </Box>
       </Box>

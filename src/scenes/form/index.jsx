@@ -40,7 +40,7 @@ const Form = () => {
   const [selectionModel, setSelectionModel] = React.useState([]);
   const [stateCheckaccess, setstateCheckaccess] = useState(false);
   const [stateupdatesoluong, setstateupdatesoluong] = useState({
-    usoluong: 0,
+    usoluong: 1,
   });
   const formatDate = (event) => {
     // Kiểm tra định dạng
@@ -193,11 +193,18 @@ const Form = () => {
       setisShowerrorDate(true);
       return;
     }
-    if (
-      parseFloat(statePhieu.thoidiem.split("-")[1]) === 2 &&
-      parseFloat(statePhieu.thoidiem.split("-")[2]) < 5
-    ) {
-      alert("Hệ thống không có dử liệu ngày này !!");
+    if (parseFloat(statePhieu.thoidiem.split("-")[0]) === 2024) {
+      if (
+        parseFloat(statePhieu.thoidiem.split("-")[1]) <= 2 &&
+        parseFloat(statePhieu.thoidiem.split("-")[2]) < 5
+      ) {
+        alert("Hệ thống không có dử liệu ngày này !! Phải từ 2024-02-05");
+        setisShowerrorDate(true);
+        return;
+      }
+    }
+    if (parseFloat(statePhieu.thoidiem.split("-")[0]) < 2024) {
+      alert("Hệ thống không có dử liệu ngày này !! Phải từ 2024-02-05");
       setisShowerrorDate(true);
       return;
     }
@@ -272,24 +279,43 @@ const Form = () => {
     });
   };
   const handleEditProduct = (productId) => {
-    const checksoluongrow = stateProduct.filter(
+    const getProductFirst = stateProduct.filter(
       (item) => item.id === productId
     );
-    if (
-      checksoluongrow[0].soluong < stateupdatesoluong.usoluong ||
-      stateupdatesoluong.usoluong < 0
-    ) {
-      alert("Số lượng nhập có giá trị lớn hơn số lượng đang có hoặc nhỏ hơn 0");
-      return;
+
+    const checksoluongrow = stateProductview.filter(
+      (item) => item.id === productId
+    );
+    if (statePhieu.loaiphieu === "NK") {
+      if (
+        checksoluongrow[0].soluong < stateupdatesoluong.usoluong ||
+        stateupdatesoluong.usoluong <= 0
+      ) {
+        alert(
+          "Số lượng nhập có giá trị lớn hơn số lượng đang có hoặc nhỏ hơn 0"
+        );
+        return;
+      }
     }
+
     const updatedRows = stateProduct.map((row) =>
       row.id === productId
         ? { ...row, soluong: stateupdatesoluong.usoluong }
         : row
     );
-    setstateupdatesoluong({
-      usoluong: 0,
-    });
+    if (statePhieu.loaiphieu === "NK") {
+      let newsotien =
+        statePhieu.sotien -
+        getProductFirst[0].sotien * getProductFirst[0].soluong +
+        checksoluongrow[0].sotien * stateupdatesoluong.usoluong;
+
+      setsotienbandau(newsotien);
+      setStatePhieu({
+        ...statePhieu,
+        sotien: newsotien,
+      });
+    }
+
     setStateProduct(updatedRows);
   };
   const showAlert = async () => {
@@ -526,19 +552,20 @@ const Form = () => {
       }
       return selectedItem; // Trả về nguyên bản nếu không tìm thấy đối tượng
     });
-    let sotiennew = statePhieu.sotien;
+    let sotiennew = 0;
 
     updatedSelectedData.forEach((element) => {
-      sotiennew = sotiennew + element.sotien;
+      sotiennew = sotiennew + element.sotien * element.soluong;
     });
     setStatePhieu({
       ...statePhieu,
-      sotien: parseFloat(statesotienbandau) + parseFloat(sotiennew),
+      sotien: parseFloat(sotiennew),
     });
-    setsotienbandau(parseFloat(statesotienbandau) + parseFloat(sotiennew));
+
+    setsotienbandau(parseFloat(sotiennew));
 
     setStateProduct(updatedSelectedData);
-    setSelectionModel([]);
+    // setSelectionModel([]);
     // selectedData là mảng chứa dữ liệu của các hàng được chọn
   };
   const convertoBase64 = async (e) => {
@@ -609,14 +636,25 @@ const Form = () => {
     // Cập nhật stateProduct
     const updateMoney = stateProduct.filter((item) => item.id === productId);
 
-    setsotienbandau(
-      parseFloat(statesotienbandau) - parseFloat(updateMoney[0].sotien)
-    );
+    if (statePhieu.loaiphieu === "NK") {
+      setStatePhieu({
+        ...statePhieu,
+        sotien:
+          statePhieu.sotien -
+          parseFloat(updateMoney[0].sotien) * updateMoney[0].soluong,
+      });
+    } else {
+      setsotienbandau(
+        parseFloat(statesotienbandau) - parseFloat(updateMoney[0].sotien)
+      );
 
-    setStatePhieu({
-      ...statePhieu,
-      sotien: parseFloat(statesotienbandau) - parseFloat(updateMoney[0].sotien),
-    });
+      setStatePhieu({
+        ...statePhieu,
+        sotien:
+          parseFloat(statesotienbandau) - parseFloat(updateMoney[0].sotien),
+      });
+    }
+
     // Cập nhật stateProduct
     setStateProduct(updatedState);
   };
@@ -646,7 +684,13 @@ const Form = () => {
                   type="text"
                   label={i18n.t("TONGSOTIEN_NHAP")}
                   name="sotien"
-                  value={stateCheckaccess ? statePhieu.sotien : "#####"}
+                  value={
+                    stateCheckaccess
+                      ? parseInt(statePhieu.sotien).toLocaleString("en-US")
+                      : statePhieu.loaiphieu === "NN"
+                      ? parseInt(statePhieu.sotien).toLocaleString("en-US")
+                      : "#####"
+                  }
                   onChange={onhandlechangePhieu}
                   sx={{ gridColumn: "span 2" }}
                 />
@@ -736,7 +780,7 @@ const Form = () => {
                         <td>{item.soluong}</td>
                         <td>
                           {item.checkStore && item.checkStore
-                            ? item.sotien
+                            ? parseInt(item.sotien).toLocaleString("en-US")
                             : "###"}
                         </td>
                         <td>{item.xuatxu}</td>

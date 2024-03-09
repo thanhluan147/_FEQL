@@ -65,14 +65,14 @@ export const createProduct = async (req) => {
     `${Url_BackEnd}/product/create`,
     {
       id: req.id,
-      name: req.name,
-      picture: req.picture,
+      name: "...",
+      picture: "...",
       loai: req.loai,
       soluong: req.soluong,
       status: "GOOD",
       StoreID: req.StoreID,
-      behavior: req.behavior,
-      xuatxu: req.xuatxu,
+      behavior: "...",
+      xuatxu: "...",
       sotien: req.sotien,
     },
     {
