@@ -85,7 +85,7 @@ const Invoices = () => {
           LOAISP: child.loai,
           SOLUONGSP: parseFloat(child.soluong),
           SOTIENSP: parseFloat(child.sotien),
-          SOTIENTT: parseFloat(child.sotienThucte),
+          SOTIENTT: parseFloat(element.sotienThucte),
           MAPHIEU: element.id,
           LOAIPHIEU: element.loaiphieu,
           CHINHANH: converToName[child.StoreID],
