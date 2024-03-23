@@ -528,7 +528,7 @@ const Dashboard = () => {
               justifyContent="center"
             >
               <StatBox
-                title={statetongdoanhthu}
+                title={parseInt(statetongdoanhthu).toLocaleString("en-US")}
                 subtitle={i18n.t("TSOTIENTHUVETUBAN")}
                 progress="0.75"
                 increase="+14%"
@@ -550,7 +550,7 @@ const Dashboard = () => {
                   justifyContent="center"
                 >
                   <StatBox
-                    title={statesotienBAN}
+                    title={parseInt(statesotienBAN).toLocaleString("en-US")}
                     subtitle={i18n.t("TSOTIENDABAN")}
                     progress="0.75"
                     increase="+14%"
@@ -577,7 +577,7 @@ const Dashboard = () => {
               justifyContent="center"
             >
               <StatBox
-                title={statetCostBuy}
+                title={parseInt(statetCostBuy).toLocaleString("en-US")}
                 subtitle={i18n.t("CostBuy")}
                 progress="0.80"
                 increase="+43%"
@@ -600,7 +600,9 @@ const Dashboard = () => {
                   justifyContent="center"
                 >
                   <StatBox
-                    title={statetCostBuyThucTe}
+                    title={parseInt(statetCostBuyThucTe).toLocaleString(
+                      "en-US"
+                    )}
                     subtitle={i18n.t("TSOTIENTHUCTETUNHAPKHO")}
                     progress="0.80"
                     increase="+43%"
