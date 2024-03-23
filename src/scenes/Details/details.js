@@ -37,10 +37,10 @@ import { GET_ALLDEBTOR_BY_Debtor_BranchID } from "../debtor/handleDebtor";
 const DETAILS = () => {
   const [showPopupNK, setShowPopupNK] = useState(false);
   const [stateContentModalNK, setStatecontentModalNK] = useState([]);
-
+  const [showPopup, setShowPopup] = useState(false);
   const [showPopupXK, setShowPopupXK] = useState(false);
   const [stateContentModalXK, setStatecontentModalXK] = useState([]);
-
+  const [stateContentModal, setStatecontentModal] = useState([]);
   const [showPopupDT, setShowPopupDT] = useState(false);
   const [stateContentModalDT, setStatecontentModalDT] = useState([]);
 
@@ -165,11 +165,14 @@ const DETAILS = () => {
       setStatePhieuStore(JSON.parse(check));
     }
   };
-  const CustomPopup = ({ show, handleClose, content }) => {
+
+  const CustomPopupDEB = ({ show, handleClose, content, money }) => {
     return (
       <Modal show={show} onHide={handleClose} centered size="lg">
         <Modal.Header closeButton>
-          <Modal.Title>Popup Title</Modal.Title>
+          <Modal.Title style={{ color: "black" }}>
+            Thông tin sản phẩm
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body
           style={{ maxWidth: "100%", overflow: "scroll", maxHeight: "500px" }}
@@ -178,29 +181,34 @@ const DETAILS = () => {
             <table className="custom-table">
               <thead>
                 <tr>
-                  <th>{i18n.t("TEN_P")}</th>
-                  <th>{i18n.t("LOAI_P")}</th>
-                  <th>{i18n.t("SOLUONG_P")}</th>
-
-                  <th>{i18n.t("HINHANH_P")}</th>
-                  <th>{i18n.t("SOTIEN_P")}</th>
+                  <th>Mã sản phẩm</th>
+                  <th>Tên sản phẩm</th>
+                  <th>Loại sản phẩm</th>
+                  <th>Số lượng</th>
+                  <th>Số tiền</th>
+                  {/* <th>Hình ảnh</th>
+                  <th>Hành vi</th> */}
                 </tr>
               </thead>
               <tbody>
                 {content.map((item) => (
                   <tr key={item.id}>
+                    <td>{item.id}</td>
                     <td>{item.name}</td>
                     <td>{item.loai}</td>
                     <td>{item.soluong}</td>
-
                     <td>
+                      {" "}
+                      {parseInt(item.sotien).toLocaleString("en-US")} VND
+                    </td>
+                    {/* <td>
                       {item.picture ? (
                         <img width={200} height={100} src={item.picture}></img>
                       ) : (
                         ""
                       )}
                     </td>
-                    <th>{item.sotien}</th>
+                    <td>{item.behavior}</td> */}
                   </tr>
                 ))}
               </tbody>
@@ -219,12 +227,14 @@ const DETAILS = () => {
     return (
       <Modal show={show} onHide={handleClose} centered size="lg">
         <Modal.Header closeButton>
-          <Modal.Title>Popup Title</Modal.Title>
+          <Modal.Title style={{ color: "black" }}>
+            Thông tin sản phẩm
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body
           style={{ maxWidth: "100%", overflow: "scroll", maxHeight: "500px" }}
         >
-          <div className="table-container">
+          <div className="table-container" style={{ width: "600px" }}>
             <table className="custom-table">
               <thead>
                 <tr>
@@ -232,8 +242,7 @@ const DETAILS = () => {
                   <th>{i18n.t("LOAI_P")}</th>
                   <th>{i18n.t("SOLUONG_P")}</th>
 
-                  <th>{i18n.t("HINHANH_P")}</th>
-                  <th>{i18n.t("SOTIEN_P")}</th>
+                  <th>{i18n.t("SOTIEN_NP")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -243,13 +252,6 @@ const DETAILS = () => {
                     <td>{item.loai}</td>
                     <td>{item.soluong}</td>
 
-                    <td>
-                      {item.picture ? (
-                        <img width={200} height={100} src={item.picture}></img>
-                      ) : (
-                        ""
-                      )}
-                    </td>
                     <th>{item.sotien}</th>
                   </tr>
                 ))}
@@ -345,34 +347,34 @@ const DETAILS = () => {
       headerAlign: "left",
       align: "left",
     },
-    {
-      field: "picture",
-      headerName: `${i18n.t("HINHANH_P")}`,
-      flex: 1,
-      width: 130,
-      renderCell: ImageCell,
-      headerAlign: "left",
-      align: "left",
-    },
+    // {
+    //   field: "picture",
+    //   headerName: `${i18n.t("HINHANH_P")}`,
+    //   flex: 1,
+    //   width: 130,
+    //   renderCell: ImageCell,
+    //   headerAlign: "left",
+    //   align: "left",
+    // },
     {
       field: "soluong",
       headerAlign: "left",
       headerName: `${i18n.t("SOLUONG_P")}`,
       flex: 1,
     },
-    {
-      field: "xuatxu",
-      headerName: `Xuất xứ`,
-      flex: 1,
-      headerAlign: "left",
-      align: "left",
-    },
-    {
-      field: "status",
-      headerAlign: "left",
-      headerName: `${i18n.t("TINHTRANG_P")}`,
-      flex: 1,
-    },
+    // {
+    //   field: "xuatxu",
+    //   headerName: `Xuất xứ`,
+    //   flex: 1,
+    //   headerAlign: "left",
+    //   align: "left",
+    // },
+    // {
+    //   field: "status",
+    //   headerAlign: "left",
+    //   headerName: `${i18n.t("TINHTRANG_P")}`,
+    //   flex: 1,
+    // },
     {
       field: "sotien",
       headerName: `Số tiền`,
@@ -380,12 +382,12 @@ const DETAILS = () => {
       headerAlign: "left",
       align: "left",
     },
-    {
-      field: "behavior",
-      headerAlign: "left",
-      headerName: `${i18n.t("HANHVI_P")}`,
-      flex: 1,
-    },
+    // {
+    //   field: "behavior",
+    //   headerAlign: "left",
+    //   headerName: `${i18n.t("HANHVI_P")}`,
+    //   flex: 1,
+    // },
   ];
   function ImageCell(params) {
     return (
@@ -513,6 +515,12 @@ const DETAILS = () => {
       headerName: `${i18n.t("LANCUOICAPNHAT")}`,
       flex: 1,
     },
+    {
+      field: "arrayProduct",
+      headerName: `${i18n.t("SOLUONGSP_PX")}`,
+      flex: 1,
+      renderCell: ArrayObjectCell,
+    },
   ];
   function UpdatedateObjectCell(params) {
     const arrayObject = params.value;
@@ -531,6 +539,51 @@ const DETAILS = () => {
     const formattedDateString = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
     return <span>{formattedDateString}</span>;
   }
+  function ArrayObjectCell(params) {
+    const arrayObject = params.value;
+    const numberOfItems = Array.isArray(arrayObject) ? arrayObject.length : 0;
+    let money = 0;
+    arrayObject.forEach((element) => {
+      money += parseFloat(element.sotien) * parseFloat(element.soluong);
+    });
+    return (
+      <>
+        <div
+          style={{
+            justifyContent: "space-between",
+            width: "100%",
+            display: "flex",
+          }}
+        >
+          <button
+            class="btn41-43 btn-43 "
+            onClick={() => handleOpenPopup(arrayObject)}
+          >
+            {" "}
+            {numberOfItems} Items
+          </button>
+
+          {showPopup ? (
+            <CustomPopupDEB
+              show={showPopup}
+              handleClose={handleClosePopup}
+              content={stateContentModal}
+            />
+          ) : (
+            ""
+          )}
+        </div>
+      </>
+    );
+  }
+  const handleOpenPopup = (content) => {
+    setShowPopup(true);
+    setStatecontentModal(content);
+  };
+  const handleClosePopup = () => {
+    setShowPopup(false);
+    setStatecontentModal([]);
+  };
   function StatusObjectCellLoai(params) {
     const arrayObject = params.value;
     if (arrayObject === "NK") {
@@ -884,12 +937,12 @@ const DETAILS = () => {
 
     {
       field: "sotien",
-      headerName: `Số tiền đã trả từ con nợ`,
+      headerName: `${i18n.t("SOTIENTRATUCONNO")}`,
       flex: 1,
     },
     {
       field: "sotienThucte",
-      headerName: `Số tiền doanh thu`,
+      headerName: `${i18n.t("TONGSOTIEN")}`,
       flex: 1,
     },
 
@@ -1185,10 +1238,11 @@ const DETAILS = () => {
           *{i18n.t("MA_B")} : {storeID}
         </h5>
         <h5>
-          *{i18n.t("MA_KHO")} : {converBranchIDTOStoreID[storeID]}
+          *{i18n.t("MA_KHO")} : {converBranchIDTOStoreID[storeID] || storeID}
         </h5>
         <h5>
-          *{i18n.t("TEN_B")} : {converToName[converBranchIDTOStoreID[storeID]]}
+          *{i18n.t("TEN_B")} :{" "}
+          {converToName[converBranchIDTOStoreID[storeID]] || storeID}
         </h5>
         <div className="Top">
           <button onClick={() => handleButtonClick(1)} class="bn30">

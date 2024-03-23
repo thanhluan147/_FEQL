@@ -11,6 +11,7 @@ import {
   Get_all_Store,
   Get_all_store_By_userid,
 } from "../contacts/handlestore";
+import { converToName } from "../method";
 import { converIdToCODE } from "../method";
 import { confirmAlert } from "react-confirm-alert";
 import { Modal, Button } from "react-bootstrap";
@@ -21,6 +22,7 @@ import {
   Get_all_Bill_By_userID,
   Update_PhieuOrder_By_id,
 } from "./handlebills";
+import ExcelJS from "exceljs";
 import { createProduct } from "../contacts/handleproduct";
 import { Update_ListOfCreditors_Listdebtors_By_id } from "../doanhthu/handledoanhthu";
 import { createDebtor, Get_all_DEBTOR } from "./handleCreateDebtor";
@@ -232,8 +234,8 @@ const Invoices = () => {
                   <th>Loại sản phẩm</th>
                   <th>Số lượng</th>
                   <th>Số tiền</th>
-                  <th>Hình ảnh</th>
-                  <th>Hành vi</th>
+                  {/* <th>Hình ảnh</th>
+                  <th>Hành vi</th> */}
                 </tr>
               </thead>
               <tbody>
@@ -247,14 +249,14 @@ const Invoices = () => {
                       {" "}
                       {parseInt(item.sotien).toLocaleString("en-US")} VND
                     </td>
-                    <td>
+                    {/* <td>
                       {item.picture ? (
                         <img width={200} height={100} src={item.picture}></img>
                       ) : (
                         ""
                       )}
                     </td>
-                    <td>{item.behavior}</td>
+                    <td>{item.behavior}</td> */}
                   </tr>
                 ))}
               </tbody>
@@ -463,7 +465,7 @@ const Invoices = () => {
     //  await fetchingOrderBy_storeID(statc);
     await fetchingStore();
     await fetchingGetAllHoaDon();
-    console.log("fetch " + formattedDate);
+
     await fetchingOrderBy_storeID_By_year_month(chinhanhdau, formattedDate);
     setStatechinhanh(chinhanhdau);
   };
@@ -518,199 +520,228 @@ const Invoices = () => {
     const day = String(formattedDatex.getDate()).padStart(2, "0");
 
     const convertedDate = `${year}-${month}-${day}`;
-
-    await createDEBTOR(convertedDate, addformbill);
-    if (JSON.parse(check).success) {
-      await Update_PhieuOrder_By_id(selectionModel);
-      let updateStatusPhieuStore = [];
-      selectionModel.forEach(async (obj) => {
-        updateStatusPhieuStore = statePhieuStore.filter(
-          (item) => item.id === obj
+    try {
+      await createDEBTOR(convertedDate, addformbill);
+      if (JSON.parse(check).success) {
+        await Update_PhieuOrder_By_id(selectionModel);
+        let updateStatusPhieuStore = [];
+        selectionModel.forEach(async (obj) => {
+          updateStatusPhieuStore = statePhieuStore.filter(
+            (item) => item.id === obj
+          );
+        });
+        let arraytemp = [];
+        if (updateStatusPhieuStore.length > 0) {
+          let arraytemp2 = [];
+          arraytemp2.push(updateStatusPhieuStore[0].phieustoreID);
+          let jsontemp = {
+            array: arraytemp2,
+            newmoney: addformbill.giaban,
+          };
+          arraytemp.push(jsontemp);
+        }
+        await Update_PhieuStore_By_id(arraytemp);
+        await fetchingOrderBy_storeID_By_year_month(
+          statechinhanh,
+          formattedDate
         );
-      });
-      let arraytemp = [];
-      if (updateStatusPhieuStore.length > 0) {
-        arraytemp.push(updateStatusPhieuStore[0].phieustoreID);
-      }
-      await Update_PhieuStore_By_id(arraytemp);
-      await fetchingOrderBy_storeID_By_year_month(statechinhanh, convertedDate);
-      setstatelenghtID_bill(statelenghtID_bill + 1);
+        setstatelenghtID_bill(statelenghtID_bill + 1);
 
-      const checktemp = await Get_all_Product_By_StoreID(selectedOptionnoimua);
-      let lenghtState = 0;
-      if (checktemp instanceof Promise) {
-        // Nếu là promise, chờ promise hoàn thành rồi mới cập nhật state
-        const resolvedResult = await checktemp;
+        const checktemp = await Get_all_Product_By_StoreID(
+          selectedOptionnoimua
+        );
+        let lenghtState = 0;
+        if (checktemp instanceof Promise) {
+          // Nếu là promise, chờ promise hoàn thành rồi mới cập nhật state
+          const resolvedResult = await checktemp;
+          let maxNumber = 0;
+          selectedRow.forEach(async (obj) => {
+            const updateMoney = statePhieuStore.filter(
+              (item) => item.phieustoreID === obj.phieustoreID
+            );
 
-        selectedRow.forEach(async (obj) => {
-          const updateMoney = statePhieuStore.filter(
-            (item) => item.phieustoreID === obj.phieustoreID
-          );
+            updateMoney.forEach(async (obj) => {
+              const a = obj.arrayProduct;
+              let maxItem = null;
+              const createProductPromises = a.map(async (obj, index) => {
+                let createproduct = {};
 
-          updateMoney.forEach(async (obj) => {
-            const a = obj.arrayProduct;
-            let maxItem = null;
-            const createProductPromises = a.map(async (obj, index) => {
-              let createproduct = {};
+                const filteredArray = JSON.parse(resolvedResult).filter(
+                  (item) => item.id.startsWith(obj.id.split("-")[0])
+                );
+                if (filteredArray.length > 0) {
+                  // Nếu có phần tử thì tìm số lớn nhất
 
-              const filteredArray = JSON.parse(resolvedResult).filter((item) =>
-                item.id.startsWith(obj.id.split("-")[0])
-              );
-              if (filteredArray.length > 0) {
-                // Nếu có phần tử thì tìm số lớn nhất
-                let maxNumber = 0;
+                  filteredArray.forEach((item) => {
+                    const number = parseInt(item.id.split("-")[1]);
+                    if (!isNaN(number) && number > maxNumber) {
+                      maxNumber = number;
+                      maxItem = item;
+                    }
+                  });
 
-                filteredArray.forEach((item) => {
-                  const number = parseInt(item.id.split("-")[1]);
-                  if (!isNaN(number) && number > maxNumber) {
-                    maxNumber = number;
-                    maxItem = item;
-                  }
-                });
-
-                createproduct = {
-                  id: obj.id.split("-")[0] + "-" + (parseFloat(maxNumber) + 1),
-                  name: obj.name,
-                  xuatxu: obj.xuatxu,
-                  picture: obj.picture,
-                  loai: obj.loai,
-                  soluong: obj.soluong,
-                  status: obj.status,
-                  sotien: obj.sotien,
-                  StoreID: selectedOptionnoimua,
-                  behavior: obj.behavior,
-                };
-              } else {
-                createproduct = {
-                  id: obj.id,
-                  name: obj.name,
-                  xuatxu: obj.xuatxu,
-                  picture: obj.picture,
-                  loai: obj.loai,
-                  soluong: obj.soluong,
-                  status: obj.status,
-                  sotien: obj.sotien,
-                  StoreID: selectedOptionnoimua,
-                  behavior: obj.behavior,
-                };
-              }
-
-              // Trả về promise của createProduct
-              return createProduct(createproduct);
+                  createproduct = {
+                    id:
+                      obj.id.split("-")[0] + "-" + (parseFloat(maxNumber) + 1),
+                    name: obj.name,
+                    xuatxu: obj.xuatxu,
+                    picture: obj.picture,
+                    loai: obj.loai,
+                    soluong: obj.soluong,
+                    status: obj.status,
+                    sotien: obj.sotien,
+                    StoreID: selectedOptionnoimua,
+                    behavior: obj.behavior,
+                  };
+                } else {
+                  createproduct = {
+                    id: obj.id,
+                    name: obj.name,
+                    xuatxu: obj.xuatxu,
+                    picture: obj.picture,
+                    loai: obj.loai,
+                    soluong: obj.soluong,
+                    status: obj.status,
+                    sotien: obj.sotien,
+                    StoreID: selectedOptionnoimua,
+                    behavior: obj.behavior,
+                  };
+                }
+                maxNumber++;
+                // Trả về promise của createProduct
+                return createProduct(createproduct);
+              });
+              await Promise.all(createProductPromises);
             });
-            await Promise.all(createProductPromises);
           });
-        });
-      } else {
-        selectedRow.forEach(async (obj) => {
-          const updateMoney = statePhieuStore.filter(
-            (item) => item.phieustoreID === obj.phieustoreID
-          );
+        } else {
+          let maxNumber = 0;
+          selectedRow.forEach(async (obj) => {
+            const updateMoney = statePhieuStore.filter(
+              (item) => item.phieustoreID === obj.phieustoreID
+            );
 
-          updateMoney.forEach(async (obj) => {
-            const a = obj.arrayProduct;
-            let maxItem = null;
-            const createProductPromises = a.map(async (obj, index) => {
-              let createproduct = {};
+            updateMoney.forEach(async (obj) => {
+              const a = obj.arrayProduct;
+              let maxItem = null;
+              const createProductPromises = a.map(async (obj, index) => {
+                let createproduct = {};
 
-              const filteredArray = JSON.parse(checktemp).filter((item) =>
-                item.id.startsWith(obj.id.split("-")[0])
-              );
-              if (filteredArray.length > 0) {
-                // Nếu có phần tử thì tìm số lớn nhất
-                let maxNumber = 0;
+                const filteredArray = JSON.parse(checktemp).filter((item) =>
+                  item.id.startsWith(obj.id.split("-")[0])
+                );
+                if (filteredArray.length > 0) {
+                  // Nếu có phần tử thì tìm số lớn nhất
 
-                filteredArray.forEach((item) => {
-                  const number = parseInt(item.id.split("-")[1]);
-                  if (!isNaN(number) && number > maxNumber) {
-                    maxNumber = number;
-                    maxItem = item;
-                  }
-                });
+                  filteredArray.forEach((item) => {
+                    const number = parseInt(item.id.split("-")[1]);
+                    if (!isNaN(number) && number > maxNumber) {
+                      maxNumber = number;
+                      maxItem = item;
+                    }
+                  });
 
-                createproduct = {
-                  id: obj.id.split("-")[0] + "-" + (parseFloat(maxNumber) + 1),
-                  name: obj.name,
-                  xuatxu: obj.xuatxu,
-                  picture: obj.picture,
-                  loai: obj.loai,
-                  soluong: obj.soluong,
-                  status: obj.status,
-                  sotien: obj.sotien,
-                  StoreID: selectedOptionnoimua,
-                  behavior: obj.behavior,
-                };
-              } else {
-                createproduct = {
-                  id: obj.id,
-                  name: obj.name,
-                  xuatxu: obj.xuatxu,
-                  picture: obj.picture,
-                  loai: obj.loai,
-                  soluong: obj.soluong,
-                  status: obj.status,
-                  sotien: obj.sotien,
-                  StoreID: selectedOptionnoimua,
-                  behavior: obj.behavior,
-                };
-              }
-
-              // Trả về promise của createProduct
-              return createProduct(createproduct);
+                  createproduct = {
+                    id:
+                      obj.id.split("-")[0] + "-" + (parseFloat(maxNumber) + 1),
+                    name: obj.name,
+                    xuatxu: obj.xuatxu,
+                    picture: obj.picture,
+                    loai: obj.loai,
+                    soluong: obj.soluong,
+                    status: obj.status,
+                    sotien: obj.sotien,
+                    StoreID: selectedOptionnoimua,
+                    behavior: obj.behavior,
+                  };
+                } else {
+                  createproduct = {
+                    id: obj.id,
+                    name: obj.name,
+                    xuatxu: obj.xuatxu,
+                    picture: obj.picture,
+                    loai: obj.loai,
+                    soluong: obj.soluong,
+                    status: obj.status,
+                    sotien: obj.sotien,
+                    StoreID: selectedOptionnoimua,
+                    behavior: obj.behavior,
+                  };
+                }
+                maxNumber++;
+                // Trả về promise của createProduct
+                return createProduct(createproduct);
+              });
+              await Promise.all(createProductPromises);
             });
-            await Promise.all(createProductPromises);
           });
+        }
+
+        await fetchingOrderBy_storeID_By_year_month(
+          statechinhanh,
+          formattedDate
+        );
+        alert(`${i18n.t("ALERT_LAPHOADONSUCCESS")}`);
+
+        setStateFormbills({
+          id: "",
+          OrderID: "",
+          sotien: "",
+          userID: "",
+          noiban: "",
+          noimua: "",
+          giaban: 0,
+          giamua: 0,
+          phieuxuatID: "",
         });
+        setSelectionModel([]);
       }
-
-      await fetchingOrderBy_storeID_By_year_month(statechinhanh, formattedDate);
-      alert(`${i18n.t("ALERT_LAPHOADONSUCCESS")}`);
-
-      setStateFormbills({
-        id: "",
-        OrderID: "",
-        sotien: "",
-        userID: "",
-        noiban: "",
-        noimua: "",
-        giaban: 0,
-        giamua: 0,
-        phieuxuatID: "",
-      });
-      setSelectionModel([]);
+    } catch (error) {
+      console.log("lỗi " + error);
     }
   };
-  const handleExportExcel = () => {
-    // Chuẩn bị dữ liệu để xuất
+  const handleExportExcelOLD = () => {
+    // Chuẩ n bị dữ liệu để xuất
     let arrayrow = [];
-    statePhieuStore.forEach((element) => {
+
+    var filteredArray = statePhieuStore.filter((obj) => {
+      return obj.status === "DONE";
+    });
+
+    filteredArray.forEach((element) => {
       element.arrayProduct.forEach((child) => {
         let object = {
-          [i18n.t("NGAYCAPNHAT_PX")]: element.updateDate.split(" ")[0],
-          [i18n.t("MAPX_PX")]: element.id,
-          [i18n.t("MAPN_PX")]: element.phieustoreID,
-          [i18n.t("TEN_P")]: child.name,
-          [i18n.t("LOAI_P")]: child.loai,
-          [i18n.t("SOLUONG_P")]: child.soluong,
-          [i18n.t("SOTIEN_NP")]: parseFloat(child.sotien),
-          [i18n.t("THUE")]: "",
-          [i18n.t("THANHTIEN")]: "",
-          [i18n.t("GHICHU")]: "",
+          [i18n.t("NGAYCAPNHAT_PX").toUpperCase()]:
+            element.updateDate.split(" ")[0],
+          [i18n.t("MASP_P").toUpperCase()]: child.id,
+          [i18n.t("TEN_P").toUpperCase()]: child.name,
+          [i18n.t("LOAI_P").toUpperCase()]: child.loai,
+          [i18n.t("SOLUONG_P").toUpperCase()]: {
+            v: child.soluong,
+            t: "n",
+            s: { alignment: "center" },
+          },
+          [i18n.t("SOTIEN_NP").toUpperCase()]: {
+            v: parseFloat(child.sotien),
+            t: "n",
+            z: "#,##0",
+            s: {
+              alignment: { horizontal: "center" },
+            },
+          },
+          [i18n.t("THUE").toUpperCase()]: {
+            v: "",
+            t: "s",
+            s: { alignment: { horizontal: "center" } },
+          },
+          [i18n.t("THANHTIEN").toUpperCase()]: {
+            v: "",
+            t: "s",
+            s: { alignment: { horizontal: "center" } },
+          },
+          [i18n.t("GHICHU").toUpperCase()]: "",
         };
-        // const rows = statePhieuStore.map((staff) => {
-        //   // Chỉ lấy các trường dữ liệu bạn muốn xuất
-        //   return {
-        //     // Thêm các trường khác nếu cần
-        //     [i18n.t("MAPX_PX")]: staff.id,
-        //     [i18n.t("TINHTRANG_PX")]: staff.status,
 
-        //     [i18n.t("MAPX_PX")]: staff.phieustoreID,
-
-        //     [i18n.t("NGAYLAP_PX")]: staff.CreateAt,
-        //     [i18n.t("NGAYCAPNHAT_PX")]: staff.updateDate,
-        //   };
-        // });
-        // console.log("check row " + JSON.stringify(rows));
         arrayrow.push(object);
       });
     });
@@ -720,7 +751,7 @@ const Invoices = () => {
     const ws = XLSX.utils.json_to_sheet(arrayrow);
     ws["!cols"] = [
       { width: 20 },
-      { width: 20 },
+
       { width: 20 },
       { width: 20 },
       { width: 20 },
@@ -730,12 +761,105 @@ const Invoices = () => {
       { width: 20 },
       { width: 20 },
     ];
+    // Cài đặt căn giữa cho từng ô trong dữ liệu
 
     // Thêm worksheet vào workbook
     XLSX.utils.book_append_sheet(wb, ws, "Xuất kho Data");
 
     // Tạo tệp Excel từ workbook
     XLSX.writeFile(wb, "XuatKho_Data.xlsx");
+  };
+
+  const handleExportExcel = async () => {
+    // Mảng JSON chứa dữ liệu
+    let data = [];
+
+    var filteredArray = statePhieuStore.filter((obj) => {
+      return obj.status === "DONE";
+    });
+    filteredArray.forEach((element) => {
+      element.arrayProduct.forEach((child) => {
+        let object = {
+          NGAYCAPNHAT_PX: element.updateDate.split(" ")[0],
+          MASP_P: child.id,
+          TEN_P: child.name,
+          LOAI_P: child.loai,
+          SOLUONG_P: child.soluong,
+          SOTIEN_NP: parseFloat(child.sotien),
+          THUE: "",
+          THANHTIEN: "",
+          GHICHU: "",
+        };
+        data.push(object);
+      });
+    });
+    // Tạo một workbook mới
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Sheet1");
+
+    // Tạo dòng header tùy chỉnh
+    const headerRow = worksheet.addRow([
+      i18n.t("NGAYCAPNHAT_PX").toUpperCase(),
+      i18n.t("MASP_P").toUpperCase(),
+      i18n.t("TEN_P").toUpperCase(),
+      i18n.t("LOAI_P").toUpperCase(),
+      i18n.t("SOLUONG_P").toUpperCase(),
+
+      i18n.t("SOTIEN_NP").toUpperCase(),
+      i18n.t("THUE").toUpperCase(),
+      i18n.t("THANHTIEN").toUpperCase(),
+      i18n.t("GHICHU").toUpperCase(),
+    ]);
+    headerRow.font = { bold: true, color: { argb: "FF000000" } };
+    headerRow.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FFFF00" },
+    };
+
+    // Đặt dữ liệu
+    data.forEach((row) => {
+      const rowData = Object.keys(row).map((key) => row[key]);
+      worksheet.addRow(rowData);
+    });
+
+    worksheet.columns = [
+      { width: 30 },
+      { width: 30 },
+      { width: 30 },
+      { width: 30 },
+      { width: 30 },
+      { width: 30 },
+      { width: 30 },
+      { width: 30 },
+      { width: 30 },
+    ];
+    // Định dạng cột B
+    const columnB = worksheet.getColumn("E");
+    columnB.alignment = { horizontal: "center", vertical: "middle" };
+    columnB.numFmt = "#,##";
+    // Định dạng cột C
+    const columnC = worksheet.getColumn("F");
+    columnC.alignment = { horizontal: "center", vertical: "middle" };
+    columnC.numFmt = "#,##";
+    const columnG = worksheet.getColumn("G");
+    columnG.alignment = { horizontal: "center", vertical: "middle" };
+    columnG.numFmt = "#,##";
+    // Định dạng cột C
+    const columnH = worksheet.getColumn("H");
+    columnH.alignment = { horizontal: "center", vertical: "middle" };
+    columnH.numFmt = "#,##";
+    // Xuất workbook vào tệp Excel
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    const link = document.createElement("a");
+    link.href = window.URL.createObjectURL(blob);
+    link.download = `${i18n.t("TITLEXUATKHO")}-${
+      converToName[statechinhanh]
+    }.xlsx`;
+    link.click();
   };
   const createDEBTOR = async (x, addformbill) => {
     const check = await Get_all_DEBTOR();

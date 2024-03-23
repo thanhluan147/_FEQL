@@ -14,6 +14,7 @@ import {
 import HandleAccessAccount from "../handleAccess/handleAccess";
 import { Columns } from "./data";
 import { Form, Button } from "react-bootstrap";
+import ExcelJS from "exceljs";
 import { converIDloaiTONAME, converToName } from "../method";
 import { useState, useEffect } from "react";
 import { DeleteProduct, EditProduct } from "./handleproduct";
@@ -51,7 +52,7 @@ const Contacts = () => {
   });
   const [stateFormProduct, setStateFormProduct] = useState({
     id: "",
-    name: "",
+    name: "...",
     picture: "...",
     loai: "",
     soluong: 0,
@@ -94,33 +95,12 @@ const Contacts = () => {
       align: "left",
     },
     {
-      field: "picture",
-      headerName: `${i18n.t("HINHANH_P")}`,
-      flex: 1,
-      width: 130,
-      renderCell: ImageCell,
-      headerAlign: "left",
-      align: "left",
-    },
-    {
       field: "soluong",
       headerAlign: "left",
       headerName: `${i18n.t("SOLUONG_P")}`,
       flex: 1,
     },
-    {
-      field: "xuatxu",
-      headerName: `${i18n.t("XUATSU_X")}`,
-      flex: 1,
-      headerAlign: "left",
-      align: "left",
-    },
-    {
-      field: "status",
-      headerAlign: "left",
-      headerName: `${i18n.t("TINHTRANG_P")}`,
-      flex: 1,
-    },
+
     {
       field: "sotien",
       headerName: `${i18n.t("SOTIEN_NP")}`,
@@ -131,9 +111,43 @@ const Contacts = () => {
     },
     {
       field: "behavior",
-      headerAlign: "left",
-      headerName: `${i18n.t("HANHVI_P")}`,
+      headerName: `${i18n.t("HV")}`,
       flex: 1,
+      headerAlign: "left",
+      align: "left",
+    },
+  ];
+  const ColumnsSPADMIN = [
+    { field: "id", headerName: `${i18n.t("MASP_P")}`, flex: 0.5 },
+    {
+      field: "name",
+      headerName: `${i18n.t("TEN_P")}`,
+      flex: 1,
+      headerAlign: "left",
+      align: "left",
+    },
+    {
+      field: "loai",
+      headerName: `${i18n.t("LOAI_P")}`,
+      flex: 1,
+      headerAlign: "left",
+      align: "left",
+    },
+
+    {
+      field: "soluong",
+      headerAlign: "left",
+      headerName: `${i18n.t("SOLUONG_P")}`,
+      flex: 1,
+    },
+
+    {
+      field: "sotien",
+      headerName: `${i18n.t("SOTIEN_NP")}`,
+      flex: 1,
+      headerAlign: "left",
+      align: "left",
+      renderCell: StatusMoney,
     },
   ];
   const ColumnsB = [
@@ -146,6 +160,7 @@ const Contacts = () => {
       headerAlign: "left",
       align: "left",
     },
+
     {
       field: "loai",
       headerName: `${i18n.t("LOAI_P")}`,
@@ -393,6 +408,7 @@ const Contacts = () => {
     const check = await Get_all_Product_By_StoreID(formFetching);
 
     if (check instanceof Promise) {
+      console.log("check 1");
       // Nếu là promise, chờ promise hoàn thành rồi mới cập nhật state
       let arraySort = [];
       const resolvedResult = await check;
@@ -419,24 +435,6 @@ const Contacts = () => {
         .concat(filteredDataCM)
         .concat(filteredDataCT)
         .concat(filteredDataPOR);
-      // // Lặp qua từng đợt và gọi API
-      // arrayproduct.push(arrtemp);
-      // for (let i = 0; i < totalBatches; i++) {
-      //   const startIndex = i * stateSizeProduct;
-      //   const endIndex = Math.min(
-      //     (i + 1) * stateSizeProduct - 1,
-      //     stateLength - 1
-      //   );
-
-      //   // Gọi API cho mỗi đợt
-      //   let formFetching = {
-      //     StoreID: x,
-      //     startIndex: startIndex,
-      //     endIndex: endIndex,
-      //   };
-      //   await Get_all_Product_By_StoreID(formFetching);
-      // }
-      // console.log("check state " + JSON.stringify(arrtemp));
       setStateProduct(arraySort);
     } else {
       let arraySort = [];
@@ -444,18 +442,22 @@ const Contacts = () => {
       const filteredDataMK = JSON.parse(arrtemp).filter((item) =>
         item.id.startsWith("MK")
       );
+
       const filteredDataLK = JSON.parse(arrtemp).filter((item) =>
         item.id.startsWith("LK")
       );
       const filteredDataCM = JSON.parse(arrtemp).filter((item) =>
         item.id.startsWith("CM")
       );
+
       const filteredDataCT = JSON.parse(arrtemp).filter((item) =>
         item.id.startsWith("CT")
       );
+
       const filteredDataPOR = JSON.parse(arrtemp).filter((item) =>
         item.id.startsWith("POR")
       );
+
       arraySort = arraySort
         .concat(filteredDataMK)
         .concat(filteredDataLK)
@@ -748,50 +750,101 @@ const Contacts = () => {
     setStateimgEdit("");
     setStateimg("");
   };
-  const handleExportExcel = () => {
-    const rows = stateProduct.map((staff) => {
-      if (stateaccess) {
-        return {
-          [i18n.t("MASP_P")]: staff.id,
-          [i18n.t("TEN_P")]: staff.name,
-          [i18n.t("LOAI_P")]: staff.loai,
-          [i18n.t("TINHTRANG_P")]: staff.status,
-          [i18n.t("SOLUONG_P")]: staff.soluong,
-          [i18n.t("SOTIEN_NP")]: staff.sotien,
 
-          [i18n.t("XUATSU_X")]: staff.xuatxu,
-          // Thêm các trường khác nếu cần
-        };
-      } else {
-        return {
-          [i18n.t("MASP_P")]: staff.id,
-          [i18n.t("TEN_P")]: staff.name,
-          [i18n.t("LOAI_P")]: staff.loai,
-          [i18n.t("TINHTRANG_P")]: staff.status,
-          [i18n.t("SOLUONG_P")]: staff.soluong,
+  const handleExportExcel = async () => {
+    // Mảng JSON chứa dữ liệu
+    let data = [];
+    stateProduct.forEach((element) => {
+      let object = {
+        [i18n.t("MASP_P").toUpperCase()]: element.id,
 
-          [i18n.t("XUATSU_X")]: staff.xuatxu,
-          // Thêm các trường khác nếu cần
-        };
-      }
+        [i18n.t("LOAI_P").toUpperCase()]: element.loai.toUpperCase(),
+
+        [i18n.t("SOLUONG_P").toUpperCase()]: parseFloat(element.soluong),
+
+        [i18n.t("SOTIEN_NP").toUpperCase()]: parseFloat(element.sotien),
+      };
+      data.push(object);
     });
+    // Tạo một workbook mới
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Sheet1");
 
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(rows);
+    // Tạo dòng header tùy chỉnh
+    const headerRow = worksheet.addRow([
+      i18n.t("MASP_P").toUpperCase(),
+      i18n.t("LOAI_P").toUpperCase(),
 
-    // Điều chỉnh chiều rộng của cột (ví dụ: cột 'A' sẽ rộng hơn)
-    ws["!cols"] = [
-      { width: 15 },
-      { width: 20 },
-      { width: 20 },
-      { width: 20 },
-      { width: 20 },
-      { width: 20 },
-      { width: 20 },
+      i18n.t("SOLUONG_P").toUpperCase(),
+
+      i18n.t("SOTIEN_NP").toUpperCase(),
+    ]);
+    // headerRow.font = { bold: true, color: { argb: "FF000000" } };
+    // headerRow.fill = {
+    //   type: "pattern",
+    //   pattern: "solid",
+    //   fgColor: { argb: "FFFF00" },
+    // };
+
+    // Đặt dữ liệu
+    data.forEach((row) => {
+      const rowData = Object.keys(row).map((key) => row[key]);
+      worksheet.addRow(rowData);
+    });
+    const columnE1 = worksheet.getCell("A1");
+    columnE1.font = { bold: true, color: { argb: "FF000000" } };
+    columnE1.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FFFF00" },
+    };
+    const columnE2 = worksheet.getCell("D1");
+    columnE2.font = { bold: true, color: { argb: "FF000000" } };
+    columnE2.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FFFF00" },
+    };
+    const columnE3 = worksheet.getCell("B1");
+    columnE3.font = { bold: true, color: { argb: "FF000000" } };
+    columnE3.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FFFF00" },
+    };
+    const columnE4 = worksheet.getCell("C1");
+    columnE4.font = { bold: true, color: { argb: "FF000000" } };
+    columnE4.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FFFF00" },
+    };
+
+    worksheet.columns = [
+      { width: 30 },
+      { width: 30 },
+      { width: 30 },
+      { width: 30 },
     ];
-    const convert = converToName[statechinhanh];
-    XLSX.utils.book_append_sheet(wb, ws, "Product Data");
-    XLSX.writeFile(wb, `Product_Data_${convert}.xlsx`);
+
+    const columnD = worksheet.getColumn("D");
+    columnD.alignment = { horizontal: "center", vertical: "middle" };
+    columnD.numFmt = "#,##";
+
+    // Định dạng cột B
+    const columnE = worksheet.getColumn("C");
+    columnE.alignment = { horizontal: "center", vertical: "middle" };
+    columnE.numFmt = "#,##";
+
+    // Xuất workbook vào tệp Excel
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    const link = document.createElement("a");
+    link.href = window.URL.createObjectURL(blob);
+    link.download = `"Product"-${converToName[statechinhanh]}.xlsx`;
+    link.click();
   };
 
   const handleExportExcel_B = () => {
@@ -1031,8 +1084,8 @@ const Contacts = () => {
                   class="modal-title"
                   id="staticBackdropLabel"
                 >
-                  Điều chỉnh thông tin nhân viên
-                  <br></br>
+                  Điều chỉnh thông tin
+                  {/* <br></br>
                   <label htmlFor="baocao">*Báo cáo sự cố sản phẩm </label>
                   <input
                     checked={stateBaocao}
@@ -1041,7 +1094,7 @@ const Contacts = () => {
                     }}
                     name="baocao"
                     type="checkbox"
-                  ></input>
+                  ></input> */}
                 </h5>
                 <button
                   type="button"
@@ -1052,55 +1105,10 @@ const Contacts = () => {
                   <span aria-hidden="true">&times;</span>
                 </button>
               </div>{" "}
-              <div class="modal-body" style={{ color: "black" }}>
-                {stateBaocao ? (
-                  <>
-                    {" "}
-                    <label htmlFor="tinhtrang" name="tinhtrang">
-                      Tình trạng
-                    </label>
-                    <input
-                      type="text"
-                      name="tinhtrang"
-                      value={stateFormBaocao.tinhtrang}
-                      onChange={onChangeBaocaoProductForm}
-                    ></input>{" "}
-                    <label htmlFor="soluong" name="soluong">
-                      Số lượng
-                    </label>
-                    <input
-                      type="text"
-                      name="soluong"
-                      value={stateFormBaocao.soluong}
-                      onChange={onChangeBaocaoProductForm}
-                    ></input>
-                    <hr></hr>
-                  </>
-                ) : (
-                  ""
-                )}
-
-                <label htmlFor="name" name="name">
-                  {i18n.t("TEN_P")}
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={EditProductForm.name}
-                  onChange={onChangeEditProductForm}
-                ></input>
-                <label htmlFor="phone"> {i18n.t("LOAI_P")}</label>
-                <input
-                  type="text"
-                  name="loai"
-                  value={EditProductForm.loai}
-                  onChange={onChangeEditProductForm}
-                ></input>
-
-                {stateBaocao ? (
-                  ""
-                ) : (
-                  <>
+              {stateaccess ? (
+                <>
+                  {" "}
+                  <div class="modal-body" style={{ color: "black" }}>
                     {" "}
                     <label htmlFor="Role">{i18n.t("SOLUONG_P")}</label>
                     <input
@@ -1109,60 +1117,88 @@ const Contacts = () => {
                       onChange={onChangeEditProductForm}
                       name="soluong"
                     ></input>
-                  </>
-                )}
+                  </div>
+                </>
+              ) : (
+                <>
+                  {" "}
+                  <div class="modal-body" style={{ color: "black" }}>
+                    {stateBaocao ? (
+                      <>
+                        {" "}
+                        <label htmlFor="tinhtrang" name="tinhtrang">
+                          Tình trạng
+                        </label>
+                        <input
+                          type="text"
+                          name="tinhtrang"
+                          value={stateFormBaocao.tinhtrang}
+                          onChange={onChangeBaocaoProductForm}
+                        ></input>{" "}
+                        <label htmlFor="soluong" name="soluong">
+                          Số lượng
+                        </label>
+                        <input
+                          type="text"
+                          name="soluong"
+                          value={stateFormBaocao.soluong}
+                          onChange={onChangeBaocaoProductForm}
+                        ></input>
+                        <hr></hr>
+                      </>
+                    ) : (
+                      ""
+                    )}
 
-                {stateaccess ? (
-                  <>
-                    <label htmlFor="Role">{i18n.t("SOTIEN_NP")}</label>
-                    <input
-                      type="number"
-                      value={EditProductForm.sotien}
-                      onChange={onChangeEditProductForm}
-                      name="sotien"
-                    ></input>
-                  </>
-                ) : (
-                  ""
-                )}
-                {stateBaocao ? (
-                  ""
-                ) : (
-                  <>
-                    {" "}
-                    <label htmlFor="Role">{i18n.t("TINHTRANG_P")}</label>
+                    <label htmlFor="name" name="name">
+                      {i18n.t("TEN_P")}
+                    </label>
                     <input
                       type="text"
-                      value={EditProductForm.status}
+                      name="name"
+                      value={EditProductForm.name}
                       onChange={onChangeEditProductForm}
-                      name="status"
                     ></input>
-                  </>
-                )}
+                    <label htmlFor="phone"> {i18n.t("LOAI_P")}</label>
+                    <input
+                      type="text"
+                      name="loai"
+                      value={EditProductForm.loai}
+                      onChange={onChangeEditProductForm}
+                    ></input>
 
-                <label htmlFor="xuatxu">{i18n.t("XUATSU_X")}</label>
-                <input
-                  type="text"
-                  name="xuatxu"
-                  value={EditProductForm.xuatxu}
-                  onChange={onChangeEditProductForm}
-                ></input>
+                    {stateBaocao ? (
+                      ""
+                    ) : (
+                      <>
+                        {" "}
+                        <label htmlFor="Role">{i18n.t("SOLUONG_P")}</label>
+                        <input
+                          type="number"
+                          value={EditProductForm.soluong}
+                          onChange={onChangeEditProductForm}
+                          name="soluong"
+                        ></input>
+                      </>
+                    )}
 
-                <label htmlFor="picture">{i18n.t("HINHANH_P")}</label>
-                <input
-                  accept="image/png, image/jpeg"
-                  onChange={convertoBase64Edit}
-                  type="file"
-                  id="picture"
-                  name="picture"
-                  onFocus={convertoBase64Edit}
-                ></input>
-                {stateimageEdit ? (
-                  <img width={200} height={100} src={stateimageEdit}></img>
-                ) : (
-                  ""
-                )}
-              </div>
+                    {/* <label htmlFor="picture">{i18n.t("HINHANH_P")}</label>
+                    <input
+                      accept="image/png, image/jpeg"
+                      onChange={convertoBase64Edit}
+                      type="file"
+                      id="picture"
+                      name="picture"
+                      onFocus={convertoBase64Edit}
+                    ></input>
+                    {stateimageEdit ? (
+                      <img width={200} height={100} src={stateimageEdit}></img>
+                    ) : (
+                      ""
+                    )} */}
+                  </div>
+                </>
+              )}
               <div class="modal-footer">
                 <button
                   type="button"
@@ -1216,13 +1252,13 @@ const Contacts = () => {
                   </div>
 
                   <div class="modal-body" style={{ color: "black" }}>
-                    <label htmlFor="name"> {i18n.t("TEN_P")}</label>
+                    {/* <label htmlFor="name"> {i18n.t("TEN_P")}</label>
                     <input
                       type="text"
                       name="name"
                       value={stateFormProduct.name}
                       onChange={onChangeAddProductForm}
-                    ></input>
+                    ></input> */}
                     <div>
                       <label for="loaip">Chọn loại khác</label>
                       <input
@@ -1268,7 +1304,34 @@ const Contacts = () => {
                         ></input>
                       </>
                     )}
-
+                    {ischeckloai ? (
+                      <>
+                        {" "}
+                        <label htmlFor="name"> {i18n.t("TEN_P")}</label>
+                        <input
+                          type="text"
+                          name="name"
+                          value={stateFormProduct.name}
+                          onChange={onChangeAddProductForm}
+                        ></input>{" "}
+                      </>
+                    ) : (
+                      ""
+                    )}
+                    {stateFormProduct.loai === "LK" ? (
+                      <>
+                        {" "}
+                        <label htmlFor="name"> {i18n.t("TEN_P")}</label>
+                        <input
+                          type="text"
+                          name="name"
+                          value={stateFormProduct.name}
+                          onChange={onChangeAddProductForm}
+                        ></input>{" "}
+                      </>
+                    ) : (
+                      ""
+                    )}
                     <label htmlFor="Role">{i18n.t("SOLUONG_P")}</label>
                     <input
                       type="Number"
@@ -1278,7 +1341,6 @@ const Contacts = () => {
                     ></input>
                     {stateaccess ? (
                       <>
-                        {" "}
                         <label htmlFor="sotien">{i18n.t("SOTIEN_NP")}</label>
                         <input
                           type="Number"
@@ -1291,7 +1353,7 @@ const Contacts = () => {
                       ""
                     )}
 
-                    <label htmlFor="xuatxu">{i18n.t("XUATSU_X")}</label>
+                    {/* <label htmlFor="xuatxu">{i18n.t("XUATSU_X")}</label>
                     <input
                       type="text"
                       name="xuatxu"
@@ -1311,7 +1373,7 @@ const Contacts = () => {
                       <img width={200} height={100} src={stateimage}></img>
                     ) : (
                       ""
-                    )}
+                    )} */}
                   </div>
                   <div class="modal-footer">
                     <button
@@ -1466,20 +1528,31 @@ const Contacts = () => {
           </select>
         </div>
         <br></br>
-        <div style={{ position: "relative", top: "-176%", left: "-49%" }}>
-          <div style={{ top: "-160%" }} className="BoxIMG drop-target">
+        {stateaccess ? (
+          ""
+        ) : (
+          <>
             {" "}
-            {stateViewimg ? (
-              <img
-                src={stateViewimg}
-                alt="Image"
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-            ) : (
-              `${i18n.t("clickdouble")}`
-            )}
-          </div>
-        </div>
+            <div style={{ position: "relative", top: "-176%", left: "-49%" }}>
+              <div style={{ top: "-160%" }} className="BoxIMG drop-target">
+                {" "}
+                {stateViewimg ? (
+                  <img
+                    src={stateViewimg}
+                    alt="Image"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                ) : (
+                  `${i18n.t("clickdouble")}`
+                )}
+              </div>
+            </div>
+          </>
+        )}
       </div>
       <Box
         m="40px 0 0 0"
@@ -1513,7 +1586,14 @@ const Contacts = () => {
           },
         }}
       >
-        <button onClick={handleExportExcel}>Export Excel</button>
+        {stateaccess ? (
+          <>
+            {" "}
+            <button onClick={handleExportExcel}>Export Excel</button>
+          </>
+        ) : (
+          ""
+        )}
 
         <DataGrid
           checkboxSelection
@@ -1521,7 +1601,7 @@ const Contacts = () => {
           selectionModel={selectionModel}
           onSelectionModelChange={handleSelectionModelChange}
           rows={stateProduct}
-          columns={Columns}
+          columns={stateaccess ? ColumnsSPADMIN : Columns}
           pageSize={stateSizeProduct}
           components={{
             Toolbar: () => (
@@ -1534,7 +1614,7 @@ const Contacts = () => {
       </Box>
 
       {/* Row kho broken */}
-      <Box
+      {/* <Box
         m="40px 0 0 0"
         height="75vh"
         sx={{
@@ -1581,7 +1661,7 @@ const Contacts = () => {
             ),
           }}
         />
-      </Box>
+      </Box> */}
     </Box>
   );
 };

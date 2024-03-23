@@ -26,6 +26,7 @@ import { Update_PhieuOrder_By_id } from "./handlebills";
 import { GET_ALLBILL_BY_NOIMUA, Get_all_Bill } from "./handlebills";
 import { GET_ALL_DOANHTHU_By_storeID } from "./handledoanhthu";
 import i18n from "../../i18n/i18n";
+import ExcelJS from "exceljs";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { converToName } from "../method";
@@ -87,7 +88,7 @@ const DOANHTHU = () => {
     );
     // await fetchingOrderBy_storeID_By_year_month(statechinhanh, formattedDate);
   };
-  const handleExportExcel = () => {
+  const handleExportExcelOLD = () => {
     const currentDate = new Date();
 
     // Lấy thông tin về ngày, giờ, phút, giây và milliseconds
@@ -129,6 +130,72 @@ const DOANHTHU = () => {
       wb,
       "Revenues_" + converToName[statechinhanh] + "_" + datetimeString + ".xlsx"
     );
+  };
+
+  const handleExportExcel = async () => {
+    // Mảng JSON chứa dữ liệu
+    let data = [];
+    stateHoadon.forEach((element) => {
+      let object = {
+        [i18n.t("MADT_DT")]: element.id,
+        [i18n.t("CN")]: converToName[element.storeID],
+        [i18n.t("SOTIENTRATUCONNO")]: element.sotien,
+        [i18n.t("SOTIENDOANHTHU")]: element.sotienThucte,
+
+        [i18n.t("NGAYLAP_DT")]: element.thoidiem.split(" ")[0],
+      };
+      data.push(object);
+    });
+    // Tạo một workbook mới
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Sheet1");
+
+    // Tạo dòng header tùy chỉnh
+    const headerRow = worksheet.addRow([
+      i18n.t("MADT_DT").toUpperCase(),
+      i18n.t("MAKHO_DT").toUpperCase(),
+      i18n.t("SOTIENTRATUCONNO").toUpperCase(),
+      i18n.t("SOTIENDOANHTHU").toUpperCase(),
+      i18n.t("NGAYLAP_DT").toUpperCase(),
+      ,
+    ]);
+    headerRow.font = { bold: true, color: { argb: "FF000000" } };
+    headerRow.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FFFF00" },
+    };
+
+    // Đặt dữ liệu
+    data.forEach((row) => {
+      const rowData = Object.keys(row).map((key) => row[key]);
+      worksheet.addRow(rowData);
+    });
+
+    worksheet.columns = [
+      { width: 30 },
+      { width: 30 },
+      { width: 30 },
+      { width: 30 },
+      { width: 30 },
+    ];
+    // Định dạng cột B
+    const columnD = worksheet.getColumn("D");
+    columnD.alignment = { horizontal: "center", vertical: "middle" };
+    columnD.numFmt = "#,##";
+    // Định dạng cột C
+    const columnC = worksheet.getColumn("C");
+    columnC.alignment = { horizontal: "center", vertical: "middle" };
+    columnC.numFmt = "#,##";
+    // Xuất workbook vào tệp Excel
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    const link = document.createElement("a");
+    link.href = window.URL.createObjectURL(blob);
+    link.download = `${i18n.t("DT")}-${converToName[statechinhanh]}.xlsx`;
+    link.click();
   };
   const formattedDate = `${currentDate.getFullYear()}-${getMonthNameInVietnamese(
     currentDate.getMonth()
@@ -295,7 +362,7 @@ const DOANHTHU = () => {
     },
     {
       field: "sotienThucte",
-      headerName: `${i18n.t("SOTIENDOANHTHU")}`,
+      headerName: `${i18n.t("TONGSOTIEN")}`,
       renderCell: StatusMoney,
       flex: 1,
     },
@@ -321,12 +388,14 @@ const DOANHTHU = () => {
   ];
   const CustomPopup = ({ show, handleClose, content }) => {
     const sumSotienNo = content.reduce((acc, debtor) => {
-      return acc + parseInt(debtor.sotienNo, 10);
+      return acc + parseFloat(debtor.sotienNo, 10);
     }, 0);
     return (
       <Modal show={show} onHide={handleClose} centered size="lg">
         <Modal.Header style={{ color: "black" }} closeButton>
-          <Modal.Title>Tổng số tiền nợ : {sumSotienNo}</Modal.Title>
+          <Modal.Title>
+            {i18n.t("MODAL_SOTIENNO")} : {sumSotienNo.toLocaleString("en-US")}
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body
           style={{ maxWidth: "100%", overflow: "scroll", maxHeight: "500px" }}
@@ -681,7 +750,7 @@ const DOANHTHU = () => {
         }}
       >
         <span>
-          *Tổng doanh thu :{" "}
+          *{i18n.t("TONGSOTIEN")} :{" "}
           <span style={{ color: "green", fontSize: "1.1rem" }}>
             {" "}
             {parseInt(stateTongtien.tongdoanhthu).toLocaleString("en-US")} VND
@@ -689,7 +758,7 @@ const DOANHTHU = () => {
         </span>
         <br></br>
         <span>
-          *Tổng số tiền trả từ con nợ :
+          *{i18n.t("SOTIENTRATUCONNO")} :
           <span style={{ color: "green", fontSize: "1.1rem" }}>
             {" "}
             {parseInt(stateTongtien.tongtienno).toLocaleString("en-US")} VND

@@ -5,6 +5,7 @@ import { mockDataInvoices } from "../../data/mockData";
 import Header from "../../components/Header";
 import { useState, useEffect } from "react";
 import React from "react";
+
 import { GridToolbar } from "@mui/x-data-grid";
 import HandleAccessAccount from "../handleAccess/handleAccess";
 import {
@@ -16,9 +17,10 @@ import html2canvas from "html2canvas";
 import {
   Get_all_Phieu_Store_By_StoreID,
   Get_all_Phieu_Store,
-  Update_PhieuStore_By_id,
+  Update_PhieuStore_By_id_Invoces,
   Update_PhieuStore_By_id_CANCEL,
 } from "./handlePhieustore";
+import ExcelJS from "exceljs";
 import { Update_SOTIENTHUCTE_By_DATE_STOREID } from "../doanhthu/handledoanhthu";
 import { Get_all_Product_By_StoreID } from "../contacts/handleproduct";
 import { confirmAlert } from "react-confirm-alert";
@@ -29,6 +31,7 @@ import i18n from "../../i18n/i18n";
 import { useTranslation } from "react-i18next";
 import { Get_all_Phieu_Store_By_Year_Month } from "./handlePhieustore";
 import * as XLSX from "xlsx";
+
 import { converToName } from "../method";
 const Invoices = () => {
   useTranslation();
@@ -68,42 +71,91 @@ const Invoices = () => {
     ];
     return monthNames[month];
   };
-  const handleExportExcel = () => {
-    // Chuẩn bị dữ liệu để xuất
-    const rows = statePhieuStore.map((staff) => {
-      // Chỉ lấy các trường dữ liệu bạn muốn xuất
-      return {
-        // Thêm các trường khác nếu cần
-        [i18n.t("MAKHO_NP")]: staff.id,
-        [i18n.t("TINHTRANG_NP")]: staff.status,
-        [i18n.t("CN")]: converToName[staff.StoreID],
-        [i18n.t("SOTIEN_NP")]: staff.sotien,
-        [i18n.t("MAKHO_NP")]: staff.StoreID,
-        [i18n.t("NGAYCAPNHAT_NP")]: staff.updateDate,
+  const handleExportExcel = async () => {
+    // Mảng JSON chứa dữ liệu
+    let data = [];
 
-        [i18n.t("NGAYLAPPHIEU_NP")]: staff.ngaylap,
-      };
+    var filteredArray = statePhieuStore.filter((obj) => {
+      return obj.status === "ACCEPT";
+    });
+    filteredArray.forEach((element) => {
+      element.arrayProduct.forEach((child) => {
+        let object = {
+          MASP: child.id,
+          LOAISP: child.loai,
+          SOLUONGSP: parseFloat(child.soluong),
+          SOTIENSP: parseFloat(child.sotien),
+          MAPHIEU: element.id,
+          LOAIPHIEU: element.loaiphieu,
+          CHINHANH: converToName[child.StoreID],
+          THOIDIEMTAO: element.ngaylap,
+
+          UPDATEDATE: element.updateDate,
+        };
+        data.push(object);
+      });
+    });
+    // Tạo một workbook mới
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Sheet1");
+
+    // Tạo dòng header tùy chỉnh
+    const headerRow = worksheet.addRow([
+      i18n.t("MASP_P").toUpperCase(),
+      i18n.t("LOAI_P").toUpperCase(),
+      i18n.t("SOLUONG_P").toUpperCase(),
+      i18n.t("SOTIEN_NP").toUpperCase(),
+      i18n.t("MAPN_PX").toUpperCase(),
+      i18n.t("LOAIPHIEU_NHAP").toUpperCase(),
+      i18n.t("CN").toUpperCase(),
+      i18n.t("THOIDIEMTAOPHIEU").toUpperCase(),
+      i18n.t("NGAYCAPNHAT_NP").toUpperCase(),
+    ]);
+    headerRow.font = { bold: true, color: { argb: "FF000000" } };
+    headerRow.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FFFF00" },
+    };
+
+    // Đặt dữ liệu
+    data.forEach((row) => {
+      const rowData = Object.keys(row).map((key) => row[key]);
+      worksheet.addRow(rowData);
     });
 
-    // Tạo một workbook mới
-    const wb = XLSX.utils.book_new();
-    // Tạo một worksheet từ dữ liệu
-    const ws = XLSX.utils.json_to_sheet(rows);
-    ws["!cols"] = [
-      { width: 20 },
-      { width: 20 },
-      { width: 20 },
-      { width: 20 },
-      { width: 20 },
-      { width: 20 },
-      { width: 20 },
+    worksheet.columns = [
+      { width: 30 },
+      { width: 30 },
+      { width: 30, numFmt: "#,##0.00" },
+      { width: 30, numFmt: "#,##0.00" },
+      { width: 30 },
+      { width: 30 },
+      { width: 30 },
+      { width: 30 },
+      { width: 30 },
+      { width: 30 },
+      { width: 30 },
     ];
-
-    // Thêm worksheet vào workbook
-    XLSX.utils.book_append_sheet(wb, ws, "Phieustore Data");
-
-    // Tạo tệp Excel từ workbook
-    XLSX.writeFile(wb, "Phieu_Store.xlsx");
+    // Định dạng cột B
+    const columnB = worksheet.getColumn("D");
+    columnB.alignment = { horizontal: "center", vertical: "middle" };
+    columnB.numFmt = "#,##";
+    // Định dạng cột C
+    const columnC = worksheet.getColumn("C");
+    columnC.alignment = { horizontal: "center", vertical: "middle" };
+    columnC.numFmt = "#,##";
+    // Xuất workbook vào tệp Excel
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    const link = document.createElement("a");
+    link.href = window.URL.createObjectURL(blob);
+    link.download = `${i18n.t("ALERT_PHIEUNHAP")}-${
+      converToName[statechinhanh]
+    }.xlsx`;
+    link.click();
   };
 
   const PrintTableButton = () => {
@@ -227,7 +279,9 @@ const Invoices = () => {
         {
           label: "Yes",
           onClick: async () => {
-            const respone = await Update_PhieuStore_By_id(selectionModel);
+            const respone = await Update_PhieuStore_By_id_Invoces(
+              selectionModel
+            );
 
             if (JSON.parse(respone).success) {
               alert(`${i18n.t("CAPNHAT_NP")}`);
@@ -427,14 +481,17 @@ const Invoices = () => {
           style={{ maxWidth: "100%", overflow: "scroll", maxHeight: "500px" }}
         >
           <div className="table-container">
-            <table id="tabletemp" className="custom-table">
+            <table
+              id="tabletemp"
+              style={{ width: "620px" }}
+              className="custom-table"
+            >
               <thead>
                 <tr>
-                  <th>{i18n.t("TEN_P")}</th>
+                  <th>{i18n.t("MASP_P")}</th>
                   <th>{i18n.t("LOAI_P")}</th>
                   <th>{i18n.t("SOLUONG_P")}</th>
 
-                  <th>{i18n.t("HINHANH_P")}</th>
                   {stateCheckAccess ? (
                     <>
                       {" "}
@@ -443,24 +500,16 @@ const Invoices = () => {
                   ) : (
                     ""
                   )}
-
-                  <th>{i18n.t("XUATSU_X")}</th>
+                  <th>{i18n.t("HINHANH_P")}</th>
                 </tr>
               </thead>
               <tbody>
                 {content.map((item) => (
                   <tr key={item.id}>
-                    <td>{item.name}</td>
+                    <td>{item.id}</td>
                     <td>{item.loai}</td>
                     <td>{item.soluong}</td>
 
-                    <td>
-                      {item.picture ? (
-                        <img width={200} height={100} src={item.picture}></img>
-                      ) : (
-                        ""
-                      )}
-                    </td>
                     {stateCheckAccess ? (
                       <>
                         {" "}
@@ -469,8 +518,9 @@ const Invoices = () => {
                     ) : (
                       ""
                     )}
-
-                    <th>{item.xuatxu}</th>
+                    <td>
+                      <img width={100} height={100} src={item.picture}></img>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -510,6 +560,12 @@ const Invoices = () => {
     {
       field: "sotien",
       headerName: `${i18n.t("SOTIEN_NP")}`,
+      renderCell: StatusMoney,
+      flex: 1,
+    },
+    {
+      field: "sotienThucTe",
+      headerName: `${i18n.t("SOTIENTTE")}`,
       renderCell: StatusMoney,
       flex: 1,
     },
@@ -555,6 +611,23 @@ const Invoices = () => {
     // Tạo chuỗi mới với định dạng "năm tháng ngày giờ phút giây"
     const formattedDateString = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
     return <span>{formattedDateString}</span>;
+  }
+  function ChangeFormat(params) {
+    const arrayObject = params;
+    const originalDateString = arrayObject;
+    const originalDate = new Date(originalDateString);
+
+    // Lấy thông tin về năm, tháng, ngày, giờ, phút, giây từ đối tượng Date
+    const year = originalDate.getFullYear();
+    const month = (originalDate.getMonth() + 1).toString().padStart(2, "0"); // Tháng bắt đầu từ 0
+    const day = originalDate.getDate().toString().padStart(2, "0");
+    const hours = originalDate.getHours().toString().padStart(2, "0");
+    const minutes = originalDate.getMinutes().toString().padStart(2, "0");
+    const seconds = originalDate.getSeconds().toString().padStart(2, "0");
+
+    // Tạo chuỗi mới với định dạng "năm tháng ngày giờ phút giây"
+    const formattedDateString = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    return arrayObject;
   }
 
   function StatusMoney(params) {

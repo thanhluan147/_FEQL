@@ -76,52 +76,17 @@ const Form = () => {
     { field: "id", headerName: `${i18n.t("MASP_P")}`, flex: 0.5 },
 
     {
-      field: "name",
-      headerName: `${i18n.t("TEN_P")}`,
-      flex: 1,
-      headerAlign: "left",
-      align: "left",
-    },
-    {
       field: "loai",
       headerName: `${i18n.t("LOAI_P")}`,
       flex: 1,
       headerAlign: "left",
       align: "left",
     },
-    {
-      field: "picture",
-      headerName: `${i18n.t("HINHANH_P")}`,
-      flex: 1,
-      width: 130,
-      renderCell: ImageCell,
-      headerAlign: "left",
-      align: "left",
-    },
+
     {
       field: "soluong",
       headerAlign: "left",
       headerName: `${i18n.t("SOLUONG_P")}`,
-      flex: 1,
-    },
-    {
-      field: "xuatxu",
-      headerName: `${i18n.t("XUATSU_X")}`,
-      flex: 1,
-      headerAlign: "left",
-      align: "left",
-    },
-    {
-      field: "status",
-      headerAlign: "left",
-      headerName: `${i18n.t("TINHTRANG_P")}`,
-      flex: 1,
-    },
-
-    {
-      field: "behavior",
-      headerAlign: "left",
-      headerName: `${i18n.t("HANHVI_P")}`,
       flex: 1,
     },
   ];
@@ -169,6 +134,15 @@ const Form = () => {
       setStateProductview(JSON.parse(check));
     }
   };
+  function replaceSpecialCharacters(inputString) {
+    // Sử dụng replace() với biểu thức chính quy để thay thế ký tự đặc biệt bằng "-"
+    var modifiedString = inputString.replace(
+      /[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]/g,
+      "-"
+    );
+
+    return modifiedString;
+  }
   const handleBlurdate = () => {
     const currentDate = new Date();
 
@@ -176,45 +150,52 @@ const Form = () => {
     const year = currentDate.getFullYear();
     const month = (currentDate.getMonth() + 1).toString().padStart(2, "0"); // Tháng bắt đầu từ 0
     const day = currentDate.getDate().toString().padStart(2, "0");
-    if (statePhieu.thoidiem.split("/").length > 1) {
+
+    var inputString = replaceSpecialCharacters(statePhieu.thoidiem);
+    if (statePhieu.thoidiem.length === 8) {
+      var yearx = inputString.slice(0, 4);
+      var monthx = inputString.slice(4, 6);
+      var dayx = inputString.slice(6, 8);
+      inputString = yearx + "-" + monthx + "-" + dayx;
+    }
+    console.log("inputString " + inputString);
+    if (parseFloat(inputString.split("-")[0]) > parseFloat(year)) {
       setisShowerrorDate(true);
       return;
     }
-    if (
-      parseFloat(statePhieu.thoidiem.split("-")[0]) < parseFloat(year) ||
-      parseFloat(statePhieu.thoidiem.split("-")[0]) > parseFloat(year)
-    ) {
-      setisShowerrorDate(true);
-      return;
-    }
-    // console.log("chheck month " + statePhieu.thoidiem.split("-")[1]);
+    // console.log("chheck month " + inputString.split("-")[1]);
     // console.log("month ht " + parseFloat(month));
-    if (parseFloat(statePhieu.thoidiem.split("-")[1]) > parseFloat(month)) {
+    if (parseFloat(inputString.split("-")[1]) > parseFloat(month)) {
       setisShowerrorDate(true);
       return;
     }
-    if (parseFloat(statePhieu.thoidiem.split("-")[0]) === 2024) {
+    if (parseFloat(inputString.split("-")[0]) === 2024) {
       if (
-        parseFloat(statePhieu.thoidiem.split("-")[1]) <= 2 &&
-        parseFloat(statePhieu.thoidiem.split("-")[2]) < 5
+        parseFloat(inputString.split("-")[1]) <= 2 &&
+        parseFloat(inputString.split("-")[2]) < 5
       ) {
         alert("Hệ thống không có dử liệu ngày này !! Phải từ 2024-02-05");
         setisShowerrorDate(true);
         return;
       }
     }
-    if (parseFloat(statePhieu.thoidiem.split("-")[0]) < 2024) {
+    if (parseFloat(inputString.split("-")[0]) < 2024) {
       alert("Hệ thống không có dử liệu ngày này !! Phải từ 2024-02-05");
       setisShowerrorDate(true);
       return;
     }
 
     // Kiểm tra lỗi khi mất focus (kết thúc nhập)
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(statePhieu.thoidiem)) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(inputString)) {
       setisShowerrorDate(true);
     } else {
       setisShowerrorDate(false);
     }
+
+    setStatePhieu({
+      ...statePhieu,
+      thoidiem: inputString,
+    });
   };
   const [stateimage, setStateimg] = useState("");
   const [stateProduct, setStateProduct] = useState([]);
@@ -224,6 +205,7 @@ const Form = () => {
   let code = "";
   const [stateCode, setstateCode] = useState("");
   const [statesotienbandau, setsotienbandau] = useState(0);
+  const [statesotienThucTebandau, setsotienThucTebandau] = useState(0);
   const [statechinhanhdau, setchinhanhdau] = useState("");
   const [isshowError, setisshowError] = useState(false);
   const [isshowErrorTable, setisshowErrorTable] = useState(false);
@@ -238,6 +220,7 @@ const Form = () => {
     status: "GOOD",
     StoreID: "",
     sotien: 0,
+    sotienthucte: 0,
     xuatxu: "",
     behavior: "ADMIN ADD",
   });
@@ -250,6 +233,7 @@ const Form = () => {
   });
   const [statePhieu, setStatePhieu] = useState({
     sotien: 0,
+    sotienthucte: 0,
     loaiphieu: "",
     thoidiem: "",
   });
@@ -259,12 +243,14 @@ const Form = () => {
 
     if (event.target.name === "loaiphieu") {
       setsotienbandau(0);
+      setsotienThucTebandau(0);
+      setStateProduct([]);
       setStatePhieu({
         ...statePhieu,
         sotien: 0,
+        sotienthucte: 0,
         [event.target.name]: event.target.value,
       });
-      setStateProduct([]);
     } else {
       setStatePhieu({
         ...statePhieu,
@@ -294,6 +280,7 @@ const Form = () => {
         alert(
           "Số lượng nhập có giá trị lớn hơn số lượng đang có hoặc nhỏ hơn 0"
         );
+
         return;
       }
     }
@@ -371,6 +358,7 @@ const Form = () => {
                 sotien: statePhieu.sotien,
                 StoreID: statechinhanhdau,
                 arrayProduct: stateProduct,
+                sotienThucTe: statePhieu.sotienthucte,
                 ngaylap: statePhieu.thoidiem,
                 updateDate: "...",
               };
@@ -385,21 +373,14 @@ const Form = () => {
                 setisloading(false);
                 setStatePhieu({
                   sotien: 0,
+                  sotienthucte: 0,
                   thoidiem: "",
                   loaiphieu: "",
                 });
                 setsotienbandau(0);
-                // setStateFormProduct({
-                //   id: "",
-                //   name: "",
-                //   picture: "",
-                //   loai: "",
-                //   soluong: 0,
-                //   status: "GOOD",
-                //   StoreID: "",
-                //   sotien: 0,
-                //   behavior: "ADMIN ADD",
-                // });
+                setsotienThucTebandau(0);
+
+                console.log("hẻre showw alert ");
                 setStateProduct([]);
               }
             },
@@ -479,9 +460,6 @@ const Form = () => {
     if (!name) {
       errors.name = `${i18n.t("ERROR_NAME")}`;
     }
-    if (!pictureview) {
-      errors.pictureview = `*Vui lòng chọn ảnh`;
-    }
 
     if (!loai) {
       errors.loai = `${i18n.t("ERROR_LOAI")}`;
@@ -499,9 +477,16 @@ const Form = () => {
     setsotienbandau(
       parseFloat(statesotienbandau) + parseFloat(stateFormProduct.sotien)
     );
+    setsotienThucTebandau(
+      parseFloat(statesotienThucTebandau) +
+        parseFloat(stateFormProduct.sotienthucte)
+    );
 
     setStatePhieu({
       ...statePhieu,
+      sotienthucte:
+        parseFloat(statesotienThucTebandau) +
+        parseFloat(stateFormProduct.sotienthucte),
       sotien:
         parseFloat(statesotienbandau) + parseFloat(stateFormProduct.sotien),
     });
@@ -513,9 +498,12 @@ const Form = () => {
       picture: URL_IMG + `STORE/${statechinhanhdau}` + "/" + stateimageFileName,
       pictureName: stateimageFileName,
     };
-    arry.push(updatedItem);
 
-    setStateProduct(stateProduct.concat(arry));
+    arry.push(updatedItem);
+    if (arry.length > 0) {
+      setStateProduct(stateProduct.concat(arry));
+    }
+
     setStateFormProduct({
       id: "",
       name: "",
@@ -525,6 +513,7 @@ const Form = () => {
       status: "GOOD",
       StoreID: "",
       sotien: 0,
+      sotienthucte: 0,
       xuatxu: "",
       behavior: "ADMIN ADD",
     });
@@ -572,17 +561,7 @@ const Form = () => {
     const file = e.target.files[0];
 
     // Check if a file is selected
-    if (!file) {
-      setErrorMessages((prev) => ({
-        ...prev,
-        pictureview: `${i18n.t("ERROR_HINH")}`,
-      }));
-      return;
-    }
-    setErrorMessages({
-      ...errorMessages,
-      pictureview: "",
-    });
+
     const check = await CheckFileName(
       e.target.files[0].name,
       "STORE",
@@ -647,15 +626,22 @@ const Form = () => {
       setsotienbandau(
         parseFloat(statesotienbandau) - parseFloat(updateMoney[0].sotien)
       );
+      setsotienThucTebandau(
+        parseFloat(statesotienThucTebandau) -
+          parseFloat(updateMoney[0].sotienthucte)
+      );
 
       setStatePhieu({
         ...statePhieu,
+        sotienthucte:
+          parseFloat(statesotienThucTebandau) -
+          parseFloat(updateMoney[0].sotienthucte),
         sotien:
           parseFloat(statesotienbandau) - parseFloat(updateMoney[0].sotien),
       });
     }
-
-    // Cập nhật stateProduct
+    console.log("update cái deleted");
+    // // Cập nhật stateProduct
     setStateProduct(updatedState);
   };
   return (
@@ -691,7 +677,6 @@ const Form = () => {
                       ? parseInt(statePhieu.sotien).toLocaleString("en-US")
                       : "#####"
                   }
-                  onChange={onhandlechangePhieu}
                   sx={{ gridColumn: "span 2" }}
                 />
 
@@ -744,6 +729,24 @@ const Form = () => {
                 </FormControl>
               </Box>
               <div className="table-container">
+                <span>
+                  {statePhieu.loaiphieu === "NN" ? (
+                    <>
+                      <span>
+                        {" "}
+                        {">>> "} Tổng số tiền thực tế :{" "}
+                        <span
+                          style={{ color: "greenyellow", fontSize: "1.2rem" }}
+                        >
+                          {statePhieu.sotienthucte}
+                        </span>{" "}
+                      </span>
+                    </>
+                  ) : (
+                    ""
+                  )}
+                </span>
+                <br></br>
                 <label htmlFor="usoluong">*{i18n.t("SLDC")}</label>
                 <br></br>
                 <input
@@ -758,78 +761,135 @@ const Form = () => {
                 ) : (
                   ""
                 )}
+                {statePhieu.loaiphieu && statePhieu.loaiphieu == "NK" ? (
+                  <>
+                    <table className="custom-table">
+                      <thead>
+                        <tr>
+                          <th>{i18n.t("LOAI_P")}</th>
+                          <th>{i18n.t("SOLUONG_P")}</th>
+                          <th>{i18n.t("SOTIEN_NP")}</th>
 
-                <table className="custom-table">
-                  <thead>
-                    <tr>
-                      <th>{i18n.t("TEN_P")}</th>
-                      <th>{i18n.t("LOAI_P")}</th>
-                      <th>{i18n.t("SOLUONG_P")}</th>
-                      <th>{i18n.t("SOTIEN_NP")}</th>
-                      <th>{i18n.t("XUATSU_X")}</th>
-                      <th>{i18n.t("HINHANH_P")}</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {stateProduct.map((item) => (
+                          <tr key={item.id}>
+                            <td>{item.loai}</td>
+                            <td>{item.soluong}</td>
+                            <td>
+                              {item.checkStore && item.checkStore
+                                ? parseInt(item.sotien).toLocaleString("en-US")
+                                : "###"}
+                            </td>
 
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {stateProduct.map((item) => (
-                      <tr key={item.id}>
-                        <td>{item.name}</td>
-                        <td>{item.loai}</td>
-                        <td>{item.soluong}</td>
-                        <td>
-                          {item.checkStore && item.checkStore
-                            ? parseInt(item.sotien).toLocaleString("en-US")
-                            : "###"}
-                        </td>
-                        <td>{item.xuatxu}</td>
-
-                        <td>
-                          {item.pictureview ? (
-                            <img
-                              width={200}
-                              height={100}
-                              src={item.pictureview}
-                            ></img>
+                            <th>
+                              <button
+                                className="btn btn-danger"
+                                onClick={() => handleDelete(item.id)}
+                              >
+                                Xóa
+                              </button>
+                              <button
+                                className="btn btn-success"
+                                style={{ marginLeft: "5px" }}
+                                onClick={() => handleEditProduct(item.id)}
+                              >
+                                Điều chỉnh
+                              </button>
+                            </th>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </>
+                ) : (
+                  <>
+                    {" "}
+                    <table className="custom-table">
+                      <thead>
+                        <tr>
+                          <th>{i18n.t("TEN_P")}</th>
+                          <th>{i18n.t("LOAI_P")}</th>
+                          <th>{i18n.t("SOLUONG_P")}</th>
+                          <th>{i18n.t("SOTIEN_NP")}</th>
+                          {stateCheckaccess ? (
+                            <>
+                              <th>Số tiền thực tế</th>
+                            </>
                           ) : (
                             ""
                           )}
-                        </td>
+                          <th>{i18n.t("XUATSU_X")}</th>
+                          <th>{i18n.t("HINHANH_P")}</th>
 
-                        <th>
-                          <button
-                            onClick={() => handleDelete(item.id)}
-                            class="bn632-hover bn28"
-                          >
-                            Xóa
-                          </button>
-                          <button
-                            style={{ backgroundColor: "green" }}
-                            class="bn632-hover bn2"
-                            onClick={() => handleEditProduct(item.id)}
-                          >
-                            Điều chỉnh
-                          </button>
-                        </th>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                {statePhieu.loaiphieu && statePhieu.loaiphieu === "NN" ? (
-                  <div
-                    className="add-button"
-                    data-toggle="modal"
-                    data-target="#staticBackdrop"
-                    onClick={() => {
-                      setisshowError(false);
-                    }}
-                    type="button"
-                  >
-                    +
-                  </div>
-                ) : (
-                  ""
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {stateProduct.map((item) => (
+                          <tr key={item.id}>
+                            <td>{item.name}</td>
+                            <td>{item.loai}</td>
+                            <td>{item.soluong}</td>
+                            <td>
+                              {item.checkStore && item.checkStore
+                                ? parseInt(item.sotien).toLocaleString("en-US")
+                                : "###"}
+                            </td>
+                            {stateCheckaccess ? (
+                              <>
+                                <td>{item.sotienthucte}</td>
+                              </>
+                            ) : (
+                              ""
+                            )}
+                            <td>{item.xuatxu}</td>
+
+                            <td>
+                              {item.pictureview ? (
+                                <img
+                                  width={200}
+                                  height={100}
+                                  src={item.pictureview}
+                                ></img>
+                              ) : (
+                                ""
+                              )}
+                            </td>
+
+                            <th>
+                              <button
+                                onClick={() => handleDelete(item.id)}
+                                class="btn btn-danger"
+                              >
+                                Xóa
+                              </button>
+                              <button
+                                style={{ marginLeft: "5px" }}
+                                class="btn btn-success"
+                                onClick={() => handleEditProduct(item.id)}
+                              >
+                                Điều chỉnh
+                              </button>
+                            </th>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    <div
+                      className="add-button"
+                      data-toggle="modal"
+                      data-target="#staticBackdrop"
+                      onClick={() => {
+                        setisshowError(false);
+                      }}
+                      type="button"
+                    >
+                      +
+                    </div>
+                  </>
                 )}
 
                 <div
@@ -895,6 +955,23 @@ const Form = () => {
                           value={stateFormProduct.sotien}
                           onChange={onChangeAddProductForm}
                         ></input>
+                        {stateCheckaccess ? (
+                          <>
+                            {" "}
+                            <label htmlFor="sotienthucte">
+                              Số tiền thực tế
+                            </label>
+                            <input
+                              type="number"
+                              name="sotienthucte"
+                              value={stateFormProduct.sotienthucte}
+                              onChange={onChangeAddProductForm}
+                            ></input>
+                          </>
+                        ) : (
+                          ""
+                        )}
+
                         <label htmlFor="xuatxu">{i18n.t("XUATSU_X")}</label>
                         <input
                           type="text"

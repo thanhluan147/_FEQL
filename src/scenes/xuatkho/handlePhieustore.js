@@ -104,6 +104,7 @@ export const Get_all_Phieu_Store_By_StoreID = async (req) => {
 };
 
 export const Get_all_Order_By_StoreID_Year_Month = async (req) => {
+  console.log("check req YEar " + JSON.stringify(req));
   const respod = await Axios.post(
     `${Url_BackEnd}/order/getALlOrderByYearMonth`,
     {

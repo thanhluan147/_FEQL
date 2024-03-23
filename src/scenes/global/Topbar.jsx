@@ -9,6 +9,7 @@ import NotificationImportantIcon from "@mui/icons-material/NotificationImportant
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import SearchIcon from "@mui/icons-material/Search";
+
 import { useTranslation } from "react-i18next";
 import Temp from "../../components/Temp";
 import { useEffect, useState } from "react";
@@ -147,7 +148,7 @@ const Topbar = () => {
                 <div class="dropdown-menu cssleft">
                   <a class="dropdown-item" style={{ fontSize: "1.5rem" }}>
                     {i18n.t("MAPN_PX")} - {i18n.t("TINHTRANG_PX")} -{" "}
-                    {i18n.t("LOAIPHIEU_NHAP")}
+                    {i18n.t("LOAIPHIEU_NHAP")} - {i18n.t("THOIDIEMTAOPHIEU")}
                   </a>
                   <hr></hr>
                   {statePhieustore
@@ -201,6 +202,8 @@ const Topbar = () => {
                               </span>
                             </>
                           )}
+                          {"  | "}
+                          <span>{object.ngaylap}</span>
                         </a>
                       ))
                     : ""}

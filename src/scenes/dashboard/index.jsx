@@ -14,12 +14,14 @@ import PointOfSaleIcon from "@mui/icons-material/PointOfSale";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import TrafficIcon from "@mui/icons-material/Traffic";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
+import ChatIcon from "@mui/icons-material/Chat";
 import Header from "../../components/Header";
 import SendIcon from "@mui/icons-material/Send";
 import LineChart from "../../components/LineChart";
 import GeographyChart from "../../components/GeographyChart";
 import BarChart from "../../components/BarChart";
 import StatBox from "../../components/StatBox";
+import "./style.css";
 import ProgressCircle from "../../components/ProgressCircle";
 import { GET_ALLDEBTOR_CONNO } from "../debtor/handleDebtor";
 import { useEffect, useState, useRef } from "react";
@@ -51,13 +53,15 @@ const Dashboard = () => {
   const [stateDoanhthu, setstateDoanhthu] = useState([]);
   const [statetongdoanhthu, setstatetongdoanhthu] = useState(0);
   const [statetCostBuy, setstateCostBuy] = useState(0);
+  const [statetCostBuyThucTe, setstateCostBuyThucTe] = useState(0);
   const [statechinhanh, setStatechinhanh] = useState("");
   const [inputValue, setInputValue] = useState("");
   const [textAreaValue, setTextAreaValue] = useState("");
+  const [isOpenChat, setIsOpenchat] = useState(false);
   const [stateCheckaccess, setstateCheckaccess] = useState(false);
   const [min, setmin] = useState(0);
   const [max, setmax] = useState(0);
-  const [statesotienNhap, setstatesotienNhap] = useState(0);
+  const [statesotienBAN, setstatesotienBAN] = useState(0);
   const textAreaRef = useRef();
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
@@ -163,11 +167,10 @@ const Dashboard = () => {
         let sumallSotienNhapKho = 0;
         setstateDoanhthu(JSON.parse(resolvedResult));
         JSON.parse(resolvedResult).forEach((obj) => {
-          obj.ListOfCreditors.forEach((item) => {
-            sumallSotienNhapKho += parseFloat(item.sotien);
-          });
+          sumallSotienNhapKho += parseFloat(obj.sotienThucte);
         });
-        setstatesotienNhap(sumallSotienNhapKho);
+
+        setstatesotienBAN(sumallSotienNhapKho);
 
         let maxValue = 0;
         let minValue = 0;
@@ -182,21 +185,17 @@ const Dashboard = () => {
         setmin(minValue);
         setmax(maxValue);
         const sumSotien = JSON.parse(resolvedResult).reduce(
-          (total, obj) => total + obj.sotienThucte,
+          (total, obj) => total + obj.sotien,
           0
         );
-
         setstatetongdoanhthu(sumSotien);
       } else {
         let sumallSotienNhapKho = 0;
         setstateDoanhthu(JSON.parse(objBranch));
         JSON.parse(objBranch).forEach((obj) => {
-          obj.ListOfCreditors.forEach((item) => {
-            sumallSotienNhapKho += parseFloat(item.sotien);
-          });
+          sumallSotienNhapKho += parseFloat(obj.sotienThucte);
         });
-        setstatesotienNhap(sumallSotienNhapKho);
-
+        setstatesotienBAN(sumallSotienNhapKho);
         let maxValue = 0;
         let minValue = 0;
         JSON.parse(objBranch).forEach((obj) => {
@@ -210,7 +209,7 @@ const Dashboard = () => {
         setmin(minValue);
         setmax(maxValue);
         const sumSotien = JSON.parse(objBranch).reduce(
-          (total, obj) => total + obj.sotienThucte,
+          (total, obj) => total + obj.sotien,
           0
         );
 
@@ -231,19 +230,28 @@ const Dashboard = () => {
         const resolvedResult = await objBranch;
 
         let sumallSotienNhapKho = 0;
+        let sumallSotienNhapKhoTT = 0;
         // setstateDoanhthu(JSON.parse(resolvedResult));
         JSON.parse(resolvedResult).forEach((obj) => {
           sumallSotienNhapKho += parseFloat(obj.sotien);
+          sumallSotienNhapKhoTT += parseFloat(obj.sotienThucte);
+          console.log(
+            "check  parseFloat(obj.sotienThucte);" +
+              parseFloat(obj.sotienThucte)
+          );
         });
 
         setstateCostBuy(sumallSotienNhapKho);
+        setstateCostBuyThucTe(sumallSotienNhapKhoTT);
       } else {
         let sumallSotienNhapKho = 0;
+        let sumallSotienNhapKhoTT = 0;
         // setstateDoanhthu(JSON.parse(resolvedResult));
         JSON.parse(objBranch).forEach((obj) => {
           sumallSotienNhapKho += parseFloat(obj.sotien);
+          sumallSotienNhapKhoTT += parseFloat(obj.sotienThucTe);
         });
-
+        setstateCostBuyThucTe(sumallSotienNhapKhoTT);
         setstateCostBuy(sumallSotienNhapKho);
       }
     }
@@ -404,6 +412,24 @@ const Dashboard = () => {
   return (
     <>
       {stateCheckaccess ? (
+        <>
+          {" "}
+          <div class="social-icons">
+            <a
+              onClick={() => {
+                setIsOpenchat(!isOpenChat);
+              }}
+              class="tiktok"
+            >
+              <ChatIcon fontSize="large" />
+            </a>
+          </div>
+        </>
+      ) : (
+        ""
+      )}
+
+      {stateCheckaccess ? (
         <Box m="20px">
           {/* HEADER */}
 
@@ -414,7 +440,7 @@ const Dashboard = () => {
           >
             <Header
               title={i18n.t("DESDOASHBOARD")}
-              subtitle={i18n.t("TONGDOANHTHU")}
+              // subtitle={i18n.t("TONGDOANHTHU")}
             />
 
             {/* <Box>
@@ -503,7 +529,7 @@ const Dashboard = () => {
             >
               <StatBox
                 title={statetongdoanhthu}
-                subtitle={i18n.t("TONGDOANHTHU")}
+                subtitle={i18n.t("TSOTIENTHUVETUBAN")}
                 progress="0.75"
                 increase="+14%"
                 icon={
@@ -513,49 +539,36 @@ const Dashboard = () => {
                 }
               />
             </Box>
-            <Box
-              gridColumn="span 3"
-              backgroundColor={colors.primary[400]}
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
-            >
-              <StatBox
-                title={
-                  statetongdoanhthu > 0
-                    ? (statetongdoanhthu * 0.15).toFixed(2)
-                    : 0
-                }
-                subtitle={i18n.t("SOTIENLOINHUAN")}
-                progress="0.50"
-                increase="+15%"
-                icon={
-                  <AttachMoneyIcon
-                    sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
+            {statechinhanh && statechinhanh === "ST00" ? (
+              <>
+                {" "}
+                <Box
+                  gridColumn="span 3"
+                  backgroundColor={colors.primary[400]}
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <StatBox
+                    title={statesotienBAN}
+                    subtitle={i18n.t("TSOTIENDABAN")}
+                    progress="0.75"
+                    increase="+14%"
+                    icon={
+                      <TrafficIcon
+                        sx={{
+                          color: colors.greenAccent[600],
+                          fontSize: "26px",
+                        }}
+                      />
+                    }
                   />
-                }
-              />
-            </Box>
+                </Box>
+              </>
+            ) : (
+              ""
+            )}
 
-            <Box
-              gridColumn="span 3"
-              backgroundColor={colors.primary[400]}
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
-            >
-              <StatBox
-                title={statesotienNhap}
-                subtitle={i18n.t("TSTLN")}
-                progress="0.80"
-                increase="+43%"
-                icon={
-                  <ShoppingBasketIcon
-                    sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
-                  />
-                }
-              />
-            </Box>
             <Box
               gridColumn="span 3"
               backgroundColor={colors.primary[400]}
@@ -575,6 +588,36 @@ const Dashboard = () => {
                 }
               />
             </Box>
+
+            {statechinhanh === "ST00" ? (
+              <>
+                {" "}
+                <Box
+                  gridColumn="span 3"
+                  backgroundColor={colors.primary[400]}
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <StatBox
+                    title={statetCostBuyThucTe}
+                    subtitle={i18n.t("TSOTIENTHUCTETUNHAPKHO")}
+                    progress="0.80"
+                    increase="+43%"
+                    icon={
+                      <ShoppingBasketIcon
+                        sx={{
+                          color: colors.greenAccent[600],
+                          fontSize: "26px",
+                        }}
+                      />
+                    }
+                  />
+                </Box>
+              </>
+            ) : (
+              ""
+            )}
 
             {/* ROW 2 */}
             <Box
@@ -690,7 +733,8 @@ const Dashboard = () => {
                       p="5px 10px"
                       borderRadius="4px"
                     >
-                      {transaction.sotienNo} VND
+                      {parseFloat(transaction.sotienNo).toLocaleString("en-US")}{" "}
+                      VND
                     </Box>
                   </Box>
                 ))}
@@ -699,7 +743,9 @@ const Dashboard = () => {
             {/* ROW 3 */}
 
             <Box
+              className="chatbox"
               gridColumn="span 4"
+              style={{ display: isOpenChat ? "block" : "none" }}
               gridRow="span 2"
               backgroundColor={colors.primary[400]}
               alignItems="center"
@@ -732,10 +778,12 @@ const Dashboard = () => {
                     fontWeight: "",
                     color: "white",
                     border: "aliceblue",
+                    paddingLeft: "15px",
                     backgroundColor: "#1f2a40",
                   }}
                 />
-                <label>
+                <hr></hr>
+                <label style={{ padding: "5px", paddingLeft: "15px" }}>
                   <input
                     type="text"
                     value={inputValue}

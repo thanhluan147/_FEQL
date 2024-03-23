@@ -61,17 +61,20 @@ export const Get_all_LENGHT_Product_By_StoreID = async (req) => {
   return respod.data.soluong;
 };
 export const createProduct = async (req) => {
+  if (!req.name) {
+    req.name = "...";
+  }
   const respod = await Axios.post(
     `${Url_BackEnd}/product/create`,
     {
       id: req.id,
-      name: "...",
+      name: req.name,
       picture: "...",
       loai: req.loai,
       soluong: req.soluong,
       status: "GOOD",
       StoreID: req.StoreID,
-      behavior: "...",
+      behavior: req.behavior,
       xuatxu: "...",
       sotien: req.sotien,
     },

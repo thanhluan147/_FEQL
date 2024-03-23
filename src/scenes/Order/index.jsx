@@ -54,6 +54,7 @@ const Form = () => {
   const [stateProduct, setStateProduct] = useState([]);
   const [stateStore, setStateStore] = useState([]);
   const [statechinhanh, setStatechinhanh] = useState("");
+  const [statechinhanhPN, setStatechinhanhPN] = useState("");
   const [statePhieuStore, setStatePhieuStore] = useState([]);
   const [showPopup, setShowPopup] = useState(false);
   const [stateContentModal, setStatecontentModal] = useState([]);
@@ -207,41 +208,41 @@ const Form = () => {
       align: "left",
       renderCell: StatusMoney,
     },
-    {
-      field: "picture",
-      headerName: `${i18n.t("HINHANH_P")}`,
-      renderCell: ImageCell,
-      flex: 1,
-      width: 130,
+    // {
+    //   field: "picture",
+    //   headerName: `${i18n.t("HINHANH_P")}`,
+    //   renderCell: ImageCell,
+    //   flex: 1,
+    //   width: 130,
 
-      headerAlign: "left",
-      align: "left",
-    },
+    //   headerAlign: "left",
+    //   align: "left",
+    // },
     {
       field: "soluong",
       headerAlign: "left",
       headerName: `${i18n.t("SOLUONG_P")}`,
       flex: 1,
     },
-    {
-      field: "xuatxu",
-      headerName: `Xuất xứ`,
-      flex: 1,
-      headerAlign: "left",
-      align: "left",
-    },
-    {
-      field: "status",
-      headerAlign: "left",
-      headerName: `${i18n.t("TINHTRANG_P")}`,
-      flex: 1,
-    },
-    {
-      field: "behavior",
-      headerAlign: "left",
-      headerName: `${i18n.t("HANHVI_P")}`,
-      flex: 1,
-    },
+    // {
+    //   field: "xuatxu",
+    //   headerName: `Xuất xứ`,
+    //   flex: 1,
+    //   headerAlign: "left",
+    //   align: "left",
+    // },
+    // {
+    //   field: "status",
+    //   headerAlign: "left",
+    //   headerName: `${i18n.t("TINHTRANG_P")}`,
+    //   flex: 1,
+    // },
+    // {
+    //   field: "behavior",
+    //   headerAlign: "left",
+    //   headerName: `${i18n.t("HANHVI_P")}`,
+    //   flex: 1,
+    // },
   ];
   const [errorMessages, setErrorMessages] = useState({
     name: "",
@@ -292,7 +293,6 @@ const Form = () => {
 
         setStatechinhanh(chinhanhdau);
         setstateCode(code);
-        setstateCodePN(code);
       } else {
         // Nếu không phải là promise, cập nhật state ngay lập tức
 
@@ -302,7 +302,6 @@ const Form = () => {
 
         setStatechinhanh(chinhanhdau);
         setstateCode(code);
-        setstateCodePN(code);
       }
     } else {
       const objBranch = Get_all_store_By_userid();
@@ -317,7 +316,6 @@ const Form = () => {
 
         setStatechinhanh(chinhanhdau);
         setstateCode(code);
-        setstateCodePN(code);
       } else {
         // Nếu không phải là promise, cập nhật state ngay lập tức
         setStateStore(JSON.parse(objBranch));
@@ -326,7 +324,6 @@ const Form = () => {
 
         setStatechinhanh(chinhanhdau);
         setstateCode(code);
-        setstateCodePN(code);
       }
     }
   };
@@ -389,6 +386,7 @@ const Form = () => {
     await fetchingGettAllPhieu_by_StoreID(chinhanhdau);
 
     await fetchgetAllOrder_BY_storeID(chinhanhdau, code);
+    setstateCodePN(code);
     setStatechinhanh(chinhanhdau);
     setchinhanhnhan(chinhanhdau);
   };
@@ -611,8 +609,8 @@ const Form = () => {
                 setisloading(false);
                 alert(`${i18n.t("ALERT_ADDPHIEUSUCCESS")}`);
                 await Update_PhieuStore_By_id_WATING(selectionModelPhieu);
-                await fetchingGettAllPhieu_by_StoreID(statechinhanh);
-                await fetchgetAllOrder_BY_storeID(statechinhanh, stateCodePN);
+                await fetchingGettAllPhieu_by_StoreID(statechinhanhnhan);
+                await fetchgetAllOrder_BY_storeID(statechinhanh, stateCode);
                 setStatePhieu({
                   sotien: 0,
                   loaiphieu: "",
@@ -848,7 +846,9 @@ const Form = () => {
   };
   const handle_changechinhanhnhan = async (e) => {
     await fetchingGettAllPhieu_by_StoreID(e.target.value);
+    setchinhanhnhan(e.target.value);
     const selectedId = e.target.options[e.target.selectedIndex].id;
+    setstateCodePN(selectedId);
   };
   const handleSelectionModelChange = (newSelectionModel) => {
     const hasAcceptedOrCancelled = newSelectionModel.some((selectedId) => {
@@ -1068,13 +1068,10 @@ const Form = () => {
               <table className="custom-table">
                 <thead>
                   <tr>
-                    <th>Mã sản phẩm</th>
+                    <th>{i18n.t("MASP_P")}</th>
                     <th>{i18n.t("TEN_P")}</th>
                     <th>{i18n.t("LOAI_P")}</th>
                     <th>{i18n.t("SOLUONG_P")}</th>
-                    <th>{i18n.t("XUATSU_X")}</th>
-                    <th>{i18n.t("HINHANH_P")}</th>
-
                     <th></th>
                   </tr>
                 </thead>
@@ -1085,19 +1082,6 @@ const Form = () => {
                       <td>{item.name}</td>
                       <td>{item.loai}</td>
                       <td>{item.soluong}</td>
-
-                      <td>{item.xuatxu}</td>
-                      <td>
-                        {item.picture ? (
-                          <img
-                            width={200}
-                            height={100}
-                            src={item.picture}
-                          ></img>
-                        ) : (
-                          ""
-                        )}
-                      </td>
 
                       <th>
                         <button

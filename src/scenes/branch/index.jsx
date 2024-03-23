@@ -1,29 +1,16 @@
-import { Box, Button, Typography, useTheme } from "@mui/material";
+import { Box, useTheme } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
-import { mockDataTeam } from "../../data/mockData";
-import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
-import LockOpenOutlinedIcon from "@mui/icons-material/LockOpenOutlined";
-import SecurityOutlinedIcon from "@mui/icons-material/SecurityOutlined";
 import Header from "../../components/Header";
-import styled from "styled-components";
 import { GridToolbar } from "@mui/x-data-grid";
 import React from "react";
 import * as XLSX from "xlsx";
-import {
-  Get_all_branch_By_userid,
-  Get_all_User_By_branchID,
-  Get_all_branch,
-} from "./handlebranch";
+import { CreateBranch, Get_all_branch, CreateStore } from "./handlebranch";
 import "./style.css";
 import HandleAccessAccount from "../handleAccess/handleAccess";
-import {
-  HandleCreateStaff,
-  HandleDeletedStaff,
-  HandleEditStaff,
-} from "./handlestaff";
 import { useState, useEffect } from "react";
 import i18n from "../../i18n/i18n";
+import { Get_all_Store } from "../contacts/handlestore";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import "./style.css";
@@ -31,9 +18,63 @@ const BRACNH = () => {
   const nav = useNavigate();
   useTranslation();
   const [stateStore, setStateStore] = useState([]);
+  const [stateStoreFetch, setStateStoreFetch] = useState([]);
+  const [stateMaxIDStoreId, setStateMaxIDStoreId] = useState(0);
+  const [stateFormBranch, setStateFormBranch] = useState({
+    branchID: "",
+    name: "",
+    diachi: "",
+    masothue: "...",
+    code: "",
+  });
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
+  const onhandlechangeform = (e) => {
+    setStateFormBranch({
+      ...stateFormBranch,
+      [e.target.name]: e.target.value,
+    });
+  };
+  const createBranch = async () => {
+    try {
+      const check = await CreateBranch(stateFormBranch);
+
+      if (check.success) {
+        await fetchingBranch();
+        let formStore = {
+          id: "ST" + (stateMaxIDStoreId + 1),
+          name: stateFormBranch.name,
+          BranchId: stateFormBranch.branchID,
+          code: stateFormBranch.code,
+        };
+        const checkstore = await CreateStore(formStore);
+        if (checkstore.success) {
+          alert("Create Success");
+          await fetchingapi();
+          setStateFormBranch({
+            branchID: "",
+            name: "",
+            diachi: "",
+            masothue: "...",
+            code: "",
+          });
+        }
+      }
+    } catch (error) {
+      if (
+        !stateFormBranch.branchID ||
+        !stateFormBranch.name ||
+        !stateFormBranch.diachi ||
+        !stateFormBranch.masothue ||
+        !stateFormBranch.code
+      ) {
+        alert("Create fail, create form missing !!");
+      } else {
+        alert("Branch ID already exits");
+      }
+    }
+  };
   const checkAccess = async () => {
     const check = HandleAccessAccount();
     if (check instanceof Promise) {
@@ -145,6 +186,40 @@ const BRACNH = () => {
     const formattedDateString = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
     return <span>{formattedDateString}</span>;
   }
+  const fetchingStore = async () => {
+    const objBranch = Get_all_Store();
+
+    if (objBranch instanceof Promise) {
+      // Nếu là promise, chờ promise hoàn thành rồi mới cập nhật state
+      const resolvedResult = await objBranch;
+
+      setStateStoreFetch(JSON.parse(resolvedResult));
+      let maxNumber = 0;
+      let maxItem = null;
+      JSON.parse(resolvedResult).forEach((item) => {
+        const number = parseInt(item.id.substring(2));
+        if (!isNaN(number) && number > maxNumber) {
+          maxNumber = number;
+          maxItem = item;
+        }
+      });
+      setStateMaxIDStoreId(maxNumber);
+    } else {
+      // Nếu không phải là promise, cập nhật state ngay lập tức
+      setStateStoreFetch(JSON.parse(objBranch));
+      let maxNumber = 0;
+      let maxItem = null;
+      JSON.parse(objBranch).forEach((item) => {
+        const number = parseInt(item.id.substring(2));
+        if (!isNaN(number) && number > maxNumber) {
+          maxNumber = number;
+          maxItem = item;
+        }
+      });
+      setStateMaxIDStoreId(maxNumber);
+    }
+  };
+
   const fetchingBranch = async () => {
     const objBranch = Get_all_branch();
 
@@ -165,6 +240,7 @@ const BRACNH = () => {
 
   const fetchingapi = async () => {
     await fetchingBranch();
+    await fetchingStore();
   };
   useEffect(() => {
     try {
@@ -235,14 +311,13 @@ const BRACNH = () => {
         <button
           data-toggle="modal"
           data-target="#staticBackdrop"
-          disabled
           style={{ backgroundColor: "#0d6efd", color: "white" }}
         >
           Thêm chi nhánh
         </button>
-        <button className="btn-danger" style={{ color: "white" }} disabled>
+        {/* <button className="btn-danger" style={{ color: "white" }} disabled>
           Xóa chi nhánh
-        </button>
+        </button> */}
         <div
           class="modal fade"
           id="staticBackdrop"
@@ -272,17 +347,49 @@ const BRACNH = () => {
                 </button>
               </div>
               <div class="modal-body" style={{ color: "black" }}>
-                <label htmlFor="name">Mã chi nhánh</label>
-                <input type="text" name="name"></input>
-                <label htmlFor="phone">Tên chi nhánh</label>
-                <input type="text" name="phone"></input>
-                <label htmlFor="Role">Mã số thuế</label>
-                <input type="text" name="Role"></input>
-                <label htmlFor="ngayvao">{i18n.t("NV_TEAM")}</label>
+                <label htmlFor="branchID">Mã chi nhánh</label>
                 <input
                   type="text"
-                  name="ngayvao"
-                  placeholder="YYYY/MM/DD"
+                  onChange={onhandlechangeform}
+                  value={stateFormBranch.branchID}
+                  name="branchID"
+                ></input>
+
+                <label htmlFor="code">Mã code</label>
+                <input
+                  type="text"
+                  name="code"
+                  placeholder="ex: BHD, D2, CRM, VHM, ....."
+                  onChange={onhandlechangeform}
+                  value={stateFormBranch.code}
+                ></input>
+
+                <label htmlFor="phone">Tên chi nhánh</label>
+                <input
+                  type="text"
+                  name="name"
+                  onChange={onhandlechangeform}
+                  value={stateFormBranch.name}
+                ></input>
+                <label
+                  htmlFor="Role"
+                  onChange={onhandlechangeform}
+                  value={stateFormBranch.masothue}
+                >
+                  Mã số thuế
+                </label>
+                <input
+                  type="text"
+                  name="masothue"
+                  onChange={onhandlechangeform}
+                  value={stateFormBranch.masothue}
+                ></input>
+                <label htmlFor="diachi">Địa chỉ</label>
+                <input
+                  type="text"
+                  onChange={onhandlechangeform}
+                  value={stateFormBranch.diachi}
+                  name="diachi"
                 ></input>
               </div>
               <div class="modal-footer">
@@ -297,6 +404,7 @@ const BRACNH = () => {
                   type="button"
                   class="btn btn-primary"
                   data-dismiss="modal"
+                  onClick={createBranch}
                 >
                   {i18n.t("BTN_XACNHAN")}
                 </button>

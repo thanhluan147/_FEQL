@@ -22,7 +22,7 @@ function Father({ childrend }) {
   const [theme, colorMode] = useMode();
   const [isSidebar, setIsSidebar] = useState(true);
   let Nav = useNavigate();
-  
+
   const isTokenExpired = (token) => {
     if (!token) {
       // Nếu không có token, coi như đã hết hạn
@@ -66,6 +66,7 @@ function Father({ childrend }) {
     <ColorModeContext.Provider value={colorMode}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
+
         <div className="app">
           <Sidebar isSidebar={isSidebar} />
           <main className="content">

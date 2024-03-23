@@ -5,6 +5,7 @@ import { mockDataInvoices } from "../../data/mockData";
 import Header from "../../components/Header";
 import { useState, useEffect } from "react";
 import React from "react";
+import ExcelJS from "exceljs";
 import { GridToolbar } from "@mui/x-data-grid";
 import HandleAccessAccount from "../handleAccess/handleAccess";
 import {
@@ -68,34 +69,71 @@ const DOANHTHU = () => {
     ];
     return monthNames[month];
   };
-  const handleExportExcel = () => {
-    const rows = stateHoadon.map((staff) => {
-      return {
-        [i18n.t("MAHD_HD")]: staff.id,
-        [i18n.t("MAPX_PX")]: staff.OrderID,
-        [i18n.t("NOIBAN_HD")]: converToName[staff.noiban],
-        [i18n.t("MODAL_NOIMUA")]: converToName[staff.noimua],
-        [i18n.t("GIABAN_HD")]: staff.giaban,
 
-        // Thêm các trường khác nếu cần
+  const handleExportExcel = async () => {
+    // Mảng JSON chứa dữ liệu
+    let data = [];
+    stateHoadon.forEach((element) => {
+      let object = {
+        [i18n.t("MAHD_HD")]: element.id,
+        [i18n.t("MAPX_PX")]: element.OrderID,
+        [i18n.t("NOIBAN_HD")]: converToName[element.noiban],
+        [i18n.t("MODAL_GIAMUA")]: parseFloat(element.giamua),
+        [i18n.t("GIABAN_HD")]: parseFloat(element.giaban),
       };
+      data.push(object);
+    });
+    // Tạo một workbook mới
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Sheet1");
+
+    // Tạo dòng header tùy chỉnh
+    const headerRow = worksheet.addRow([
+      i18n.t("MAHD_HD"),
+      i18n.t("MAPX_PX"),
+      i18n.t("NOIBAN_HD"),
+      i18n.t("MODAL_GIAMUA"),
+      i18n.t("GIABAN_HD"),
+    ]);
+    headerRow.font = { bold: true, color: { argb: "FF000000" } };
+    headerRow.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FFFF00" },
+    };
+
+    // Đặt dữ liệu
+    data.forEach((row) => {
+      const rowData = Object.keys(row).map((key) => row[key]);
+      worksheet.addRow(rowData);
     });
 
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(rows);
-
-    // Điều chỉnh chiều rộng của cột (ví dụ: cột 'A' sẽ rộng hơn)
-    ws["!cols"] = [
-      { width: 15 },
-      { width: 20 },
+    worksheet.columns = [
       { width: 30 },
       { width: 30 },
-      { width: 20 },
-      { width: 20 },
+      { width: 30 },
+      { width: 30 },
+      { width: 30 },
     ];
 
-    XLSX.utils.book_append_sheet(wb, ws, "Bills Data");
-    XLSX.writeFile(wb, "Bills_" + converToName[statechinhanh] + ".xlsx");
+    const columnD = worksheet.getColumn("D");
+    columnD.alignment = { horizontal: "center", vertical: "middle" };
+    columnD.numFmt = "#,##";
+
+    // Định dạng cột B
+    const columnE = worksheet.getColumn("E");
+    columnE.alignment = { horizontal: "center", vertical: "middle" };
+    columnE.numFmt = "#,##";
+
+    // Xuất workbook vào tệp Excel
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    const link = document.createElement("a");
+    link.href = window.URL.createObjectURL(blob);
+    link.download = `"Debtor"-${converToName[statechinhanh]}.xlsx`;
+    link.click();
   };
   const handleDecrease = async () => {
     const newDate = new Date(currentDate);

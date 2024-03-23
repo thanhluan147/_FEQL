@@ -16,7 +16,7 @@ i18n.use(initReactI18next).init({
         DT: "Doanh thu",
         QLHD: "Quản lý hóa đơn",
         QLDT: "Quản lý doanh thu",
-        QLCN: "Quản lý con nợ",
+        QLCN: "Quản lý công nợ",
         HV: "Hành vi",
         NK: "Nhập kho",
         XK: "Xuất kho",
@@ -90,6 +90,7 @@ i18n.use(initReactI18next).init({
         MTK_NP: "Mã tài khoản",
         TINHTRANG_NP: "Tình trạng",
         SOTIEN_NP: "Số tiền",
+
         NGAYLAPPHIEU_NP: "Ngày lập phiếu",
         NGAYCAPNHAT_NP: "Ngày cập nhật phiếu",
         SOLUONGSP_NP: "Số lượng nhập",
@@ -106,7 +107,7 @@ i18n.use(initReactI18next).init({
         XACNHANYEUCAU: "Xác nhận yêu cầu",
         THUE: "Thuế",
         THANHTIEN: "Thành tiền",
-        GHICHU: "Ghi chí",
+        GHICHU: "Ghi chú",
         HUYYEUCAU: "Hủy yêu cầu",
         TITLEXUATKHO: "Xuất kho",
         DESXUATKHO: "Quản lý xuất kho",
@@ -125,7 +126,7 @@ i18n.use(initReactI18next).init({
         MODAL_GIABAN: "Giá bán",
         MODAL_NHAPNOIBAN: "Nhập nơi bán",
         MODAL_NHAPNOIMUA: "Nhập nơi mua",
-        NNK:"Nhập ngoài kho",
+        NNK: "Nhập ngoài kho",
         //Hóa đơn
         TITLEHOADON: "Hóa đơn",
         DESHOADON: "Chi tiết hóa đơn (đã từng mua) theo từng chi nhánh",
@@ -140,7 +141,8 @@ i18n.use(initReactI18next).init({
         HINHANHSAU: "Hình ảnh mặt sau",
         //DOANH THU
         CONNO: "Con nợ",
-        SOTIENTRATUCONNO: "Số tiền trả từ con nợ",
+        TONGSOTIEN: "Tổng số tiền",
+        SOTIENTRATUCONNO: "Số tiền đã trả",
         SOTIENDOANHTHU: "Số tiền doanh thu",
         DSNOXACNHANNHAPHANG: "Danh sách con nợ xác nhận nhập hàng",
         TITLEDOANHTHU: "DOANH THU",
@@ -149,7 +151,7 @@ i18n.use(initReactI18next).init({
         MAKHO_DT: "Mã kho",
         SOTIEN_DT: "Số tiền doanh thu",
         NGAYLAP_DT: "Ngày lập phiếu",
-        DSCONNO_DT: "Danh sách con nợ",
+        DSCONNO_DT: "Danh sách công nợ",
 
         //CON NỢ DEBTOR
         LANCUOICAPNHATYYY: "Lần cuối cập nhật YYYY-MM",
@@ -203,18 +205,21 @@ i18n.use(initReactI18next).init({
         ALERT_ADDPHIEUSUCCESS: "Thêm phiếu xuất thành công !!",
 
         //Doashboard
+        TSOTIENDABAN: "TỔNG SỐ TIỀN ĐÃ BÁN",
+        SOTIENTTE: "Số tiền thực tế",
+        TSOTIENTHUCTETUNHAPKHO: "TỔNG SỐ TIỀN THỰC TẾ TỪ NHẬP KHO",
         TITLEDOASHBOARD: "Bảng điều khiển",
-
+        TSOTIENTHUVETUBAN: "TỔNG SỐ TIỀN THU VỀ TỪ BÁN",
         DESDOASHBOARD: "Chào mừng tới bảng điều khiển",
         TONGDOANHTHU: "Tổng doanh thu",
         SOTIENLOINHUAN: "Số tiền lợi nhuận",
         TONGTIENMUA: "Tổng tiền mua",
-        TONGQUAN: "Tổng quan doanh thu",
-        TONGQUANNO: "Tổng quan nợ",
+        TONGQUAN: "TỔNG QUAN SỐ TIỀN",
+        TONGQUANNO: "TỔNG QUAN NỢ",
         THOIDIEMNO: "Thời điểm nợ",
         SLDC: "Số lượng điều chỉnh",
         clickdouble: "Bấm 2 lần vào ảnh sẽ phóng to ảnh ở đây....",
-        CostBuy: "Số tiền đã mua",
+        CostBuy: "TỔNG SỐ TIỀN NHẬP KHO",
         Notice: "Thông báo",
       },
     },
@@ -242,7 +247,7 @@ i18n.use(initReactI18next).init({
         HV: "행동",
         NK: "입고",
         XK: "출고",
-        NNK:"창고 외부에서 들여오기",
+        NNK: "창고 외부에서 들여오기",
         //BUTTON
         BTN_XACNHAN: "확인",
         BTN_DONG: "닫기",
@@ -355,6 +360,7 @@ i18n.use(initReactI18next).init({
         NGAYLAP_HD: "영수증 작성일",
 
         //DOANH THU
+        TONGSOTIEN: "총 금액",
         TITLEDOANHTHU: "매출",
         DESDOANHTHU: "매장별 매출 세부 정보",
         MADT_DT: "매출 번호",
@@ -413,6 +419,10 @@ i18n.use(initReactI18next).init({
         ALERT_ADDPHIEUSUCCESS: "출고 전표 추가 성공 !!",
 
         //Doashboard
+        TSOTIENDABAN: "총 판매 금액",
+        SOTIENTTE: "실제 금액",
+        TSOTIENTHUCTETUNHAPKHO: "입고 총 실제 금액",
+        TSOTIENTHUVETUBAN: "판매를 통해 받은 총 금액",
         TITLEDOASHBOARD: "대시 보드",
         TSTLN: "창고 입고 이익 총액",
         DESDOASHBOARD: "대시 보드에 오신 것을 환영합니다",

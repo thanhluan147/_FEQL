@@ -107,14 +107,33 @@ export const Get_all_COST_Phieu_Store_By_Year_Month = async (req) => {
 
   return JSON.stringify(respod.data.All_phieustore);
 };
+export const Update_PhieuStore_By_id_Invoces = async (req) => {
+  const respod = await Axios.put(
+    `${Url_BackEnd}/phieustore/UpdatePhieuStore`,
+    {
+      arrayUpdate: req,
+      status: "ACCEPT",
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        // Thêm các header khác nếu cần
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }
+  );
+
+  return JSON.stringify(respod.data);
+};
 
 export const Update_PhieuStore_By_id = async (req) => {
   console.log("check req " + JSON.stringify(req));
   const respod = await Axios.put(
     `${Url_BackEnd}/phieustore/UpdatePhieuStore`,
     {
-      arrayUpdate: req,
+      arrayUpdate: req[0].array,
       status: "ACCEPT",
+      newmoney: req[0].newmoney,
     },
     {
       headers: {

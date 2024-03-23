@@ -45,3 +45,47 @@ export const Get_all_User_By_branchID = async (req) => {
 
   return JSON.stringify(respod.data.All_Branch);
 };
+
+export const CreateBranch = async (req) => {
+  const respod = await Axios.post(
+    `${Url_BackEnd}/Branch/create`,
+    {
+      branchID: req.branchID,
+      name: req.name,
+      diachi: req.diachi,
+      masothue: req.masothue,
+      userId: localStorage.getItem("id"),
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        // Thêm các header khác nếu cần
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }
+  );
+
+  return respod.data;
+};
+
+export const CreateStore = async (req) => {
+  const respod = await Axios.post(
+    `${Url_BackEnd}/store/create`,
+    {
+      id: req.id,
+      name: req.name,
+      BranchId: req.BranchId,
+      status: "OK",
+      code: req.code,
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        // Thêm các header khác nếu cần
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }
+  );
+
+  return respod.data;
+};

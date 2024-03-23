@@ -111,14 +111,50 @@ const Team = () => {
   const [stateBranch, setStateBranch] = useState([]);
   const [stateStaff, setStateStaff] = useState([]);
   const [statechinhanh, setStatechinhanh] = useState("");
-
   const [selectionModel, setSelectionModel] = React.useState([]);
-
+  const [stateStaffImport, setStateStaffImport] = React.useState([]);
+  const [checkImport, setStateCheckImport] = useState(true);
   const handleSelectionModelChange = (newSelectionModel) => {
     setSelectionModel(newSelectionModel);
   };
-  // base64Worker.js
 
+  const getDataFile = (e) => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+
+    reader.onload = (evt) => {
+      const bstr = evt.target.result;
+      const workbook = XLSX.read(bstr, { type: "binary" });
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+      const dataWithoutHeader = data.slice(1);
+      // Chuyển đổi mảng con thành đối tượng JSON
+      const formattedData = dataWithoutHeader.map((row) => {
+        if (row) {
+          const obj = {};
+
+          row.forEach((cell, index) => {
+            obj[`Column${index + 1}`] = cell || "...";
+          });
+          if (Object.keys(obj).length === 8) {
+            setStateCheckImport(true);
+            return obj;
+          } else {
+            setStateCheckImport(false);
+          }
+        }
+      });
+      setStateStaffImport(formattedData);
+    };
+
+    reader.readAsBinaryString(file);
+  };
+  const savechange = async () => {
+    console.log("check data " + JSON.stringify(stateStaffImport, null, 2));
+    console.log("check data true form >>>>> " + checkImport);
+  };
   function UpdatedateObjectCell(params) {
     const arrayObject = params.value;
     const originalDateString = arrayObject;
@@ -925,7 +961,15 @@ const Team = () => {
         }}
       >
         <button onClick={handleExportExcel}>Export to Excel</button>
-
+        <br></br>
+        <div style={{ display: "flex" }} className="">
+          <div style={{ paddingTop: "10px" }}>
+            <input onChange={getDataFile} type="file" />
+          </div>
+          <button className="btn btn-success" onClick={savechange}>
+            save
+          </button>
+        </div>
         <DataGrid
           zIndex={10}
           checkboxSelection

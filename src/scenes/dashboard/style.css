@@ -1,0 +1,8 @@
+.chatbox {
+    position: absolute;
+    width: 401px;
+    border: solid 1px;
+    left: 75%;
+    top: 45%;
+    border-radius: 15px;
+}

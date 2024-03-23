@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import React from "react";
 import { GridToolbar } from "@mui/x-data-grid";
 import HandleAccessAccount from "../handleAccess/handleAccess";
+import ExcelJS from "exceljs";
 import {
   Get_all_Store,
   Get_all_store_By_userid,
@@ -136,38 +137,75 @@ const DEBTORS = () => {
       }
     }
   };
-  const handleExportExcel = () => {
-    const rows = stateHoadon.map((staff) => {
-      return {
-        [i18n.t("MA_CN")]: staff.id,
-        [i18n.t("CHUNO_CN")]: converToName[staff.Owner_BranchID],
-        [i18n.t("CONNO")]: converToName[staff.Debtor_BranchID],
-        [i18n.t("THOIDIEMNO_CN")]: staff.ThoiDiemNo,
-        [i18n.t("SOTIENNO_CN")]: staff.sotienNo,
-        [i18n.t("LANCUOICAPNHAT")]: staff.LastPaymentDate,
-        // Thêm các trường khác nếu cần
+
+
+  const handleExportExcel = async () => {
+    // Mảng JSON chứa dữ liệu
+    let data = [];
+    stateHoadon.forEach((element) => {
+      let object = {
+        [i18n.t("MA_CN")]: element.id,
+        [i18n.t("CHUNO_CN")]: converToName[element.Owner_BranchID],
+        [i18n.t("CONNO")]: converToName[element.Debtor_BranchID],
+        [i18n.t("THOIDIEMNO_CN")]: element.ThoiDiemNo.split(" ")[0],
+        [i18n.t("SOTIENNO_CN")]: element.sotienNo,
+        [i18n.t("GHICHU")]: element.Note,
+        [i18n.t("LANCUOICAPNHAT")]: element.LastPaymentDate.split(" ")[0],
       };
+      data.push(object);
+    });
+    // Tạo một workbook mới
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Sheet1");
+
+    // Tạo dòng header tùy chỉnh
+    const headerRow = worksheet.addRow([
+      i18n.t("MA_CN").toUpperCase(),
+      i18n.t("CHUNO_CN").toUpperCase(),
+      i18n.t("CONNO").toUpperCase(),
+      i18n.t("THOIDIEMNO_CN").toUpperCase(),
+      i18n.t("SOTIENNO_CN").toUpperCase(),
+      i18n.t("GHICHU").toUpperCase(),
+      i18n.t("LANCUOICAPNHAT").toUpperCase(),
+    ]);
+    headerRow.font = { bold: true, color: { argb: "FF000000" } };
+    headerRow.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FFFF00" },
+    };
+
+    // Đặt dữ liệu
+    data.forEach((row) => {
+      const rowData = Object.keys(row).map((key) => row[key]);
+      worksheet.addRow(rowData);
     });
 
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(rows);
-
-    // Điều chỉnh chiều rộng của cột (ví dụ: cột 'A' sẽ rộng hơn)
-    ws["!cols"] = [
-      { width: 15 },
+    worksheet.columns = [
       { width: 30 },
       { width: 30 },
-      { width: 20 },
-      { width: 20 },
-      { width: 20 },
+      { width: 30 },
+      { width: 30 },
+      { width: 30 },
+      { width: 30 },
+      { width: 30 },
     ];
+    // Định dạng cột B
+    const columnE = worksheet.getColumn("E");
+    columnE.alignment = { horizontal: "center", vertical: "middle" };
+    columnE.numFmt = "#,##";
 
-    XLSX.utils.book_append_sheet(wb, ws, "Debtor Data");
-    XLSX.writeFile(
-      wb,
-      "Debtor_" + converToName[statechinhanh] + "_Data" + ".xlsx"
-    );
+    // Xuất workbook vào tệp Excel
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    const link = document.createElement("a");
+    link.href = window.URL.createObjectURL(blob);
+    link.download = `"Debtor"-${converToName[statechinhanh]}.xlsx`;
+    link.click();
   };
+
   function ArrayObjectCell(params) {
     const arrayObject = params.value;
     const numberOfItems = Array.isArray(arrayObject) ? arrayObject.length : 0;
@@ -276,8 +314,8 @@ const DEBTORS = () => {
                   <th>Loại sản phẩm</th>
                   <th>Số lượng</th>
                   <th>Số tiền</th>
-                  <th>Hình ảnh</th>
-                  <th>Hành vi</th>
+                  {/* <th>Hình ảnh</th>
+                  <th>Hành vi</th> */}
                 </tr>
               </thead>
               <tbody>
@@ -291,14 +329,14 @@ const DEBTORS = () => {
                       {" "}
                       {parseInt(item.sotien).toLocaleString("en-US")} VND
                     </td>
-                    <td>
+                    {/* <td>
                       {item.picture ? (
                         <img width={200} height={100} src={item.picture}></img>
                       ) : (
                         ""
                       )}
                     </td>
-                    <td>{item.behavior}</td>
+                    <td>{item.behavior}</td> */}
                   </tr>
                 ))}
               </tbody>

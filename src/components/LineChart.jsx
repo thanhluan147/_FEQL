@@ -55,7 +55,7 @@ const LineChart = ({
 
   const mockLineData = [
     {
-      id: i18n.t("TITLEDOANHTHU"),
+      id: i18n.t("SOTIEN_NP"),
       color: tokens("dark").greenAccent[500],
       data: stateDataMoc,
     },
