@@ -33,7 +33,7 @@ import { EditProduct } from "../contacts/handleproduct";
 import { DeletePhieuOrder } from "./handlePhieustore";
 import { json, useNavigate } from "react-router-dom";
 import { getAllOrder_BY_storeID } from "../Order/handleform";
-import { CreateIdMaxValueOfarray } from "../method";
+import { CreateIdMaxValueOfarray, converToNameWithoutPTT } from "../method";
 import {
   Update_PhieuStore_By_id_PENDING,
   Update_PhieuStore_By_id,
@@ -356,6 +356,16 @@ const Invoices = () => {
     }
   }
   const deletedphieu = async () => {
+    if (
+      selectionModel.some(
+        (selectedId) =>
+          statePhieuStore.find((row) => row.id === selectedId)?.status ===
+          "DONE"
+      )
+    ) {
+      alert("Không thể xóa đơn đã DONE !!!");
+      return;
+    }
     setisloading(true);
     try {
       const checkde = await DeletePhieuOrder(selectedRow);
@@ -475,6 +485,16 @@ const Invoices = () => {
     getlenghtID_Bill();
   }, []);
   const createBill = async () => {
+    if (
+      selectionModel.some(
+        (selectedId) =>
+          statePhieuStore.find((row) => row.id === selectedId)?.status ===
+          "DONE"
+      )
+    ) {
+      alert("Không thể lập hóa đơn đã DONE !!!");
+      return;
+    }
     // console.log("select row " + JSON.stringify(selectedRow));
     const currentDate2 = new Date();
 
@@ -700,94 +720,34 @@ const Invoices = () => {
       console.log("lỗi " + error);
     }
   };
-  const handleExportExcelOLD = () => {
-    // Chuẩ n bị dữ liệu để xuất
-    let arrayrow = [];
 
-    var filteredArray = statePhieuStore.filter((obj) => {
-      return obj.status === "DONE";
-    });
-
-    filteredArray.forEach((element) => {
-      element.arrayProduct.forEach((child) => {
-        let object = {
-          [i18n.t("NGAYCAPNHAT_PX").toUpperCase()]:
-            element.updateDate.split(" ")[0],
-          [i18n.t("MASP_P").toUpperCase()]: child.id,
-          [i18n.t("TEN_P").toUpperCase()]: child.name,
-          [i18n.t("LOAI_P").toUpperCase()]: child.loai,
-          [i18n.t("SOLUONG_P").toUpperCase()]: {
-            v: child.soluong,
-            t: "n",
-            s: { alignment: "center" },
-          },
-          [i18n.t("SOTIEN_NP").toUpperCase()]: {
-            v: parseFloat(child.sotien),
-            t: "n",
-            z: "#,##0",
-            s: {
-              alignment: { horizontal: "center" },
-            },
-          },
-          [i18n.t("THUE").toUpperCase()]: {
-            v: "",
-            t: "s",
-            s: { alignment: { horizontal: "center" } },
-          },
-          [i18n.t("THANHTIEN").toUpperCase()]: {
-            v: "",
-            t: "s",
-            s: { alignment: { horizontal: "center" } },
-          },
-          [i18n.t("GHICHU").toUpperCase()]: "",
-        };
-
-        arrayrow.push(object);
-      });
-    });
-    // Tạo một workbook mới
-    const wb = XLSX.utils.book_new();
-    // Tạo một worksheet từ dữ liệu
-    const ws = XLSX.utils.json_to_sheet(arrayrow);
-    ws["!cols"] = [
-      { width: 20 },
-
-      { width: 20 },
-      { width: 20 },
-      { width: 20 },
-      { width: 20 },
-      { width: 20 },
-      { width: 20 },
-      { width: 20 },
-      { width: 20 },
-    ];
-    // Cài đặt căn giữa cho từng ô trong dữ liệu
-
-    // Thêm worksheet vào workbook
-    XLSX.utils.book_append_sheet(wb, ws, "Xuất kho Data");
-
-    // Tạo tệp Excel từ workbook
-    XLSX.writeFile(wb, "XuatKho_Data.xlsx");
-  };
 
   const handleExportExcel = async () => {
     // Mảng JSON chứa dữ liệu
     let data = [];
+    let filteredArray = [];
+    if (selectedRow.length <= 0) {
+      filteredArray = statePhieuStore.filter((obj) => {
+        return obj.status === "DONE";
+      });
+    } else {
+      filteredArray = selectedRow.filter((obj) => {
+        return obj.status === "DONE";
+      });
+    }
 
-    var filteredArray = statePhieuStore.filter((obj) => {
-      return obj.status === "DONE";
-    });
     filteredArray.forEach((element) => {
       element.arrayProduct.forEach((child) => {
         let object = {
           NGAYCAPNHAT_PX: element.updateDate.split(" ")[0],
+          TENCH: converToNameWithoutPTT[element.phieustoreID.split("-")[1]],
           MASP_P: child.id,
           TEN_P: child.name,
           LOAI_P: child.loai,
           SOLUONG_P: child.soluong,
           SOTIEN_NP: parseFloat(child.sotien),
-          THUE: "",
-          THANHTIEN: "",
+          THUE: 0,
+          THANHTIEN: 0,
           GHICHU: "",
         };
         data.push(object);
@@ -800,6 +760,7 @@ const Invoices = () => {
     // Tạo dòng header tùy chỉnh
     const headerRow = worksheet.addRow([
       i18n.t("NGAYCAPNHAT_PX").toUpperCase(),
+      i18n.t("TEN_B").toUpperCase(),
       i18n.t("MASP_P").toUpperCase(),
       i18n.t("TEN_P").toUpperCase(),
       i18n.t("LOAI_P").toUpperCase(),
@@ -826,19 +787,17 @@ const Invoices = () => {
     worksheet.columns = [
       { width: 30 },
       { width: 30 },
+      { width: 15 },
       { width: 30 },
-      { width: 30 },
-      { width: 30 },
-      { width: 30 },
-      { width: 30 },
-      { width: 30 },
-      { width: 30 },
+      { width: 15 },
+      { width: 15 },
+      { width: 15 },
+      { width: 15 },
+      { width: 15 },
+      { width: 15 },
     ];
-    // Định dạng cột B
-    const columnB = worksheet.getColumn("E");
-    columnB.alignment = { horizontal: "center", vertical: "middle" };
-    columnB.numFmt = "#,##";
-    // Định dạng cột C
+
+    // Định dạng cột
     const columnC = worksheet.getColumn("F");
     columnC.alignment = { horizontal: "center", vertical: "middle" };
     columnC.numFmt = "#,##";
@@ -848,8 +807,12 @@ const Invoices = () => {
     // Định dạng cột C
     const columnH = worksheet.getColumn("H");
     columnH.alignment = { horizontal: "center", vertical: "middle" };
-    columnH.numFmt = "#,##";
+    const columnI = worksheet.getColumn("I");
+    columnI.alignment = { horizontal: "center", vertical: "middle" };
+
     // Xuất workbook vào tệp Excel
+    // Đặt dữ liệu
+
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -1029,20 +992,20 @@ const Invoices = () => {
     const selectedRows = newSelectionModel.map((selectedId) =>
       statePhieuStore.find((row) => row.id === selectedId)
     );
-    console.log("select row " + JSON.stringify(selectedRows));
+
     if (selectedRows) {
       setSelectedRow(selectedRows);
     }
 
-    if (
-      newSelectionModel.some(
-        (selectedId) =>
-          statePhieuStore.find((row) => row.id === selectedId)?.status ===
-          "DONE"
-      )
-    ) {
-      return;
-    }
+    // if (
+    // newSelectionModel.some(
+    //   (selectedId) =>
+    //     statePhieuStore.find((row) => row.id === selectedId)?.status ===
+    //     "DONE"
+    // )
+    // ) {
+    //   return;
+    // }
     setSelectionModel(newSelectionModel);
   };
 
@@ -1119,7 +1082,7 @@ const Invoices = () => {
             style={{ marginLeft: "1%" }}
             type="button"
             class="btn btn-danger"
-            disabled={selectionModel.length !== 1}
+            disabled={selectionModel.length === 0}
             onClick={deletedphieu}
           >
             {i18n.t("XOAPHIEUXUATKHO")}

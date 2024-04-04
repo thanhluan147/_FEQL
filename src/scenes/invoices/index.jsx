@@ -85,7 +85,7 @@ const Invoices = () => {
           LOAISP: child.loai,
           SOLUONGSP: parseFloat(child.soluong),
           SOTIENSP: parseFloat(child.sotien),
-          SOTIENTT: parseFloat(element.sotienThucte),
+          SOTIENTT: element.sotienThucTe,
           MAPHIEU: element.id,
           LOAIPHIEU: element.loaiphieu,
           CHINHANH: converToName[child.StoreID],
@@ -106,7 +106,7 @@ const Invoices = () => {
       i18n.t("LOAI_P").toUpperCase(),
       i18n.t("SOLUONG_P").toUpperCase(),
       i18n.t("SOTIEN_NP").toUpperCase(),
-      i18n.t("SOTIENTTE").toLocaleUpperCase(),
+      i18n.t("SOTIENTTE"),
       i18n.t("MAPN_PX").toUpperCase(),
       i18n.t("LOAIPHIEU_NHAP").toUpperCase(),
       i18n.t("CN").toUpperCase(),
@@ -129,9 +129,9 @@ const Invoices = () => {
     worksheet.columns = [
       { width: 30 },
       { width: 30 },
-      { width: 30, numFmt: "#,##0.00" },
-      { width: 30, numFmt: "#,##0.00" },
-      { width: 30, numFmt: "#,##0.00" },
+      { width: 30 },
+      { width: 30 },
+      { width: 30 },
       { width: 30 },
       { width: 30 },
       { width: 30 },
@@ -148,6 +148,10 @@ const Invoices = () => {
     const columnC = worksheet.getColumn("C");
     columnC.alignment = { horizontal: "center", vertical: "middle" };
     columnC.numFmt = "#,##";
+
+    const columnE = worksheet.getColumn("E");
+    columnE.alignment = { horizontal: "center", vertical: "middle" };
+    columnE.numFmt = "#,##";
     // Xuất workbook vào tệp Excel
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], {
@@ -575,7 +579,6 @@ const Invoices = () => {
     {
       field: "ngaylap",
       headerName: `${i18n.t("THOIDIEMTAOPHIEU")}`,
-
       flex: 1,
     },
     {

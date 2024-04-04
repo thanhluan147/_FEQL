@@ -45,3 +45,21 @@ export const Get_all_User_By_branchID = async (req) => {
 
   return JSON.stringify(respod.data.All_Branch);
 };
+
+export const Get_all_STAFFOFF_By_branchID = async (req) => {
+  const respod = await Axios.post(
+    `${Url_BackEnd}/staffoff/getallStaft`,
+    {
+      branchID: req,
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        // Thêm các header khác nếu cần
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }
+  );
+
+  return JSON.stringify(respod.data.All_Branch);
+};

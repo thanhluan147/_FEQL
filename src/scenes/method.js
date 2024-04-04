@@ -55,6 +55,30 @@ export const converToName = {
   // Thêm các ánh xạ khác nếu cầ
 };
 
+export const converToNameWithoutPTT = {
+  PTT: "PHOTO TIME COMPANY",
+  D2: " D2",
+  CRM: " CRESCENT MALL",
+  VHM: " VẠN HẠNH MALL",
+  CN: " Cinestar Cinema QUỐC THANH",
+  EMT: " Thiso Mall Sala",
+  GGM: " GIGAMALL THỦ ĐỨC",
+  BHD: " VINCOM PLAZA THỦ ĐỨC",
+  LT: " Lotte Mall Tây Hồ",
+  HVP: " HÙNG VƯƠNG PLAZA",
+  RY: " Royal City",
+  IPH: " THE LOOP",
+  // Thêm các ánh xạ khác nếu cầ
+};
+export const Check_CCCD_To_Count_TimeKeep = {
+  ["083301005714"]: 1,
+  ["052303006793"]: 1,
+  ["052302012366"]: 1,
+  ["034301005247"]: 1,
+  ["042202009547"]: 1,
+  ["084303007691"]: 1,
+};
+
 export const converIdToCODE = {
   ST00: "PTT",
   ST01: "D2",
@@ -90,6 +114,10 @@ export const converIDloaiTONAME = {
   CM: "MŨ",
   LK: "LINH KIỆN",
   MK: "MẮT KÍNH",
+  GN: "GIẤY IN NHỎ",
+  GL: "GIẤY IN LỚN",
+  OPPN: "TÚI OPP NHỎ",
+  OPPL: "TÚI OPP LỚN",
   // Thêm các ánh xạ khác nếu cầ
 };
 

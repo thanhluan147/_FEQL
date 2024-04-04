@@ -127,7 +127,6 @@ export const Update_PhieuStore_By_id_Invoces = async (req) => {
 };
 
 export const Update_PhieuStore_By_id = async (req) => {
-  console.log("check req " + JSON.stringify(req));
   const respod = await Axios.put(
     `${Url_BackEnd}/phieustore/UpdatePhieuStore`,
     {

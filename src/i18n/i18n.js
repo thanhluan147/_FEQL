@@ -140,11 +140,11 @@ i18n.use(initReactI18next).init({
         HINHANHTRC: "Hình ảnh mặt trước",
         HINHANHSAU: "Hình ảnh mặt sau",
         //DOANH THU
-        CONNO: "Con nợ",
+        CONNO: "Công nợ",
         TONGSOTIEN: "Tổng số tiền",
         SOTIENTRATUCONNO: "Số tiền đã trả",
         SOTIENDOANHTHU: "Số tiền doanh thu",
-        DSNOXACNHANNHAPHANG: "Danh sách con nợ xác nhận nhập hàng",
+        DSNOXACNHANNHAPHANG: "Danh sách Công nợ xác nhận nhập hàng",
         TITLEDOANHTHU: "DOANH THU",
         DESDOANHTHU: "Chi tiết doanh thu từng cửa hàng",
         MADT_DT: "Mã doanh thu",
@@ -153,7 +153,7 @@ i18n.use(initReactI18next).init({
         NGAYLAP_DT: "Ngày lập phiếu",
         DSCONNO_DT: "Danh sách công nợ",
 
-        //CON NỢ DEBTOR
+        //Công nợ DEBTOR
         LANCUOICAPNHATYYY: "Lần cuối cập nhật YYYY-MM",
         THOIDIEMLAP: "Thời điểm lập phiếu",
         TITLECONNO: "Danh sách nợ",
@@ -433,9 +433,9 @@ i18n.use(initReactI18next).init({
         TONGQUANNO: "전체적인 미수금 상황",
         THOIDIEMNO: "미수금 시기",
 
-        //CON NỢ DEBTOR
+        //Công nợ DEBTOR
         LANCUOICAPNHAT: "최신 업데이트 YYYY-MM",
-        //CON NỢ DEBTOR
+        //Công nợ DEBTOR
         CONNO: "미수금",
         LANCUOICAPNHATYYY: "최신 업데이트 YYYY-MM",
       },

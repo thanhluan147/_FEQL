@@ -426,6 +426,19 @@ const Contacts = () => {
       const filteredDataCT = JSON.parse(arrtemp).filter((item) =>
         item.id.startsWith("CT")
       );
+      const filteredDataGL = JSON.parse(arrtemp).filter((item) =>
+        item.id.startsWith("GL")
+      );
+      const filteredDataGN = JSON.parse(arrtemp).filter((item) =>
+        item.id.startsWith("GN")
+      );
+      const filteredDataOPPN = JSON.parse(arrtemp).filter((item) =>
+        item.id.startsWith("OPPN")
+      );
+      const filteredDataOPPL = JSON.parse(arrtemp).filter((item) =>
+        item.id.startsWith("OPPL")
+      );
+
       const filteredDataPOR = JSON.parse(arrtemp).filter((item) =>
         item.id.startsWith("POR")
       );
@@ -434,6 +447,12 @@ const Contacts = () => {
         .concat(filteredDataLK)
         .concat(filteredDataCM)
         .concat(filteredDataCT)
+
+        .concat(filteredDataGN)
+        .concat(filteredDataGL)
+        .concat(filteredDataOPPN)
+        .concat(filteredDataOPPL)
+
         .concat(filteredDataPOR);
       setStateProduct(arraySort);
     } else {
@@ -454,6 +473,18 @@ const Contacts = () => {
         item.id.startsWith("CT")
       );
 
+      const filteredDataGL = JSON.parse(arrtemp).filter((item) =>
+        item.id.startsWith("GL")
+      );
+      const filteredDataGN = JSON.parse(arrtemp).filter((item) =>
+        item.id.startsWith("GN")
+      );
+      const filteredDataOPPN = JSON.parse(arrtemp).filter((item) =>
+        item.id.startsWith("OPPN")
+      );
+      const filteredDataOPPL = JSON.parse(arrtemp).filter((item) =>
+        item.id.startsWith("OPPL")
+      );
       const filteredDataPOR = JSON.parse(arrtemp).filter((item) =>
         item.id.startsWith("POR")
       );
@@ -463,6 +494,10 @@ const Contacts = () => {
         .concat(filteredDataLK)
         .concat(filteredDataCM)
         .concat(filteredDataCT)
+        .concat(filteredDataGN)
+        .concat(filteredDataGL)
+        .concat(filteredDataOPPN)
+        .concat(filteredDataOPPL)
         .concat(filteredDataPOR);
       setStateProduct(arraySort);
       // Lặp qua từng đợt và gọi API
@@ -607,10 +642,13 @@ const Contacts = () => {
       stateFormProduct.loai === "CT" ||
       stateFormProduct.loai === "CM" ||
       stateFormProduct.loai === "LK" ||
-      stateFormProduct.loai === "MK"
+      stateFormProduct.loai === "MK" ||
+      stateFormProduct.loai === "GN" ||
+      stateFormProduct.loai === "GL" ||
+      stateFormProduct.loai === "OPPL" ||
+      stateFormProduct.loai === "OPPN"
     ) {
       // Lọc dữ liệu với id chứa "CT"
-      console.log("  stateFormProduct.loai " + stateFormProduct.loai);
       let valueNum =
         Math.ceil(stateFormProduct.sotien / (1000 * countdozens) / 10) *
         countdozens *
@@ -625,7 +663,7 @@ const Contacts = () => {
           parseInt(obj.id.split("-")[1])
         );
       }
-
+      console.log("check arrayOfNumbers " + arrayOfNumbers);
       // Tìm giá trị lớn nhất trong mảng 'arrayOfNumbers'
       let maxNumber = Math.max(...arrayOfNumbers);
       const result = 1 / 0;
@@ -1117,6 +1155,13 @@ const Contacts = () => {
                       onChange={onChangeEditProductForm}
                       name="soluong"
                     ></input>
+                    <label htmlFor="Role">{i18n.t("SOTIEN_NP")}</label>
+                    <input
+                      type="number"
+                      value={EditProductForm.sotien}
+                      onChange={onChangeEditProductForm}
+                      name="sotien"
+                    ></input>
                   </div>
                 </>
               ) : (
@@ -1290,6 +1335,10 @@ const Contacts = () => {
                           <option value={"CM"}>Mũ</option>
                           <option value={"MK"}>Mắt kính</option>
                           <option value={"LK"}>Linh kiện</option>
+                          <option value={"GN"}>Giấy in nhỏ</option>
+                          <option value={"GL"}>Giấy in lớn</option>
+                          <option value={"OPPL"}>Túi OPP lớn</option>
+                          <option value={"OPPN"}>Túi OPP nhỏ</option>
                         </select>
                       </>
                     ) : (

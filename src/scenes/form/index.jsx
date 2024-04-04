@@ -264,6 +264,37 @@ const Form = () => {
       [event.target.name]: event.target.value,
     });
   };
+  const handleEditProductNEW = (e) => {
+    const checksoluongrow = stateProductview.filter(
+      (item) => item.id === e.target.id
+    );
+    if (statePhieu.loaiphieu === "NK") {
+      if (checksoluongrow[0].soluong < e.target.value) {
+        alert(
+          "Số lượng nhập có giá trị lớn hơn số lượng đang có hoặc nhỏ hơn 0"
+        );
+
+        return;
+      }
+    }
+    const updatedRows = stateProduct.map((row) =>
+      row.id === e.target.id ? { ...row, soluong: e.target.value } : row
+    );
+    let sumallvalue = 0;
+    updatedRows.forEach((item) => (sumallvalue += item.sotien * item.soluong));
+
+    if (statePhieu.loaiphieu === "NK") {
+      let newsotien = sumallvalue;
+
+      // setsotienbandau(newsotien);
+      setStatePhieu({
+        ...statePhieu,
+        sotien: newsotien,
+      });
+    }
+
+    setStateProduct(updatedRows);
+  };
   const handleEditProduct = (productId) => {
     const getProductFirst = stateProduct.filter(
       (item) => item.id === productId
@@ -588,11 +619,8 @@ const Form = () => {
         const resolvedResult = await check;
 
         setstateCheckaccess(resolvedResult);
-        console.log("check " + resolvedResult);
       } else {
         setstateCheckaccess(check);
-
-        console.log("check c " + check);
       }
     } catch (error) {
       console.log(error);
@@ -640,10 +668,11 @@ const Form = () => {
           parseFloat(statesotienbandau) - parseFloat(updateMoney[0].sotien),
       });
     }
-    console.log("update cái deleted");
+
     // // Cập nhật stateProduct
     setStateProduct(updatedState);
   };
+
   return (
     <>
       <Box m="20px">
@@ -715,7 +744,12 @@ const Form = () => {
                     value={statePhieu.loaiphieu}
                     onChange={onhandlechangePhieu}
                   >
-                    <MenuItem value={"NK"}>Nhập từ kho</MenuItem>
+                    <MenuItem
+                      style={{ display: stateCheckaccess ? "none" : "block  " }}
+                      value={"NK"}
+                    >
+                      Nhập từ kho
+                    </MenuItem>
                     <MenuItem value={"NN"}>Nhập ngoài kho</MenuItem>
                     Create a New User Profile{" "}
                   </Select>
@@ -747,15 +781,15 @@ const Form = () => {
                   )}
                 </span>
                 <br></br>
-                <label htmlFor="usoluong">*{i18n.t("SLDC")}</label>
+                {/* <label htmlFor="usoluong">*{i18n.t("SLDC")}</label> */}
                 <br></br>
-                <input
+                {/* <input
                   placeholder="Số lượng"
                   onChange={onchangeupdatesoluong}
                   value={stateupdatesoluong.usoluong}
                   name="usoluong"
                   type="number"
-                ></input>
+                ></input> */}
                 {isshowErrorTable ? (
                   <span style={{ color: "red" }}>{i18n.t("ERROR_DULIEU")}</span>
                 ) : (
@@ -766,6 +800,7 @@ const Form = () => {
                     <table className="custom-table">
                       <thead>
                         <tr>
+                          <th>{i18n.t("MASP_P")}</th>
                           <th>{i18n.t("LOAI_P")}</th>
                           <th>{i18n.t("SOLUONG_P")}</th>
                           <th>{i18n.t("SOTIEN_NP")}</th>
@@ -776,8 +811,17 @@ const Form = () => {
                       <tbody>
                         {stateProduct.map((item) => (
                           <tr key={item.id}>
+                            <td>{item.id}</td>
                             <td>{item.loai}</td>
-                            <td>{item.soluong}</td>
+                            <td>
+                              <input
+                                id={item.id}
+                                type="number"
+                                min={0}
+                                onChange={handleEditProductNEW}
+                                value={item.soluong}
+                              ></input>
+                            </td>
                             <td>
                               {item.checkStore && item.checkStore
                                 ? parseInt(item.sotien).toLocaleString("en-US")
@@ -785,18 +829,18 @@ const Form = () => {
                             </td>
 
                             <th>
+                              {/* <button
+                                className="btn btn-success"
+                                onClick={() => handleEditProduct(item.id)}
+                              >
+                                Điều chỉnh
+                              </button> */}
                               <button
+                                style={{ marginLeft: "5px" }}
                                 className="btn btn-danger"
                                 onClick={() => handleDelete(item.id)}
                               >
                                 Xóa
-                              </button>
-                              <button
-                                className="btn btn-success"
-                                style={{ marginLeft: "5px" }}
-                                onClick={() => handleEditProduct(item.id)}
-                              >
-                                Điều chỉnh
                               </button>
                             </th>
                           </tr>
@@ -860,18 +904,18 @@ const Form = () => {
                             </td>
 
                             <th>
-                              <button
-                                onClick={() => handleDelete(item.id)}
-                                class="btn btn-danger"
-                              >
-                                Xóa
-                              </button>
-                              <button
-                                style={{ marginLeft: "5px" }}
+                              {/* <button
                                 class="btn btn-success"
                                 onClick={() => handleEditProduct(item.id)}
                               >
                                 Điều chỉnh
+                              </button> */}
+                              <button
+                                style={{ marginLeft: "5px" }}
+                                onClick={() => handleDelete(item.id)}
+                                class="btn btn-danger"
+                              >
+                                Xóa
                               </button>
                             </th>
                           </tr>
