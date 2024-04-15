@@ -138,7 +138,6 @@ const DEBTORS = () => {
     }
   };
 
-
   const handleExportExcel = async () => {
     // Mảng JSON chứa dữ liệu
     let data = [];
@@ -562,7 +561,7 @@ const DEBTORS = () => {
     <Box m="20px">
       <Header title={i18n.t("TITLECONNO")} subtitle={i18n.t("DESCONNO")} />
 
-      <div style={{ marginLeft: "0px" }} className="container">
+      <div style={{ marginLeft: "-.7%" }} className="container">
         <h3>{i18n.t("CN")}</h3>
         <select onChange={handle_getAllDOANHTHU} id="chinhanh">
           {stateStore &&

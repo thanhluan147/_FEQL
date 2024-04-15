@@ -213,13 +213,22 @@ const Sidebar = () => {
                   />
 
                   {check ? (
-                    <Item
-                      title={i18n.t("QLCNHANH")}
-                      to="/branch"
-                      icon={<StorefrontIcon />}
-                      selected={selected}
-                      setSelected={setSelected}
-                    />
+                    <>
+                      <Item
+                        title={i18n.t("QLMCC")}
+                        to="/chamcong"
+                        icon={<PeopleOutlinedIcon />}
+                        selected={selected}
+                        setSelected={setSelected}
+                      />
+                      <Item
+                        title={i18n.t("QLCNHANH")}
+                        to="/branch"
+                        icon={<StorefrontIcon />}
+                        selected={selected}
+                        setSelected={setSelected}
+                      />
+                    </>
                   ) : (
                     ""
                   )}

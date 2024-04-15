@@ -41,7 +41,11 @@ i18n.use(initReactI18next).init({
         NV_TEAM: "Ngày vào",
         TDT_TEAM: "Thời điểm tạo",
         ALERT_THEMNHANVIEN_TEAM: "Nhân viên đã được thêm thành công",
-
+        QLMCC: "Quản lý máy chấm công",
+        NGAYBD: "NGÀY BẮT ĐẦU",
+        NGAYKT: "NGÀY KẾT THÚC",
+        TONGSOGIOLAM: "TÍNH TỔNG SỐ GIỜ LÀM",
+        KIEMTRASOGIOLAM: "KIỂM TRA SỐ GIỜ LÀM",
         //BRANCH
         CTTONGQUAN: "Chi tiết tổng quan chi nhánh",
         TITLEBRANCH: "Chi nhánh",
@@ -249,6 +253,10 @@ i18n.use(initReactI18next).init({
         XK: "출고",
         NNK: "창고 외부에서 들여오기",
         //BUTTON
+        NGAYBD: "시작일",
+        NGAYKT: "종료일",
+        TONGSOGIOLAM: "근무 시간 총합 계산",
+        KIEMTRASOGIOLAM: "근무 시간 확인",
         BTN_XACNHAN: "확인",
         BTN_DONG: "닫기",
         //TEAM
@@ -267,7 +275,7 @@ i18n.use(initReactI18next).init({
         NV_TEAM: "입사일",
         TDT_TEAM: "생성 시간",
         ALERT_THEMNHANVIEN_TEAM: "직원이 성공적으로 추가되었습니다",
-
+        QLMCC: "출퇴근 기록 관리",
         THOIDIEMTAOPHIEU: "전표 생성 시점",
         //BRANCH
         TITLEBRANCH: "지점",

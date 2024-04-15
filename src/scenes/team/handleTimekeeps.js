@@ -45,6 +45,36 @@ export const Get_all_TIMEKEEPING_By_DateF_DateT_branchID = async (req) => {
   return JSON.stringify(respod.data.all_Time);
 };
 
+export const GET_ALL_TIMEKEEP_FROM_API = async (req) => {
+  const respod = await Axios.get(`${Url_BackEnd}/api/sql`, {
+    headers: {
+      "Content-Type": "application/json",
+      // Thêm các header khác nếu cần
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+  return respod.data;
+};
+
+export const GET_ALL_TIMEKEEP_FROM_API_SEARCH = async (req) => {
+  console.log("check req " + JSON.stringify(req));
+  const respod = await Axios.post(
+    `${Url_BackEnd}/api/search`,
+    {
+      dateF: req.dateF,
+      dateT: req.dateT,
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        // Thêm các header khác nếu cần
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }
+  );
+  return respod.data;
+};
+
 export const HandleEditTimekeeps = async (req) => {
   console.log("check req " + JSON.stringify(req));
   const respod = await Axios.put(

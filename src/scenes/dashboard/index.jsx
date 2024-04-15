@@ -38,6 +38,7 @@ import { GET_Notifi_BY_ID, Update_Notifi_By_id } from "./handlenotifi";
 import Url_realtime from "../../URL_REALTIME";
 import { converToName } from "../method";
 import { GET_ALLDEBTOR_BY_Debtor_Year_month } from "../debtor/handleDebtor";
+
 var socket = io(`${Url_realtime}`, {
   transports: ["websocket", "polling", "flashsocket"],
 });
@@ -133,7 +134,7 @@ const Dashboard = () => {
     await fetchingGetAllDEBTOR_by_STOREID_year_month(
       statechinhanh,
       formattedDate
-    );  
+    );
   };
   const fetchingGetAllDEBTOR_by_STOREID_year_month = async (x, y) => {
     const req = {
@@ -235,10 +236,6 @@ const Dashboard = () => {
         JSON.parse(resolvedResult).forEach((obj) => {
           sumallSotienNhapKho += parseFloat(obj.sotien);
           sumallSotienNhapKhoTT += parseFloat(obj.sotienThucte);
-          console.log(
-            "check  parseFloat(obj.sotienThucte);" +
-              parseFloat(obj.sotienThucte)
-          );
         });
 
         setstateCostBuy(sumallSotienNhapKho);
@@ -813,23 +810,6 @@ const Dashboard = () => {
               </Typography>
               <Box height="250px" mt="-20px">
                 <BarChart isDashboard={true} />
-              </Box>
-            </Box> */}
-            {/* <Box
-              gridColumn="span 4"
-              gridRow="span 2"
-              backgroundColor={colors.primary[400]}
-              padding="30px"
-            >
-              <Typography
-                variant="h5"
-                fontWeight="600"
-                sx={{ marginBottom: "15px" }}
-              >
-                Geography Based Traffic
-              </Typography>
-              <Box height="200px">
-                <GeographyChart isDashboard={true} />
               </Box>
             </Box> */}
           </Box>

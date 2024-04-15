@@ -666,7 +666,7 @@ const DOANHTHU = () => {
         subtitle={i18n.t("DESDOANHTHU")}
       />
 
-      <div style={{ marginLeft: "-1%" }} className="container">
+      <div style={{ marginLeft: "-.7%" }} className="container">
         <h3>{i18n.t("CN")}</h3>
         <select onChange={handle_getAllDOANHTHU} id="chinhanh">
           {stateStore &&

@@ -24,6 +24,7 @@ import DEBTORS from "./scenes/debtor";
 import ACCOUNT from "./scenes/account";
 import BRACNH from "./scenes/branch";
 import DETAILS from "./scenes/Details/details";
+import ChamCong from "./scenes/chamcong/chamcong";
 function App() {
   const [theme, colorMode] = useMode();
   const [isSidebar, setIsSidebar] = useState(true);
@@ -42,7 +43,10 @@ function App() {
         path="/team"
         element={<Father childrend={<Team></Team>}></Father>}
       />
-
+      <Route
+        path="/chamcong"
+        element={<Father childrend={<ChamCong></ChamCong>}></Father>}
+      />
       <Route
         path="/contacts"
         element={<Father childrend={<Contacts></Contacts>}></Father>}

@@ -1,7 +1,6 @@
 import { Box, Button, Typography, useTheme } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import DatePicker from "react-datepicker";
-
 import * as XLSX from "xlsx";
 import { tokens } from "../../theme";
 import ExcelJS from "exceljs";
@@ -52,6 +51,9 @@ const Team = () => {
   const [stateViewimg, setstateViewimg] = useState("");
   const [isloading, setIsloading] = useState(false);
   const [stateTimekeep, setStateTimekeep] = useState([]);
+  const [ischecked, setIschecked] = useState(false);
+  const [selectedOption, setSelectedOption] = useState(""); // State để theo dõi giá trị được chọn trong select
+
   const today = new Date();
 
   // Lấy thông tin về ngày, giờ, phút, giây và milliseconds
@@ -119,32 +121,56 @@ const Team = () => {
         const start = new Date(`${datetimeToday}T${item.startCheck}`);
         const end = new Date(`${datetimeToday}T${item.endCheck}`);
         let diffMilliseconds = end - start;
+        let checkRole = stateStaff.some((obj) => {
+          return obj.id === item.staffid && obj.Role !== "NV";
+        });
 
-        if (Check_CCCD_To_Count_TimeKeep[`${item.staffid}`] === 1) {
+        if (checkRole) {
           // Quy đổi thành số giờ và trừ đi 1 giờ
           const totalHours = Math.floor(diffMilliseconds / (1000 * 60 * 60));
 
-          if (totalHours >= 10) {
-            // Quy đổi số giờ thành milliseconds
-            // Chuyển đổi thành dạng giờ:phút
-            const hours = Math.floor(diffMilliseconds / (1000 * 60 * 60));
-            const minutes = Math.floor(
-              (diffMilliseconds % (1000 * 60 * 60)) / (1000 * 60)
-            );
+          if (statechinhanh === "BT00") {
+            if (totalHours >= 9) {
+              // Quy đổi số giờ thành milliseconds
+              // Chuyển đổi thành dạng giờ:phút
+              const hours = Math.floor(diffMilliseconds / (1000 * 60 * 60));
+              const minutes = Math.floor(
+                (diffMilliseconds % (1000 * 60 * 60)) / (1000 * 60)
+              );
 
-            // Giảm đi 1 giờ
-            const adjustedHours = hours - 1;
+              // Giảm đi 1 giờ
+              const adjustedHours = hours - 1;
 
-            // Chuyển lại thành milliseconds
-            const newMilliseconds = (adjustedHours * 60 + minutes) * 60 * 1000;
+              // Chuyển lại thành milliseconds
+              const newMilliseconds =
+                (adjustedHours * 60 + minutes) * 60 * 1000;
 
-            diffMilliseconds = newMilliseconds;
+              diffMilliseconds = newMilliseconds;
+            }
+          } else {
+            if (totalHours >= 10) {
+              // Quy đổi số giờ thành milliseconds
+              // Chuyển đổi thành dạng giờ:phút
+              const hours = Math.floor(diffMilliseconds / (1000 * 60 * 60));
+              const minutes = Math.floor(
+                (diffMilliseconds % (1000 * 60 * 60)) / (1000 * 60)
+              );
+
+              // Giảm đi 1 giờ
+              const adjustedHours = hours - 1;
+
+              // Chuyển lại thành milliseconds
+              const newMilliseconds =
+                (adjustedHours * 60 + minutes) * 60 * 1000;
+              console.log("yo 10");
+              diffMilliseconds = newMilliseconds;
+            }
           }
         }
         let objUpdate = {
           id: item.id,
           branchID: statechinhanh,
-          reason: "...",
+          reason: item.reason,
           startCheck: item.startCheck,
           endCheck: item.endCheck,
           Total: diffMilliseconds,
@@ -259,6 +285,7 @@ const Team = () => {
       headerName: `${i18n.t("CV_TEAM")}`,
       flex: 1,
       cellClassName: "name-column--cell",
+      renderCell: ImageRole,
       editable: true,
     },
     {
@@ -326,9 +353,18 @@ const Team = () => {
     {
       field: "createDate",
       headerName: `NGÀY CHẤM CÔNG`,
-      flex: 2,
+      flex: 1,
       cellClassName: "name-column--cell",
       renderCell: ChamCong,
+      editable: true,
+    },
+
+    {
+      field: "reason",
+      headerName: `GHI CHÚ`,
+      flex: 2,
+      cellClassName: "name-column--cell p-0",
+      // renderCell: GhiChu,
       editable: true,
     },
   ];
@@ -382,6 +418,13 @@ const Team = () => {
         endCheck: allValues[0].endCheck.value,
       };
     }
+    if (allValues[0].reason && allValues[0].reason !== "...") {
+      updatedArray = {
+        ...updatedArray,
+        reason: allValues[0].reason.value,
+      };
+    }
+
     const index = stateTimekeep.findIndex((item) => item.id === keys[0]);
     if (index === -1) {
       return stateTimekeep;
@@ -473,6 +516,23 @@ const Team = () => {
     const formattedDateString = `${year}-${month}-${day} ${hours}:${minutes}`;
     return <span>{formattedDateString}</span>;
   }
+  function GhiChu(params) {
+    return (
+      <>
+        <div className="container">
+          <select className="w-100 " style={{ height: "45px" }} id="support">
+            <option value={params.value}>{params.value}</option>
+            {stateBranch &&
+              stateBranch.map((object, index) => (
+                <React.Fragment key={index}>
+                  <option value={object.branchID}>{object.name}</option>
+                </React.Fragment>
+              ))}
+          </select>
+        </div>
+      </>
+    );
+  }
   function UpdatedateObjectCell(params) {
     const arrayObject = params.value;
     const originalDateString = arrayObject;
@@ -489,6 +549,21 @@ const Team = () => {
     // Tạo chuỗi mới với định dạng "năm tháng ngày giờ phút giây"
     const formattedDateString = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
     return <span>{formattedDateString}</span>;
+  }
+  function ImageRole(params) {
+    let getvalue = params.value;
+    if (getvalue === "QL") {
+      getvalue = "QUẢN LÝ TRƯỞNG";
+    } else if (getvalue === "PQL") {
+      getvalue = "PHÓ QUẢN LÝ";
+    } else if (getvalue === "NV") {
+      getvalue = "NHÂN VIÊN";
+    }
+    return (
+      <>
+        <span>{getvalue}</span>
+      </>
+    );
   }
   function ImageCell(params) {
     return (
@@ -514,9 +589,7 @@ const Team = () => {
       const selectedRows = stateStaff.filter((row) =>
         selectionModel.includes(row.id)
       );
-
       //create Staff off
-
       const handledelted = await HandleDeletedStaff(selectedRows);
 
       if (handledelted.success) {
@@ -528,7 +601,6 @@ const Team = () => {
         await Promise.all(promises);
       }
       setSelectionModel([]);
-
       setSelectedRow([]);
       await fetchingGettAllStaft_by_branchID(statechinhanh);
       await fetchingGettAllStaftOff_by_branchID(statechinhanh);
@@ -616,8 +688,16 @@ const Team = () => {
   const handleExportExcelTimeK = async () => {
     // Mảng JSON chứa dữ liệu
     let data = [];
+    let checkRow = 1;
     //Lọc các phần tử trùng
-    let output = stateTimekeep.filter((obj, index, arr) => {
+    let output;
+    if (selectedRowTimekeeps.length > 0) {
+      output = selectedRowTimekeeps;
+    } else {
+      output = stateTimekeep;
+      checkRow = 2;
+    }
+    let dataforeach = output.filter((obj, index, arr) => {
       return (
         arr.findIndex((o) => {
           return (
@@ -628,12 +708,21 @@ const Team = () => {
       );
     });
     let maxRow = 0;
-    output.forEach((element) => {
-      const filterCheckElement = stateTimekeep.filter(
-        (obj) =>
-          obj.staffid === element.staffid &&
-          obj.createDate.split("T")[0] === element.createDate.split("T")[0]
-      );
+    dataforeach.forEach((element) => {
+      let filterCheckElement;
+      if (checkRow === 1) {
+        filterCheckElement = selectedRowTimekeeps.filter(
+          (obj) =>
+            obj.staffid === element.staffid &&
+            obj.createDate.split("T")[0] === element.createDate.split("T")[0]
+        );
+      } else {
+        filterCheckElement = stateTimekeep.filter(
+          (obj) =>
+            obj.staffid === element.staffid &&
+            obj.createDate.split("T")[0] === element.createDate.split("T")[0]
+        );
+      }
 
       let object = {};
       if (filterCheckElement.length > maxRow) {
@@ -643,6 +732,7 @@ const Team = () => {
         object = {
           CCCD: element.staffid,
           TENNV: element.staffName,
+          REASON: element.reason,
           UPDATEDATE: element.createDate.split("T")[0],
         };
         for (let i = 0; i < filterCheckElement.length; i++) {
@@ -656,7 +746,9 @@ const Team = () => {
             ...object,
             [`CHECKINT${i + 1}`]: filterCheckElement[i].startCheck,
             [`CHECKOUT${i + 1}`]: filterCheckElement[i].endCheck,
-            [`TOTAL${i + 1}`]: parseFloat(totalHours + "." + totalMinutes),
+            [`TOTAL${i + 1}`]: parseFloat(
+              totalHours + parseFloat((totalMinutes / 60).toFixed(2))
+            ),
           };
         }
         data.push(object);
@@ -670,14 +762,18 @@ const Team = () => {
         object = {
           CCCD: element.staffid,
           TENNV: element.staffName,
+          REASON: element.reason,
           UPDATEDATE: element.createDate.split("T")[0],
           CHECKIN: element.startCheck,
           CHECKOUT: element.endCheck,
-          TONG: parseFloat(totalHours + "." + totalMinutes),
+          TONG: parseFloat(
+            totalHours + parseFloat((totalMinutes / 60).toFixed(2))
+          ),
         };
         data.push(object);
       }
     });
+
     // Tạo một workbook mới
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Sheet1");
@@ -686,6 +782,8 @@ const Team = () => {
     let addrow = [
       "CCCD",
       i18n.t("TNV_TEAM").toUpperCase(),
+
+      i18n.t("GHICHU").toUpperCase(),
       i18n.t("TDT_TEAM").toUpperCase(),
     ];
     for (let index = 1; index <= maxRow; index++) {
@@ -695,12 +793,18 @@ const Team = () => {
     }
     const headerRow = worksheet.addRow(addrow);
     headerRow.font = { bold: true, color: { argb: "FF000000" } };
-    headerRow.fill = {
-      type: "pattern",
-      pattern: "solid",
-      fgColor: { argb: "AFC4ED" },
-    };
+    for (let index = 1; index <= addrow.length; index++) {
+      headerRow.getCell(index).fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "AFC4ED" },
+      };
+    }
 
+    // Sắp xếp mảng theo thứ tự tăng dần của trường "date"
+    data.sort((a, b) => {
+      return new Date(a.UPDATEDATE) - new Date(b.UPDATEDATE);
+    });
     // Đặt dữ liệu
     data.forEach((row) => {
       const rowData = Object.keys(row).map((key) => row[key]);
@@ -731,12 +835,12 @@ const Team = () => {
     for (let index = 0; index < columnleter.length; index++) {
       const column = worksheet.getColumn(`${columnleter.charAt(index)}`);
       column.alignment = { horizontal: "center", vertical: "middle" };
-      column.numFmt = "0.0";
+
       if (
-        columnleter.charAt(index) === "F" ||
-        columnleter.charAt(index) === "I" ||
-        columnleter.charAt(index) === "L" ||
-        columnleter.charAt(index) === "O"
+        columnleter.charAt(index) === "G" ||
+        columnleter.charAt(index) === "J" ||
+        columnleter.charAt(index) === "M" ||
+        columnleter.charAt(index) === "P"
       ) {
         column.font = {
           color: { argb: "008f00" },
@@ -744,6 +848,7 @@ const Team = () => {
           size: 14,
           bold: true,
         };
+        column.numFmt = "0.00";
       }
     }
 
@@ -754,7 +859,7 @@ const Team = () => {
     });
     const link = document.createElement("a");
     link.href = window.URL.createObjectURL(blob);
-    link.download = `${i18n.t("ALERT_PHIEUNHAP")}-${
+    link.download = `PHIẾU CHẤM CÔNG -${
       converToName[converBranchIDTOStoreID[statechinhanh]]
     }.xlsx`;
     link.click();
@@ -812,6 +917,7 @@ const Team = () => {
 
       setStateTimekeep(JSON.parse(resolvedResult));
     } else {
+      console.log("check objBranch " + JSON.stringify(objBranch));
       setStateTimekeep(JSON.parse(objBranch));
     }
   };
@@ -850,11 +956,8 @@ const Team = () => {
 
   const fetchingGettAllStaftOff_by_branchID = async (x) => {
     const check = await Get_all_STAFFOFF_By_branchID(x);
-
     if (check instanceof Promise) {
-      // Nếu là promise, chờ promise hoàn thành rồi mới cập nhật state
       const resolvedResult = await check;
-
       setStateStaffOff(JSON.parse(resolvedResult));
     } else {
       setStateStaffOff(JSON.parse(check));
@@ -863,10 +966,9 @@ const Team = () => {
   const handle_getAllStaff = async (e) => {
     await fetchingGettAllStaft_by_branchID(e.target.value);
     await fetchingGettAllStaftOff_by_branchID(e.target.value);
-    await fetchingTimekeep(e.target.value, startDate, endDate);
+    await fetchingTimekeep(e.target.value, datetimeToday, datetimeToday);
     setStartDate(datetimeToday);
     setEndDate(datetimeToday);
-
     setStatechinhanh(e.target.value);
   };
 
@@ -1002,6 +1104,7 @@ const Team = () => {
     pictureTwo: "",
   });
   const editstaff = async () => {
+    setSelectedOption("");
     const check = await HandleEditStaff(EditStaffForm);
     await fetchingGettAllStaft_by_branchID(statechinhanh);
 
@@ -1023,15 +1126,15 @@ const Team = () => {
     setSelectionModel([]);
     setStateimgEdit("");
     setStateimgTwoEdit("");
+    setIschecked(false);
+    document.getElementById("choserole").selectedIndex = 0;
   };
 
   const handleEdit = () => {
     const selectedRows = stateStaff.filter((row) =>
       selectionModel.includes(row.id)
     );
-
     fetchingGettAllStaft_by_branchID(statechinhanh);
-
     setEditStaffForm({
       ...EditStaffForm,
       name: selectedRows[0].name,
@@ -1045,9 +1148,9 @@ const Team = () => {
       picture: selectedRows[0].picture,
       pictureTwo: selectedRows[0].pictureTwo,
     });
+    setSelectedOption(selectedRows[0].Role);
     setStateimgEdit(selectedRows[0].picture);
     setStateimgTwoEdit(selectedRows[0].pictureTwo);
-
     // setStateimg(selectedRows[0].picture);
     // setStateimgTwo(selectedRows[0].pictureTwo);
     // Thực hiện xử lý theo nhu cầu của bạn
@@ -1059,7 +1162,6 @@ const Team = () => {
         const filteredObjects = stateTimekeep.filter(
           (obj) => obj.staffid === item.id
         );
-
         let objtemp = {
           staffid: item.id,
           staffName: item.name,
@@ -1087,6 +1189,7 @@ const Team = () => {
     }
   };
   const addStaff = async () => {
+    setSelectedOption("");
     const objectWithIdZero = stateStaff.find(
       (obj) => obj.id === addStaffForm.id
     );
@@ -1138,6 +1241,7 @@ const Team = () => {
       setStateimgTwo("");
       setStateimgFileName("");
       setStateimgTwoFileName("");
+      setIschecked(false);
     }
   };
 
@@ -1154,11 +1258,15 @@ const Team = () => {
   });
   const onChangeStaffForm = (event) => {
     setisError(false);
+
     setAddStaffForm({
       ...addStaffForm,
       [event.target.name]: event.target.value,
       branchID: statechinhanh,
     });
+    if (event.target.name === "Role") {
+      setSelectedOption(event.target.value);
+    }
   };
 
   const onChangeEditStaffForm = (event) => {
@@ -1166,8 +1274,13 @@ const Team = () => {
       ...EditStaffForm,
       [event.target.name]: event.target.value,
     });
+    if (event.target.name === "Role") {
+      setSelectedOption(event.target.value);
+    }
   };
-
+  const handleResetSelect = () => {
+    setSelectedOption(""); // Đặt lại giá trị của select về giá trị mặc định
+  };
   return (
     <Box m="20px">
       <Header title={i18n.t("TITLETEAM")} subtitle={i18n.t("DESTEAM")} />
@@ -1303,13 +1416,55 @@ const Team = () => {
                   value={EditStaffForm.phone}
                   onChange={onChangeEditStaffForm}
                 ></input>
-                <label htmlFor="Role"> {i18n.t("CV_TEAM")}</label>
+                {/* EDIT ROLE */}
+                {/* <label htmlFor="Role"> {i18n.t("CV_TEAM")}</label>
                 <input
                   type="text"
                   value={EditStaffForm.Role}
                   onChange={onChangeEditStaffForm}
                   name="Role"
-                ></input>
+                ></input> */}
+                <div>
+                  <label htmlFor="checkrole">Chọn chức vụ khác</label>
+                  <input
+                    name="checkrole"
+                    type="checkbox"
+                    onClick={() => {
+                      setIschecked(!ischecked);
+                    }}
+                    checked={ischecked}
+                  ></input>
+                </div>
+                {ischecked ? (
+                  <>
+                    <label htmlFor="Role">{i18n.t("CV_TEAM")}</label>
+                    <input
+                      type="text"
+                      name="Role"
+                      value={EditStaffForm.Role}
+                      onChange={onChangeEditStaffForm}
+                    ></input>
+                  </>
+                ) : (
+                  <>
+                    {" "}
+                    <label htmlFor="Role">{i18n.t("CV_TEAM")}</label>
+                    <select
+                      value={selectedOption}
+                      id="choserole"
+                      name="Role"
+                      onChange={onChangeEditStaffForm}
+                    >
+                      <option value={""}>....</option>
+                      <option value={"QL"}>QUẢN LÝ TRƯỞNG</option>
+
+                      <option value={"PQL"}>PHÓ QUẢN LÝ</option>
+
+                      <option value={"NV"}>NHÂN VIÊN</option>
+                    </select>
+                  </>
+                )}
+
                 <label htmlFor="ngayvao">Ngày vào</label>
                 <input
                   type="text"
@@ -1499,6 +1654,46 @@ const Team = () => {
                   value={addStaffForm.phone}
                   onChange={onChangeStaffForm}
                 ></input>
+                <div>
+                  <label htmlFor="checkrole">Chọn chức vụ khác</label>
+                  <input
+                    name="checkrole"
+                    type="checkbox"
+                    onClick={() => {
+                      setIschecked(!ischecked);
+                    }}
+                    checked={ischecked}
+                  ></input>
+                </div>
+                {ischecked ? (
+                  <>
+                    <label htmlFor="Role">{i18n.t("CV_TEAM")}</label>
+                    <input
+                      type="text"
+                      name="Role"
+                      value={addStaffForm.Role}
+                      onChange={onChangeStaffForm}
+                    ></input>
+                  </>
+                ) : (
+                  <>
+                    {" "}
+                    <label htmlFor="Role">{i18n.t("CV_TEAM")}</label>
+                    <select
+                      name="Role"
+                      id="choserole"
+                      value={selectedOption}
+                      onChange={onChangeStaffForm}
+                    >
+                      <option value={""}>.....</option>
+                      <option value={"QL"}>QUẢN LÝ TRƯỞNG</option>
+
+                      <option value={"PQL"}>PHÓ QUẢN LÝ</option>
+
+                      <option value={"NV"}>NHÂN VIÊN</option>
+                    </select>
+                  </>
+                )}
 
                 <label htmlFor="AccountBank">{i18n.t("TTNH")}</label>
                 <input
@@ -1822,7 +2017,7 @@ const Team = () => {
           columns={columnsTime}
         />
       </Box>
-      <hr></hr>
+
       <Box
         m="80px 0 0 0"
         height="75vh"
@@ -1855,7 +2050,7 @@ const Team = () => {
           },
         }}
       >
-        <Header title="NHÂN VIÊN ĐÃ RỜI KHỎI TỔ CHỨC"></Header>
+        <Header title="NHÂN VIÊN ĐÃ NGHỈ"></Header>
         <DataGrid
           components={{
             Toolbar: GridToolbar,

@@ -100,8 +100,7 @@ const Invoices = () => {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Sheet1");
 
-    // Tạo dòng header tùy chỉnh
-    const headerRow = worksheet.addRow([
+    let addrow = [
       i18n.t("MASP_P").toUpperCase(),
       i18n.t("LOAI_P").toUpperCase(),
       i18n.t("SOLUONG_P").toUpperCase(),
@@ -112,13 +111,17 @@ const Invoices = () => {
       i18n.t("CN").toUpperCase(),
       i18n.t("THOIDIEMTAOPHIEU").toUpperCase(),
       i18n.t("NGAYCAPNHAT_NP").toUpperCase(),
-    ]);
+    ];
+    // Tạo dòng header tùy chỉnh
+    const headerRow = worksheet.addRow(addrow);
     headerRow.font = { bold: true, color: { argb: "FF000000" } };
-    headerRow.fill = {
-      type: "pattern",
-      pattern: "solid",
-      fgColor: { argb: "FFFF00" },
-    };
+    for (let index = 1; index <= addrow.length; index++) {
+      headerRow.getCell(index).fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FFFF00" },
+      };
+    }
 
     // Đặt dữ liệu
     data.forEach((row) => {
@@ -127,18 +130,18 @@ const Invoices = () => {
     });
 
     worksheet.columns = [
-      { width: 30 },
-      { width: 30 },
-      { width: 30 },
-      { width: 30 },
-      { width: 30 },
-      { width: 30 },
-      { width: 30 },
-      { width: 30 },
-      { width: 30 },
-      { width: 30 },
-      { width: 30 },
-      { width: 30 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+      { width: 10 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
     ];
     // Định dạng cột B
     const columnB = worksheet.getColumn("D");
@@ -152,6 +155,13 @@ const Invoices = () => {
     const columnE = worksheet.getColumn("E");
     columnE.alignment = { horizontal: "center", vertical: "middle" };
     columnE.numFmt = "#,##";
+
+    const columnG = worksheet.getColumn("G");
+    columnG.alignment = { horizontal: "center", vertical: "middle" };
+
+    const columnI = worksheet.getColumn("I");
+    columnI.alignment = { horizontal: "center", vertical: "middle" };
+
     // Xuất workbook vào tệp Excel
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], {
